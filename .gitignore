@@ -42,3 +42,7 @@ service/database
 service/web
 service/uploads
 service/plugins
+service/database.db
+service/sun-panel
+
+pnpm-lock.yaml
