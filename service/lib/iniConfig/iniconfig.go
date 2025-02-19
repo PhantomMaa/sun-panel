@@ -7,7 +7,6 @@ import (
 type IniConfig struct {
 	Err      error
 	Config   *ini.File
-	Default  map[string]map[string]string // 默认配置
 	FileName string
 }
 
@@ -25,16 +24,6 @@ func (t *IniConfig) SetValue(section string, name string, value string) error {
 // 获取配置
 func (t *IniConfig) GetValueString(section string, name string) string {
 	return t.Config.Section(section).Key(name).String()
-}
-
-// 获取字符串配置，如果没有会查找默认值
-func (t *IniConfig) GetValueStringOrDefault(section string, name string) string {
-	value := t.GetValueString(section, name)
-	if value == "" && t.Default[section] != nil && t.Default[section][name] != "" {
-		return t.Default[section][name]
-	} else {
-		return value
-	}
 }
 
 // 获取配置

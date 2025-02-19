@@ -13,8 +13,7 @@ import (
 )
 
 var (
-	ISDOCKER = ""      // 是否为docker模式运行
-	RUNCODE  = "debug" // 运行模式：debug | release
+	RUNCODE = "debug" // 运行模式：debug | release
 	// DB_MYSQL  = "mysql"
 	// DB_SQLITE = "sqlite"
 	DB_DRIVER = database.SQLITE

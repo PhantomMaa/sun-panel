@@ -1,9 +1,7 @@
 package initialize
 
 import (
-	"flag"
 	"fmt"
-	"os"
 	"sun-panel/global"
 	"sun-panel/initialize/cUserToken"
 	"sun-panel/initialize/config"
@@ -24,9 +22,6 @@ import (
 
 var DB_DRIVER = database.SQLITE
 
-// var RUNCODE = "debug"
-// var ISDOCER = "" // 是否为docker模式
-
 func InitApp() error {
 	Logo()
 	gin.SetMode(global.RUNCODE) // GIN 运行模式
@@ -39,17 +34,11 @@ func InitApp() error {
 		global.Logger = logger
 	}
 
-	// 命令行运行
-	CommandRun()
-
 	// 配置初始化
-	{
-		if config, err := config.ConfigInit(); err != nil {
-			global.Logger.Errorln("Configuration initialization error", err)
-			return err
-		} else {
-			global.Config = config
-		}
+	if config, err := config.ConfigInit(); err != nil {
+		return err
+	} else {
+		global.Config = config
 	}
 
 	// 多语言初始化
@@ -72,19 +61,19 @@ func InitApp() error {
 func DatabaseConnect() {
 	// 数据库连接 - 开始
 	var dbClientInfo database.DbClient
-	databaseDrive := global.Config.GetValueStringOrDefault("base", "database_drive")
+	databaseDrive := global.Config.GetValueString("base", "database_drive")
 	if databaseDrive == database.MYSQL {
 		dbClientInfo = &database.MySQLConfig{
-			Username:    global.Config.GetValueStringOrDefault("mysql", "username"),
-			Password:    global.Config.GetValueStringOrDefault("mysql", "password"),
-			Host:        global.Config.GetValueStringOrDefault("mysql", "host"),
-			Port:        global.Config.GetValueStringOrDefault("mysql", "port"),
-			Database:    global.Config.GetValueStringOrDefault("mysql", "db_name"),
+			Username:    global.Config.GetValueString("mysql", "username"),
+			Password:    global.Config.GetValueString("mysql", "password"),
+			Host:        global.Config.GetValueString("mysql", "host"),
+			Port:        global.Config.GetValueString("mysql", "port"),
+			Database:    global.Config.GetValueString("mysql", "db_name"),
 			WaitTimeout: global.Config.GetValueInt("mysql", "wait_timeout"),
 		}
 	} else {
 		dbClientInfo = &database.SQLiteConfig{
-			Filename: global.Config.GetValueStringOrDefault("sqlite", "file_path"),
+			Filename: global.Config.GetValueString("sqlite", "file_path"),
 		}
 	}
 
@@ -99,61 +88,6 @@ func DatabaseConnect() {
 	database.CreateDatabase(databaseDrive, global.Db)
 
 	database.NotFoundAndCreateUser(global.Db)
-}
-
-// 命令行运行
-func CommandRun() {
-	var (
-		cfg bool
-		pwd bool
-	)
-
-	flag.BoolVar(&cfg, "config", false, "Generate configuration file")
-	flag.BoolVar(&pwd, "password-reset", false, "Reset the password of the first user")
-
-	flag.Parse()
-
-	if cfg {
-		// 生成配置文件
-		fmt.Println("Generating configuration file")
-		cmn.AssetsTakeFileToPath("conf.example.ini", "conf/conf.example.ini")
-		cmn.AssetsTakeFileToPath("conf.example.ini", "conf/conf.ini")
-		fmt.Println("The configuration file has been created  conf/conf.ini ", "Please modify according to your own needs")
-		os.Exit(0) // 务必退出
-	} else if pwd {
-		// 重置密码
-
-		// 配置初始化
-		config, _ := config.ConfigInit()
-		global.Config = config
-
-		DatabaseConnect()
-		userInfo := models.User{}
-		if err := global.Db.Where("role=?", 1).Order("id").First(&userInfo).Error; err != nil {
-			fmt.Println("ERROR", err.Error())
-			os.Exit(0) // 务必退出
-		}
-
-		newPassword := "12345678"
-
-		updateInfo := models.User{
-			Password: cmn.PasswordEncryption(newPassword),
-			Token:    "",
-		}
-		// 重置第一个管理员的密码
-		if err := global.Db.Select("Password", "Token").Where("id=?", userInfo.ID).Updates(&updateInfo).Error; err != nil {
-			fmt.Println("ERROR", err.Error())
-			os.Exit(0) // 务必退出
-		}
-
-		fmt.Println("The password has been successfully reset. Here is the account information")
-		fmt.Println("Username ", userInfo.Username)
-		fmt.Println("Password ", newPassword)
-		os.Exit(0) // 务必退出
-	} else {
-		return
-	}
-	os.Exit(0) // 务必退出
 }
 
 func Logo() {
