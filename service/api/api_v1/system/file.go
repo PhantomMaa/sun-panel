@@ -27,38 +27,39 @@ func (a *FileApi) UploadImg(c *gin.Context) {
 	if err != nil {
 		apiReturn.ErrorByCode(c, 1300)
 		return
-	} else {
-		fileExt := strings.ToLower(path.Ext(f.Filename))
-		agreeExts := []string{
-			".png",
-			".jpg",
-			".gif",
-			".jpeg",
-			".webp",
-			".svg",
-			".ico",
-		}
-
-		if !cmn.InArray(agreeExts, fileExt) {
-			apiReturn.ErrorByCode(c, 1301)
-			return
-		}
-		fileName := cmn.Md5(fmt.Sprintf("%s%s", f.Filename, time.Now().String()))
-		fildDir := fmt.Sprintf("%s/%d/%d/%d/", configUpload, time.Now().Year(), time.Now().Month(), time.Now().Day())
-		isExist, _ := cmn.PathExists(fildDir)
-		if !isExist {
-			os.MkdirAll(fildDir, os.ModePerm)
-		}
-		filepath := fmt.Sprintf("%s%s%s", fildDir, fileName, fileExt)
-		c.SaveUploadedFile(f, filepath)
-
-		// 像数据库添加记录
-		mFile := models.File{}
-		mFile.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
-		apiReturn.SuccessData(c, gin.H{
-			"imageUrl": filepath[1:],
-		})
 	}
+
+	fileExt := strings.ToLower(path.Ext(f.Filename))
+	agreeExts := []string{
+		".png",
+		".jpg",
+		".gif",
+		".jpeg",
+		".webp",
+		".svg",
+		".ico",
+	}
+
+	if !cmn.InArray(agreeExts, fileExt) {
+		apiReturn.ErrorByCode(c, 1301)
+		return
+	}
+
+	fileName := cmn.Md5(fmt.Sprintf("%s%s", f.Filename, time.Now().String()))
+	fildDir := fmt.Sprintf("%s/", configUpload)
+	isExist, _ := cmn.PathExists(fildDir)
+	if !isExist {
+		os.MkdirAll(fildDir, os.ModePerm)
+	}
+	filepath := fmt.Sprintf("%s%s%s", fildDir, fileName, fileExt)
+	c.SaveUploadedFile(f, filepath)
+
+	// 向数据库添加记录
+	mFile := models.File{}
+	mFile.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
+	apiReturn.SuccessData(c, gin.H{
+		"imageUrl": filepath[1:],
+	})
 }
 
 func (a *FileApi) UploadFiles(c *gin.Context) {
