@@ -169,6 +169,8 @@
       "admin": "Admin",
       "regularUser": "Regular"
     },
+    "upload": "Upload",
+    "change": "Change",
     "save": "Save",
     "saveFail": "Save failed",
     "saveSort": "Save sort",

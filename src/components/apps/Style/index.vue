@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import type { UploadFileInfo } from 'naive-ui'
 import { NButton, NCard, NColorPicker, NGrid, NGridItem, NInput, NInputGroup, NPopconfirm, NSelect, NSlider, NSwitch, NUpload, NUploadDragger, useMessage } from 'naive-ui'
 import { useAuthStore, usePanelState } from '@/store'
@@ -11,8 +11,6 @@ const authStore = useAuthStore()
 const panelState = usePanelState()
 const ms = useMessage()
 const showWallpaperInput = ref(false)
-
-const isSaveing = ref(false)
 
 const iconTypeOptions = [
   {
@@ -36,18 +34,6 @@ const maxWidthUnitOption = [
   },
 ]
 
-watch(panelState.panelConfig, () => {
-  if (!isSaveing.value) {
-    isSaveing.value = true
-
-    setTimeout(() => {
-      panelState.recordState()// 本地记录
-      isSaveing.value = false
-      uploadCloud()
-    }, 1000)
-  }
-})
-
 function handleUploadBackgroundFinish({
   file,
   event,
@@ -69,6 +55,18 @@ function uploadCloud() {
   })
 }
 
+function handleUploadFaviconFinish({
+  file,
+  event,
+}: {
+  file: UploadFileInfo
+  event?: ProgressEvent
+}) {
+  const res = JSON.parse((event?.target as XMLHttpRequest).response)
+  panelState.panelConfig.logoImageSrc = res.data.imageUrl
+  return file
+}
+
 function resetPanelConfig() {
   panelState.resetPanelConfig()
   uploadCloud()
@@ -88,6 +86,35 @@ function resetPanelConfig() {
         </div>
         <div class="flex items-center mt-[5px]">
           <NInput v-model:value="panelState.panelConfig.logoText" type="text" show-count :maxlength="20" placeholder="请输入文字" />
+        </div>
+      </div>
+
+      <div class="mt-[10px]">
+        <div>
+          Favicon
+        </div>
+        <div class="flex items-center mt-[5px]">
+          <NUpload
+            action="/api/file/uploadImg"
+            :show-file-list="false"
+            name="imgfile"
+            :headers="{
+              token: authStore.token as string,
+            }"
+            accept=".ico,.png,.svg"
+            @finish="handleUploadFaviconFinish"
+          >
+            <div class="flex items-center">
+              <img 
+                v-if="panelState.panelConfig.logoImageSrc" 
+                :src="panelState.panelConfig.logoImageSrc" 
+                class="w-[32px] h-[32px] mr-[10px] border border-gray-200 rounded"
+              >
+              <NButton size="small">
+                {{ panelState.panelConfig.logoImageSrc ? $t('common.change') : $t('common.upload') }}
+              </NButton>
+            </div>
+          </NUpload>
         </div>
       </div>
     </NCard>
