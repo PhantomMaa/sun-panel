@@ -2,7 +2,6 @@ package system
 
 import (
 	"fmt"
-	"os"
 	"path"
 	"strings"
 	"sun-panel/api/api_v1/common/apiData/commonApiStructs"
@@ -10,6 +9,7 @@ import (
 	"sun-panel/api/api_v1/common/base"
 	"sun-panel/global"
 	"sun-panel/lib/cmn"
+	"sun-panel/lib/storage"
 	"sun-panel/models"
 	"time"
 
@@ -22,7 +22,6 @@ type FileApi struct{}
 
 func (a *FileApi) UploadImg(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	configUpload := global.Config.GetValueString("base", "source_path")
 	f, err := c.FormFile("imgfile")
 	if err != nil {
 		apiReturn.ErrorByCode(c, 1300)
@@ -45,58 +44,28 @@ func (a *FileApi) UploadImg(c *gin.Context) {
 		return
 	}
 
-	fileName := cmn.Md5(fmt.Sprintf("%s%s", f.Filename, time.Now().String()))
-	fildDir := fmt.Sprintf("%s/", configUpload)
-	isExist, _ := cmn.PathExists(fildDir)
-	if !isExist {
-		os.MkdirAll(fildDir, os.ModePerm)
-	}
-	filepath := fmt.Sprintf("%s%s%s", fildDir, fileName, fileExt)
-	c.SaveUploadedFile(f, filepath)
+	fileName := cmn.Md5(fmt.Sprintf("%s%s", f.Filename, time.Now().String())) + fileExt
 
-	// 向数据库添加记录
-	mFile := models.File{}
-	mFile.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
-	apiReturn.SuccessData(c, gin.H{
-		"imageUrl": filepath[1:],
-	})
-}
-
-func (a *FileApi) UploadFiles(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
-	configUpload := global.Config.GetValueString("base", "source_path")
-
-	form, err := c.MultipartForm()
+	// 使用存储接口上传文件
+	storageInstance := storage.GetStorage()
+	filepath, err := storageInstance.Upload(f, fileName)
 	if err != nil {
 		apiReturn.ErrorByCode(c, 1300)
 		return
 	}
-	files := form.File["files[]"]
-	errFiles := []string{}
-	succMap := map[string]string{}
-	for _, f := range files {
-		fileExt := strings.ToLower(path.Ext(f.Filename))
-		fileName := cmn.Md5(fmt.Sprintf("%s%s", f.Filename, time.Now().String()))
-		fildDir := fmt.Sprintf("%s/%d/%d/%d/", configUpload, time.Now().Year(), time.Now().Month(), time.Now().Day())
-		isExist, _ := cmn.PathExists(fildDir)
-		if !isExist {
-			os.MkdirAll(fildDir, os.ModePerm)
-		}
-		filepath := fmt.Sprintf("%s%s%s", fildDir, fileName, fileExt)
-		if c.SaveUploadedFile(f, filepath) != nil {
-			errFiles = append(errFiles, f.Filename)
-		} else {
-			// 成功
-			// 像数据库添加记录
-			mFile := models.File{}
-			mFile.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
-			succMap[f.Filename] = filepath[1:]
-		}
+
+	// 向数据库添加记录
+	mFile := models.File{}
+	_, err = mFile.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
+	if err != nil {
+		global.Logger.Errorf("Failed to add file record to database: %v", err)
+		apiReturn.ErrorByCode(c, 1300)
+		return
 	}
 
+	global.Logger.Infof("Successfully uploaded file %s to %s", f.Filename, filepath)
 	apiReturn.SuccessData(c, gin.H{
-		"succMap":  succMap,
-		"errFiles": errFiles,
+		"imageUrl": filepath,
 	})
 }
 
@@ -112,12 +81,11 @@ func (a *FileApi) GetList(c *gin.Context) {
 	data := []map[string]interface{}{}
 	for _, v := range list {
 		data = append(data, map[string]interface{}{
-			"src":        v.Src[1:],
+			"src":        v.Src,
 			"fileName":   v.FileName,
 			"id":         v.ID,
 			"createTime": v.CreatedAt,
 			"updateTime": v.UpdatedAt,
-			"path":       v.Src,
 		})
 	}
 	apiReturn.SuccessListData(c, data, count)
@@ -139,7 +107,10 @@ func (a *FileApi) Deletes(c *gin.Context) {
 		}
 
 		for _, v := range files {
-			os.Remove(v.Src)
+			if err := storage.GetStorage().Delete(v.Src); err != nil {
+				global.Logger.Errorf("Failed to delete file %s: %v", v.Src, err)
+				return err
+			}
 		}
 
 		if err := tx.Order("created_at desc").Delete(&files, "user_id=? AND id in ?", userInfo.ID, req.Ids).Error; err != nil {

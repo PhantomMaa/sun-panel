@@ -18,6 +18,9 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+
+	"errors"
+	"sun-panel/lib/storage"
 )
 
 var DB_DRIVER = database.SQLITE
@@ -35,11 +38,12 @@ func InitApp() error {
 	}
 
 	// 配置初始化
-	if config, err := config.ConfigInit(); err != nil {
+	config, err := config.ConfigInit()
+	if err != nil {
 		return err
-	} else {
-		global.Config = config
 	}
+
+	global.Config = config
 
 	// 多语言初始化
 	lang.LangInit("zh-cn") // en-us
@@ -54,6 +58,11 @@ func InitApp() error {
 	global.VerifyCodeCachePool = other.InitVerifyCodeCachePool()
 	global.SystemSetting = systemSettingCache.InItSystemSettingCache()
 	global.SystemMonitor = global.NewCache[interface{}](5*time.Hour, -1, "systemMonitorCache")
+
+	// 初始化存储系统
+	if err := InitStorage(); err != nil {
+		return fmt.Errorf("storage initialization error: %w", err)
+	}
 
 	return nil
 }
@@ -88,6 +97,58 @@ func DatabaseConnect() {
 	database.CreateDatabase(databaseDrive, global.Db)
 
 	database.NotFoundAndCreateUser(global.Db)
+}
+
+// InitStorage initializes the storage system based on configuration
+func InitStorage() error {
+	storageType := global.Config.GetValueString("base", "storage_drive")
+	global.Logger.Infof("Initializing storage system with type: %s", storageType)
+
+	var config storage.Config
+
+	switch storageType {
+	case "local":
+		config = storage.Config{
+			Type: storage.LocalStorageType,
+		}
+		global.Logger.Infof("Initializing local storage with path: %s", storage.LocalStorageBasePath)
+
+	case "s3":
+		accessKeyID := global.Config.GetValueString("s3", "access_key_id")
+		secretAccessKey := global.Config.GetValueString("s3", "secret_access_key")
+		endpoint := global.Config.GetValueString("s3", "endpoint")
+		bucket := global.Config.GetValueString("s3", "bucket")
+		region := global.Config.GetValueString("s3", "region")
+
+		if accessKeyID == "" || secretAccessKey == "" || endpoint == "" || bucket == "" || region == "" {
+			return fmt.Errorf("missing required S3 configuration: accessKeyID=%v, secretAccessKey=%v, endpoint=%v, bucket=%v, region=%v",
+				accessKeyID != "", secretAccessKey != "", endpoint != "", bucket != "", region != "")
+		}
+
+		global.Logger.Infof("Initializing S3 storage with endpoint: %s, bucket: %s, region: %s", endpoint, bucket, region)
+
+		config = storage.Config{
+			Type: storage.S3StorageType,
+			S3Config: &storage.S3Config{
+				AccessKeyID:     accessKeyID,
+				SecretAccessKey: secretAccessKey,
+				Endpoint:        endpoint,
+				Bucket:          bucket,
+				Region:          region,
+			},
+		}
+	default:
+		return errors.New("invalid storage type : " + storageType)
+	}
+
+	storageInstance, err := storage.NewStorage(config)
+	if err != nil {
+		return fmt.Errorf("failed to initialize storage: %w", err)
+	}
+
+	storage.SetStorage(storageInstance)
+	global.Logger.Info("Storage system initialized successfully")
+	return nil
 }
 
 func Logo() {

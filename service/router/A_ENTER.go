@@ -2,7 +2,6 @@ package router
 
 import (
 	"sun-panel/global"
-	// "sun-panel/router/admin"
 	"sun-panel/router/openness"
 	"sun-panel/router/panel"
 	"sun-panel/router/system"
@@ -31,9 +30,8 @@ func InitRouters(addr string) error {
 		router.StaticFile("/favicon.svg", webPath+"/favicon.svg")
 	}
 
-	// 上传的文件
-	sourcePath := global.Config.GetValueString("base", "source_path")
-	router.Static(sourcePath[1:], sourcePath)
+	// needed only when local storage mode
+	router.Static("/uploads", "./uploads")
 
 	global.Logger.Info("Sun-Panel is Started.  Listening and serving HTTP on ", addr)
 	return router.Run(addr)
