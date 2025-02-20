@@ -1,17 +1,15 @@
 package cmn
 
 import (
-	// "calendar-note-gin/assets"
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
 	"math/rand"
 	"os"
-	"path"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
-	"sun-panel/assets"
+	"sun-panel/lib/embedfs"
 	"time"
 )
 
@@ -110,10 +108,15 @@ func StrToUint(s string) uint {
 
 // 获取系统信息
 func GetSysVersionInfo() Version_Info {
-	cBytes, _ := assets.Asset("assets/version")
+	cBytes, err := embedfs.ReadEmbeddedFile("version")
+	if err != nil {
+		return Version_Info{}
+	}
 	c := string(cBytes)
 	info := strings.Split(c, "|")
-
+	if len(info) < 2 {
+		return Version_Info{}
+	}
 	return Version_Info{
 		Version_code: StrToInt(info[0]),
 		Version:      info[1],
@@ -197,20 +200,12 @@ func InArray[T uint | int | int8 | int64 | float32 | float64 | string](arr []T, 
 // 从Assets文件夹中抽取文件保存到路劲
 // AssetsTakeFileToPath("config.ini", targetPath string)
 func AssetsTakeFileToPath(assetsPath, targetPath string) error {
-	bytes, _ := assets.Asset("assets/" + assetsPath)
-	targetPathPath := path.Dir(targetPath)
-	exists, err := PathExists(targetPathPath)
-
-	if err != nil {
+	// 确保目标目录存在
+	dir := filepath.Dir(targetPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
-	if !exists {
-		if err := os.MkdirAll(targetPathPath, 0777); err != nil {
-			fmt.Println(456)
-			return err
-		}
-	}
-	return os.WriteFile(targetPath, bytes, 0666)
+	return embedfs.ExtractEmbeddedFile(assetsPath, targetPath)
 }
 
 // 密码加密

@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"sun-panel/lib/cmn"
+	"sun-panel/lib/embedfs"
 	"sun-panel/lib/iniConfig"
 )
 
@@ -25,6 +26,10 @@ func ConfigInit() (*iniConfig.IniConfig, error) {
 func createConfExample(confName string, targetName string) {
 	exists, _ := cmn.PathExists("conf/" + targetName)
 	if !exists {
-		cmn.AssetsTakeFileToPath(confName, "conf/"+targetName)
+		err := embedfs.ExtractEmbeddedFile(confName, "conf/"+targetName)
+		if err != nil {
+			// 记录错误但继续执行，因为这只是示例配置文件
+			cmn.AssetsTakeFileToPath(confName, "conf/"+targetName)
+		}
 	}
 }

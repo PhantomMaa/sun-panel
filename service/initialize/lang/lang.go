@@ -4,6 +4,7 @@ import (
 	"os"
 	"sun-panel/global"
 	"sun-panel/lib/cmn"
+	"sun-panel/lib/embedfs"
 	"sun-panel/lib/language"
 )
 
@@ -18,12 +19,12 @@ func LangInit(lang string) {
 	// 生成语言文件
 	if !exists {
 		global.Logger.Infoln("输出语言文件:", filename)
-		err := cmn.AssetsTakeFileToPath("lang/zh-cn.ini", "lang/zh-cn.ini")
+		err := embedfs.ExtractEmbeddedFile("lang/zh-cn.ini", "lang/zh-cn.ini")
 		if err != nil {
 			global.Logger.Errorln("输出语言文件出错:", err.Error())
 			os.Exit(1)
 		}
-		err = cmn.AssetsTakeFileToPath("lang/en-us.ini", "lang/en-us.ini")
+		err = embedfs.ExtractEmbeddedFile("lang/en-us.ini", "lang/en-us.ini")
 		if err != nil {
 			global.Logger.Errorln("输出语言文件出错:", err.Error())
 			os.Exit(1)
