@@ -1,7 +1,6 @@
 package initialize
 
 import (
-	"embed"
 	"fmt"
 	"sun-panel/global"
 	"sun-panel/initialize/cUserToken"
@@ -13,7 +12,6 @@ import (
 	"sun-panel/initialize/systemSettingCache"
 	"sun-panel/initialize/userToken"
 	"sun-panel/lib/cmn"
-	"sun-panel/lib/embedfs"
 	"sun-panel/models"
 	"time"
 
@@ -27,14 +25,7 @@ import (
 
 var DB_DRIVER = database.SQLITE
 
-func initEmbedFS() {
-	var embeddedAssets embed.FS
-	embedfs.Init(embeddedAssets)
-}
-
 func InitApp() error {
-	// 初始化嵌入式文件系统
-	initEmbedFS()
 
 	// 打印 logo
 	Logo()

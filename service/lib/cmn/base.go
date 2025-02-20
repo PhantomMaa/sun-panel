@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"math/rand"
 	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -195,17 +194,6 @@ func InArray[T uint | int | int8 | int64 | float32 | float64 | string](arr []T, 
 	})
 
 	return index < len(arr) && arr[index] == item
-}
-
-// 从Assets文件夹中抽取文件保存到路劲
-// AssetsTakeFileToPath("config.ini", targetPath string)
-func AssetsTakeFileToPath(assetsPath, targetPath string) error {
-	// 确保目标目录存在
-	dir := filepath.Dir(targetPath)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
-	}
-	return embedfs.ExtractEmbeddedFile(assetsPath, targetPath)
 }
 
 // 密码加密
