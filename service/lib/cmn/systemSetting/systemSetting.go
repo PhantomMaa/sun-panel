@@ -98,15 +98,3 @@ func (s *SystemSettingCache) Set(configName string, configValue interface{}) err
 	err := mSetting.Set(configName, configValue)
 	return err
 }
-
-func (s *SystemSettingCache) GetValue(key string) interface{} {
-	if v, ok := s.Cache.Get(key); ok {
-		return v
-	}
-	return nil
-}
-
-func (s *SystemSettingCache) SetValue(key string, value interface{}) error {
-	s.Cache.SetDefault(key, value)
-	return s.Set(key, value)
-}

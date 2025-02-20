@@ -3,6 +3,7 @@ package global
 import (
 	"sun-panel/initialize/database"
 	"sun-panel/lib/cache"
+	"sun-panel/lib/cmn/systemSetting"
 	"sun-panel/lib/iniConfig"
 	"sun-panel/lib/language"
 	"sun-panel/models"
@@ -10,15 +11,6 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
-
-// SystemSettingCache represents the system settings cache interface
-type SystemSettingCache interface {
-	GetValue(key string) interface{}
-	GetValueString(key string) (string, error)
-	GetValueByInterface(key string, value interface{}) error
-	Set(key string, value interface{}) error
-	SetValue(key string, value interface{}) error
-}
 
 var (
 	RUNCODE = "debug" // 运行模式：debug | release
@@ -39,7 +31,7 @@ var (
 	VerifyCodeCachePool cache.Cacher[string]
 	Config              *iniConfig.IniConfig
 	Db                  *gorm.DB
-	SystemSetting       SystemSettingCache
+	SystemSetting       *systemSetting.SystemSettingCache
 	SystemMonitor       cache.Cacher[interface{}]
 	RateLimit           *RateLimiter
 )

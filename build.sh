@@ -30,14 +30,6 @@ buildFrontend() {
   pnpm run build
 }
 
-buildBackEndAssets() {
-  cd $REPO/service
-#   export PATH=$PATH:/root/go/bin
-  go install -a -v github.com/go-bindata/go-bindata/...@latest
-  go install -a -v github.com/elazarl/go-bindata-assetfs/...@latest
-  go-bindata-assetfs -o=assets/bindata.go -pkg=assets assets/...
-}
-
 # buildBinary() {
 #   cd $REPO/service
 #   # mv "${REPO}/dist" "${REPO}/web"
@@ -206,6 +198,5 @@ fi
 # fi
 
 if [ "$RELEASE" = "true" ]; then
-  buildBackEndAssets
   release
 fi
