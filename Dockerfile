@@ -11,7 +11,7 @@ RUN npm install && npm run build
 # 最新alpine3.19导致sqlite3编译失败(https://github.com/mattn/go-sqlite3/issues/1164，
 # 临时解决方案:https://github.com/mattn/go-sqlite3/pull/1177)
 # sun-panel暂时解决方案使用golang:1.21-alpine3.18（因旧版本使用没问题，短期内较稳定） 
-FROM golang:1.21-alpine3.18 as server_image
+FROM golang:1.24-alpine as server_image
 
 WORKDIR /build
 
@@ -31,7 +31,6 @@ RUN go env -w GO111MODULE=on \
     && go build -o sun-panel --ldflags="-X sun-panel/global.RUNCODE=release" main.go
 
 
-
 # run_image
 FROM alpine
 
@@ -46,8 +45,7 @@ COPY --from=server_image /build/sun-panel /app/sun-panel
 
 EXPOSE 3002
 
-RUN apk add --no-cache bash ca-certificates su-exec tzdata \
-    && chmod +x ./sun-panel \
-    && ./sun-panel -config
+RUN apk add --no-cache bash ca-certificates su-exec tzdata && \
+    chmod +x ./sun-panel
 
 CMD ./sun-panel
