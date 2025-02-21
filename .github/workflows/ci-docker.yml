@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Get version
         id: version
-        run: echo "ver=$(cut -d '|' -f 2 ./service/assets/version)" >> $GITHUB_OUTPUT
+        run: echo "ver=$(cut -d '|' -f 2 ./service/version)" >> $GITHUB_OUTPUT
       - name: Lowercase repo
         id: repo
         run: echo "lower=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
