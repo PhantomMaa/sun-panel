@@ -14,7 +14,6 @@ import { RoundCardModal } from '@/components/common'
 
 interface Version {
   versionName: string
-  versionCode: number
 }
 
 const appStore = useAppStore()
@@ -39,7 +38,7 @@ onMounted(() => {
       </div>
       <div class="text-xl">
         <NGradientText type="info">
-          <a href="https://github.com/hslr-s/sun-panel/releases" class="font-semibold" :title="$t('apps.about.viewUpdateLog')" target="_blank">v{{ versionName }}</a>
+          <a href="https://github.com/hslr-s/sun-panel/releases" class="font-semibold" :title="$t('apps.about.viewUpdateLog')" target="_blank">{{ versionName }}</a>
         </NGradientText>
       </div>
       <div class="mt-2">

@@ -7,7 +7,6 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -27,11 +26,6 @@ const (
 	RAND_CODE_MODE2 = "abcdefghijklmnopqrstuvwxyz0123456789"                           // 小写，数字
 	RAND_CODE_MODE3 = "0123456789"                                                     // 数字
 )
-
-type Version_Info struct {
-	Version      string
-	Version_code int
-}
 
 func GetTime() string {
 	return time.Unix(time.Now().Unix(), 0).Format(TimeFormatMode1)
@@ -104,21 +98,13 @@ func StrToUint(s string) uint {
 	return uint(u)
 }
 
-// 获取系统信息
-func GetSysVersionInfo() Version_Info {
-	cBytes, err := os.ReadFile("./version")
-	if err != nil {
-		return Version_Info{}
+var Version string
+
+func GetVersion() string {
+	if Version == "" {
+		Version = "v1.0.0"
 	}
-	c := string(cBytes)
-	info := strings.Split(c, "|")
-	if len(info) < 2 {
-		return Version_Info{}
-	}
-	return Version_Info{
-		Version_code: StrToInt(info[0]),
-		Version:      info[1],
-	}
+	return Version
 }
 
 // 文件是否存在

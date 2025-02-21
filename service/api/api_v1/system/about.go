@@ -11,9 +11,8 @@ type About struct {
 }
 
 func (a *About) Get(c *gin.Context) {
-	version := cmn.GetSysVersionInfo()
+	version := cmn.GetVersion()
 	apiReturn.SuccessData(c, gin.H{
-		"versionName": version.Version,
-		"versionCode": version.Version_code,
+		"versionName": version,
 	})
 }

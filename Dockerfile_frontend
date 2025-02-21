@@ -1,6 +1,9 @@
-FROM sun-panel-dist AS builder
+ARG REPO_LOWER
+ARG VERSION
 
-# nginx with dist files
+FROM ghcr.io/${REPO_LOWER}/temp:${VERSION} AS builder
+WORKDIR /build
+
 FROM nginx:alpine
 COPY --from=builder /build/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf

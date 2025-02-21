@@ -157,8 +157,8 @@ func Logo() {
 	fmt.Println("  /___/\\_,_/_//_/ /_/   \\_,_/_//_/\\__/_/  ")
 	fmt.Println("")
 
-	versionInfo := cmn.GetSysVersionInfo()
-	fmt.Println("Version:", versionInfo.Version)
+	version := cmn.GetVersion()
+	fmt.Println("Version:", version)
 	fmt.Println("Welcome to the Sun-Panel.")
 	fmt.Println("Project address:", "https://github.com/hslr-s/sun-panel")
 }

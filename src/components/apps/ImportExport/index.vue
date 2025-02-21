@@ -142,7 +142,6 @@ async function exportIcons(): Promise<IconGroup[]> {
 onMounted(() => {
   interface Version {
     versionName: string
-    versionCode: number
   }
 
   getAbout<Version>().then((res) => {

@@ -1,7 +1,11 @@
-FROM sun-panel-dist AS dist
+ARG REPO_LOWER
+ARG VERSION
 
-# monolith app image
-FROM sun-panel-backend
+FROM ghcr.io/${REPO_LOWER}/temp:${VERSION} AS temp
+FROM ghcr.io/${REPO_LOWER}/backend:${VERSION}
+
 WORKDIR /app
-COPY --from=dist /build/dist /app/web
-CMD ./sun-panel
+COPY --from=temp /build/dist /app/web
+
+EXPOSE 3002
+CMD ["./sun-panel"]
