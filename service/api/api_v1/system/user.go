@@ -64,8 +64,6 @@ func (a *UserApi) UpdateInfo(c *gin.Context) {
 		"head_image": params.HeadImage,
 		"name":       params.Name,
 	})
-	// 删除缓存
-	global.UserToken.Delete(userInfo.Token)
 	if err != nil {
 		apiReturn.ErrorDatabase(c, err.Error())
 	}
@@ -106,7 +104,5 @@ func (a *UserApi) UpdatePasssword(c *gin.Context) {
 		apiReturn.ErrorDatabase(c, res.Error.Error())
 		return
 	}
-	// 删除token
-	global.UserToken.Delete(userInfo.Token)
 	apiReturn.Success(c)
 }

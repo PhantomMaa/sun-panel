@@ -3,14 +3,11 @@ package initialize
 import (
 	"fmt"
 	"sun-panel/global"
-	"sun-panel/initialize/cUserToken"
 	"sun-panel/initialize/config"
 	"sun-panel/initialize/database"
 	"sun-panel/initialize/lang"
-	"sun-panel/initialize/other"
 	"sun-panel/initialize/runlog"
 	"sun-panel/initialize/systemSettingCache"
-	"sun-panel/initialize/userToken"
 	"sun-panel/lib/cmn"
 	"sun-panel/models"
 	"time"
@@ -20,8 +17,8 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"errors"
+	"sun-panel/initialize/jwt"
 	"sun-panel/lib/storage"
-	"sun-panel/initialize/jwt" // added jwt import
 )
 
 var DB_DRIVER = database.SQLITE
@@ -53,12 +50,7 @@ func InitApp() error {
 
 	DatabaseConnect()
 
-	// 初始化用户token
-	global.UserToken = userToken.InitUserToken()
-	global.CUserToken = cUserToken.InitCUserToken()
-
 	// 其他的初始化
-	global.VerifyCodeCachePool = other.InitVerifyCodeCachePool()
 	global.SystemSetting = systemSettingCache.InItSystemSettingCache()
 	global.SystemMonitor = global.NewCache[interface{}](5*time.Hour, -1, "systemMonitorCache")
 

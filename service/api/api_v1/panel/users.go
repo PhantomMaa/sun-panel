@@ -167,17 +167,13 @@ func (a UsersApi) Update(c *gin.Context) {
 
 	mUser := models.User{}
 
-	userInfo := models.User{}
 	// 验证账号是否存在
 	if user, err := mUser.CheckUsernameExist(param.Username); err != nil {
-		userInfo = user
 		if user.ID != param.ID {
 			apiReturn.ErrorByCode(c, 1006)
 			// apiReturn.Error(c, global.Lang.Get("register.mail_exist"))
 			return
 		}
-	} else {
-		userInfo = user
 	}
 
 	param.Token = "" // 修改资料就重置token
@@ -185,8 +181,7 @@ func (a UsersApi) Update(c *gin.Context) {
 		apiReturn.ErrorDatabase(c, err.Error())
 		return
 	}
-	// global.Logger.Debug("修改资料清空token", userInfo.Token)
-	global.UserToken.Delete(userInfo.Token) // 更新用户信息
+
 	// 返回token等基本信息
 	apiReturn.SuccessData(c, param)
 }
