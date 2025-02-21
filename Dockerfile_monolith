@@ -1,13 +1,7 @@
 FROM sun-panel-dist AS dist
 
-FROM sun-panel-backend as backend
-
 # monolith app image
-FROM alpine
+FROM sun-panel-backend
 WORKDIR /app
 COPY --from=dist /build/dist /app/web
-COPY --from=backend /build/sun-panel /app/sun-panel
-EXPOSE 3002
-RUN apk add --no-cache bash ca-certificates su-exec tzdata && \
-    chmod +x ./sun-panel
 CMD ./sun-panel
