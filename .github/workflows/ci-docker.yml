@@ -2,8 +2,6 @@ name: Docker Image CI
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
 
@@ -45,9 +43,9 @@ jobs:
           file: ./Dockerfile_dist
           platforms: linux/amd64,linux/arm64
           tags: |
-            ghcr.io/${{ needs.prepare.outputs.repo_lower }}/dist:latest
-            ghcr.io/${{ needs.prepare.outputs.repo_lower }}/dist:${{ needs.prepare.outputs.version }}
-          cache-to: type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}/dist:cache,mode=max
+            ghcr.io/${{ needs.prepare.outputs.repo_lower }}-dist:latest
+            ghcr.io/${{ needs.prepare.outputs.repo_lower }}-dist:${{ needs.prepare.outputs.version }}
+          cache-to: type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}-dist:cache,mode=max
 
   build-frontend:
     needs: [prepare, build-dist]
@@ -73,10 +71,10 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ needs.prepare.outputs.repo_lower }}/frontend:latest
-            ghcr.io/${{ needs.prepare.outputs.repo_lower }}/frontend:${{ needs.prepare.outputs.version }}
-          cache-from: type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}/dist:cache
-          cache-to: type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}/frontend:cache,mode=max
+            ghcr.io/${{ needs.prepare.outputs.repo_lower }}-frontend:latest
+            ghcr.io/${{ needs.prepare.outputs.repo_lower }}-frontend:${{ needs.prepare.outputs.version }}
+          cache-from: type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}-dist:cache
+          cache-to: type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}-frontend:cache,mode=max
 
   build-backend:
     needs: prepare
@@ -102,9 +100,9 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ needs.prepare.outputs.repo_lower }}/backend:latest
-            ghcr.io/${{ needs.prepare.outputs.repo_lower }}/backend:${{ needs.prepare.outputs.version }}
-          cache-to: type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}/backend:cache,mode=max
+            ghcr.io/${{ needs.prepare.outputs.repo_lower }}-backend:latest
+            ghcr.io/${{ needs.prepare.outputs.repo_lower }}-backend:${{ needs.prepare.outputs.version }}
+          cache-to: type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}-backend:cache,mode=max
 
   build-monolith:
     needs: [prepare, build-dist, build-frontend, build-backend]
@@ -130,8 +128,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ needs.prepare.outputs.repo_lower }}/monolith:latest
-            ghcr.io/${{ needs.prepare.outputs.repo_lower }}/monolith:${{ needs.prepare.outputs.version }}
+            ghcr.io/${{ needs.prepare.outputs.repo_lower }}-monolith:latest
+            ghcr.io/${{ needs.prepare.outputs.repo_lower }}-monolith:${{ needs.prepare.outputs.version }}
           cache-from: |
-            type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}/dist:cache
-            type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}/backend:cache
+            type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}-dist:cache
+            type=registry,ref=ghcr.io/${{ needs.prepare.outputs.repo_lower }}-backend:cache
