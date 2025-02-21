@@ -9,7 +9,8 @@ import (
 
 func InitUserRouter(router *gin.RouterGroup) {
 	api := api_v1.ApiGroupApp.ApiSystem.UserApi
-	r := router.Group("", middleware.LoginInterceptor)
+	r := router.Group("")
+	r.Use(middleware.JWTAuth())
 	r.POST("/user/getInfo", api.GetInfo)
 	r.POST("/user/updatePassword", api.UpdatePasssword)
 	r.POST("/user/updateInfo", api.UpdateInfo)

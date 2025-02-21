@@ -9,7 +9,8 @@ import (
 
 func InitUserConfig(router *gin.RouterGroup) {
 	api := api_v1.ApiGroupApp.ApiPanel.UserConfig
-	r := router.Group("", middleware.LoginInterceptor)
+	r := router.Group("")
+	r.Use(middleware.JWTAuth())
 	{
 		r.POST("/panel/userConfig/set", api.Set)
 	}

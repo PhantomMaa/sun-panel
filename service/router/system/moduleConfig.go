@@ -9,7 +9,8 @@ import (
 
 func InitModuleConfigRouter(router *gin.RouterGroup) {
 	api := api_v1.ApiGroupApp.ApiSystem.ModuleConfigApi
-	r := router.Group("", middleware.LoginInterceptor)
+	r := router.Group("")
+	r.Use(middleware.JWTAuth())
 	r.POST("/system/moduleConfig/save", api.Save)
 
 	// 公开模式

@@ -9,7 +9,8 @@ import (
 
 func InitItemIcon(router *gin.RouterGroup) {
 	itemIcon := api_v1.ApiGroupApp.ApiPanel.ItemIcon
-	r := router.Group("", middleware.LoginInterceptor)
+	r := router.Group("")
+	r.Use(middleware.JWTAuth())
 	{
 		r.POST("/panel/itemIcon/edit", itemIcon.Edit)
 		r.POST("/panel/itemIcon/deletes", itemIcon.Deletes)

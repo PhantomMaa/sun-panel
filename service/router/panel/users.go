@@ -10,7 +10,8 @@ import (
 func InitUsersRouter(router *gin.RouterGroup) {
 	userApi := api_v1.ApiGroupApp.ApiPanel.UsersApi
 
-	rAdmin := router.Group("", middleware.LoginInterceptor, middleware.AdminInterceptor)
+	rAdmin := router.Group("")
+	rAdmin.Use(middleware.JWTAuth(), middleware.AdminInterceptor)
 	{
 		rAdmin.POST("panel/users/create", userApi.Create)
 		rAdmin.POST("panel/users/update", userApi.Update)
