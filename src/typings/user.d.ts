@@ -14,11 +14,4 @@ declare namespace User{
 		token?:string
 		isAdmin?:number
 	}
-
-	interface GetReferralCodeResponse{
-		referralCode:string
-	}
-
-
-	
 }

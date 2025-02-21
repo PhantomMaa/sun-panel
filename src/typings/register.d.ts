@@ -6,7 +6,6 @@ declare namespace System.Register{
 	    vcode     ?:string 
 	    emailVCode ?:string 
 		verification?:Common.VerificationRequest
-		referralCode?:string
     }
 
 	interface CommitRquest extends SendRegisterVcodeRquest {

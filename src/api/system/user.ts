@@ -12,12 +12,6 @@ export function getAuthInfo<T>() {
   })
 }
 
-export function getReferralCode<T>() {
-  return post<T>({
-    url: '/user/getReferralCode',
-  })
-}
-
 export function updateInfo<T>(name: string) {
   return post<T>({
     url: '/user/updateInfo',

@@ -1,7 +1,6 @@
 package system
 
 import (
-	"sun-panel/api/api_v1/common/apiData/systemApiStructs"
 	"sun-panel/api/api_v1/common/apiReturn"
 	"sun-panel/api/api_v1/common/base"
 	"sun-panel/global"
@@ -112,40 +111,4 @@ func (a *UserApi) UpdatePasssword(c *gin.Context) {
 	// 删除token
 	global.UserToken.Delete(userInfo.Token)
 	apiReturn.Success(c)
-}
-
-// 获取推荐码
-func (a *UserApi) GetReferralCode(c *gin.Context) {
-	currentUserInfo, _ := base.GetCurrentUserInfo(c)
-	mUser := models.User{}
-	userInfo, err := mUser.GetUserInfoByUid(currentUserInfo.ID)
-	if err != nil {
-		apiReturn.ErrorDatabase(c, err.Error())
-		return
-	}
-
-	// 为空生成一个
-	if userInfo.ReferralCode == "" {
-		for {
-			referralCode := cmn.BuildRandCode(8, cmn.RAND_CODE_MODE2)
-			global.Logger.Debug("referralCode:", referralCode)
-
-			// 查询是否有重复的
-			if row := global.Db.Find(&userInfo, "referral_code=?", referralCode).RowsAffected; row != 0 {
-				apiReturn.ErrorDatabase(c, err.Error())
-				continue
-			}
-
-			// 创建新的邀请码
-			if err := global.Db.Model(&models.User{}).Where("id=?", userInfo.ID).Update("referral_code", referralCode).Error; err != nil {
-				apiReturn.ErrorDatabase(c, err.Error())
-				return
-			} else {
-				userInfo.ReferralCode = referralCode
-				break
-			}
-		}
-	}
-
-	apiReturn.SuccessData(c, systemApiStructs.GetReferralCodeResp{ReferralCode: userInfo.ReferralCode})
 }
