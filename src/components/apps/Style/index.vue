@@ -99,7 +99,7 @@ function resetPanelConfig() {
             :show-file-list="false"
             name="imgfile"
             :headers="{
-              token: authStore.token as string,
+              Authorization: `Bearer ${authStore.token}`
             }"
             accept=".ico,.png,.svg"
             @finish="handleUploadFaviconFinish"
@@ -222,7 +222,7 @@ function resetPanelConfig() {
         :show-file-list="false"
         name="imgfile"
         :headers="{
-          token: authStore.token as string,
+          Authorization: `Bearer ${authStore.token}`
         }"
         :directory-dnd="true"
         @finish="handleUploadBackgroundFinish"

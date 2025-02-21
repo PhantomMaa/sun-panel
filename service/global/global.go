@@ -17,6 +17,12 @@ var (
 	// DB_MYSQL  = "mysql"
 	// DB_SQLITE = "sqlite"
 	DB_DRIVER = database.SQLITE
+
+	// JWT配置
+	JWTConfig struct {
+		Secret string
+		Expire int // 过期时间（小时）
+	}
 )
 
 // var Log *cmn.LogStruct

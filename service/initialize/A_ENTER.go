@@ -21,6 +21,7 @@ import (
 
 	"errors"
 	"sun-panel/lib/storage"
+	"sun-panel/initialize/jwt" // added jwt import
 )
 
 var DB_DRIVER = database.SQLITE
@@ -60,6 +61,11 @@ func InitApp() error {
 	global.VerifyCodeCachePool = other.InitVerifyCodeCachePool()
 	global.SystemSetting = systemSettingCache.InItSystemSettingCache()
 	global.SystemMonitor = global.NewCache[interface{}](5*time.Hour, -1, "systemMonitorCache")
+
+	// 初始化JWT
+	if err := jwt.InitJWT(); err != nil {
+		return fmt.Errorf("JWT initialization error: %w", err)
+	}
 
 	// 初始化存储系统
 	if err := InitStorage(); err != nil {

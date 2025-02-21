@@ -1,7 +1,6 @@
 package system
 
 import (
-	"strconv"
 	"strings"
 	"sun-panel/api/api_v1/common/apiReturn"
 	"sun-panel/api/api_v1/common/base"
@@ -10,8 +9,9 @@ import (
 	"sun-panel/lib/cmn/systemSetting"
 	"sun-panel/models"
 
+	"sun-panel/lib/jwt" // 新增jwt包导入
+
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -52,7 +52,7 @@ func (l LoginApi) Login(c *gin.Context) {
 		err  error
 		info models.User
 	)
-	bToken := ""
+
 	param.Username = strings.TrimSpace(param.Username)
 	if info, err = mUser.GetUserInfoByUsernameAndPassword(param.Username, cmn.PasswordEncryption(param.Password)); err != nil {
 		// 未找到记录 账号或密码错误
@@ -64,7 +64,6 @@ func (l LoginApi) Login(c *gin.Context) {
 			apiReturn.Error(c, err.Error())
 			return
 		}
-
 	}
 
 	// 停用或未激活
@@ -73,40 +72,23 @@ func (l LoginApi) Login(c *gin.Context) {
 		return
 	}
 
-	bToken = info.Token
-	if info.Token == "" {
-		// 生成token
-		buildTokenOver := false
-		for !buildTokenOver {
-			bToken = cmn.BuildRandCode(32, cmn.RAND_CODE_MODE2)
-			if _, err := mUser.GetUserInfoByToken(bToken); err != nil {
-				// 保存token
-				mUser.UpdateUserInfoByUserId(info.ID, map[string]interface{}{
-					"token": bToken,
-				})
-				buildTokenOver = true
-			}
-		}
-		info.Token = bToken
+	// 生成JWT Token
+	tokenString, err := jwt.GenerateToken(info.ID)
+	if err != nil {
+		global.Logger.Error("JWT生成失败:", err)
+		apiReturn.Error(c, "系统错误")
+		return
 	}
-	info.Password = ""
 
-	// global.UserToken.SetDefault(bToken, info)
-	cToken := uuid.NewString() + "-" + cmn.Md5(cmn.Md5("userId"+strconv.Itoa(int(info.ID))))
-	global.CUserToken.SetDefault(cToken, bToken)
-	global.Logger.Debug("token:", cToken, "|", bToken)
-	global.Logger.Debug(global.CUserToken.Get(cToken))
+	info.Password = "" // 清除敏感信息
+	info.Token = tokenString
 
 	// 设置当前用户信息
 	c.Set("userInfo", info)
-	info.Token = cToken // 重要 采用cToken,隐藏真实token
 	apiReturn.SuccessData(c, info)
 }
 
-// 安全退出
+// Logout 安全退出
 func (l *LoginApi) Logout(c *gin.Context) {
-	// userInfo, _ := base.GetCurrentUserInfo(c)
-	cToken := c.GetHeader("token")
-	global.CUserToken.Delete(cToken)
 	apiReturn.Success(c)
 }

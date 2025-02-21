@@ -92,7 +92,6 @@ function http<T = any>(
   if (!headers)
     headers = {}
 
-  headers.token = authStore.token
   headers.lang = appStore.language
   return method === 'GET'
     ? request.get(url, { params, signal, onDownloadProgress }).then(successHandler, failHandler)
