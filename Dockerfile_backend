@@ -1,0 +1,21 @@
+# build binary
+FROM golang:1.24-alpine as builder
+WORKDIR /build
+COPY ./service .
+RUN apk add --no-cache bash curl gcc git musl-dev && \
+    go env -w GO111MODULE=on && \
+    export PATH=$PATH:/go/bin && \
+    go build -o sun-panel --ldflags="-X sun-panel/global.RUNCODE=release" main.go
+
+# final image
+FROM alpine
+WORKDIR /app
+COPY --from=builder /build/sun-panel /app/sun-panel
+COPY service/conf /app/conf
+COPY service/lang /app/lang
+COPY service/version /app/version
+
+EXPOSE 3002
+RUN apk add --no-cache bash ca-certificates su-exec tzdata && \
+    chmod +x ./sun-panel
+CMD ./sun-panel

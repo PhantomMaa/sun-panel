@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sun-panel/lib/embedfs"
 	"time"
 )
 
@@ -107,7 +106,7 @@ func StrToUint(s string) uint {
 
 // 获取系统信息
 func GetSysVersionInfo() Version_Info {
-	cBytes, err := embedfs.ReadEmbeddedFile("version")
+	cBytes, err := os.ReadFile("./version")
 	if err != nil {
 		return Version_Info{}
 	}

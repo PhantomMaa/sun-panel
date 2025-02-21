@@ -24,7 +24,6 @@ import (
 var DB_DRIVER = database.SQLITE
 
 func InitApp() error {
-
 	// 打印 logo
 	Logo()
 	gin.SetMode(global.RUNCODE) // GIN 运行模式
@@ -162,5 +161,4 @@ func Logo() {
 	fmt.Println("Version:", versionInfo.Version)
 	fmt.Println("Welcome to the Sun-Panel.")
 	fmt.Println("Project address:", "https://github.com/hslr-s/sun-panel")
-
 }

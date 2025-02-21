@@ -36,8 +36,7 @@ service_node
 
 bindata.go
 service/assets/bindata.go
-service/conf
-service/lang
+service/conf/conf.ini
 service/database
 service/web
 service/uploads
