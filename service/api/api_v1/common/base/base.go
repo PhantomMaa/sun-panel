@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"sun-panel/api/api_v1/common/apiReturn"
-	"sun-panel/lib/captcha"
-	"sun-panel/lib/cmn"
 	"sun-panel/models"
 
 	"github.com/gin-gonic/gin"
@@ -95,24 +92,5 @@ func GetCurrentVisitMode(c *gin.Context) (visitMode int) {
 			return v
 		}
 	}
-	return
-}
-
-// 验证器验证
-func VerificationCheck(verificationId, vCode string) (errCode int, verificationIdRes string) {
-
-	// 需要进一步验证并返回验证信息
-	if verificationId == "" || vCode == "" {
-		verificationIdRes = cmn.BuildRandCode(16, cmn.RAND_CODE_MODE1)
-		errCode = apiReturn.ERROR_CODE_VERIFICATION_MUST
-		return
-	}
-
-	// 验证码错误
-	if !captcha.CaptchaVerifyHandle(verificationId, vCode) {
-		errCode = apiReturn.ERROR_CODE_VERIFICATION_FAIL
-		return
-	}
-	errCode = apiReturn.ERROR_CODE_SUCCESS
 	return
 }

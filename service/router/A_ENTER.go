@@ -2,7 +2,6 @@ package router
 
 import (
 	"sun-panel/global"
-	"sun-panel/router/openness"
 	"sun-panel/router/panel"
 	"sun-panel/router/system"
 
@@ -18,7 +17,6 @@ func InitRouters(addr string) error {
 	// 接口
 	system.Init(routerGroup)
 	panel.Init(routerGroup)
-	openness.Init(routerGroup)
 
 	// WEB文件服务
 	{
