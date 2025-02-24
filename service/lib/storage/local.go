@@ -102,3 +102,8 @@ func (s *LocalStorage) Delete(ctx context.Context, path string) error {
 	global.Logger.Infof("Successfully deleted file: %s", fullPath)
 	return nil
 }
+
+// Get implements file reading from storage
+func (r *LocalStorage) Get(ctx context.Context, path string) ([]byte, error) {
+	return nil, nil
+}

@@ -10,14 +10,14 @@ import (
 type StorageType string
 
 const (
-	LocalStorageType StorageType = "local"
-	S3StorageType    StorageType = "s3"
+	LocalStorageType  StorageType = "local"
+	RcloneStorageType StorageType = "rclone"
 )
 
 // Config holds storage configuration
 type Config struct {
-	Type     StorageType
-	S3Config *S3Config
+	Type         StorageType
+	RcloneConfig *RcloneConfig
 }
 
 // NewStorage creates a new storage instance based on configuration
@@ -29,21 +29,12 @@ func NewStorage(ctx context.Context, config Config) (Storage, error) {
 		storage := NewLocalStorage()
 		return storage, nil
 
-	case S3StorageType:
-		if config.S3Config == nil {
-			return nil, fmt.Errorf("S3 configuration is required for S3 storage")
-		}
-
-		// 设置默认超时
-		if config.S3Config.TimeoutSeconds == 0 {
-			config.S3Config.TimeoutSeconds = 30
-		}
-
-		s3Storage, err := NewS3Storage(ctx, config.S3Config)
+	case RcloneStorageType:
+		rcloneStorage, err := NewRcloneStorage(ctx, config.RcloneConfig)
 		if err != nil {
-			return nil, fmt.Errorf("failed to initialize S3 storage: %w", err)
+			return nil, fmt.Errorf("failed to initialize rclone storage: %w", err)
 		}
-		return s3Storage, nil
+		return rcloneStorage, nil
 
 	default:
 		return nil, fmt.Errorf("unsupported storage type: %s", config.Type)

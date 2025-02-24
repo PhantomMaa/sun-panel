@@ -1,15 +1,11 @@
 package storage
 
-// S3Config holds S3-specific configuration
-type S3Config struct {
-	Provider        Provider // aws, aliyun, minio
-	AccessKeyID     string
-	SecretAccessKey string
-	Endpoint        string
-	Bucket          string
-	Region          string
-	// 新增SSL配置选项
-	DisableSSL bool
-	// 新增自定义超时设置
-	TimeoutSeconds int
+// RcloneConfig holds configuration for rclone storage
+type RcloneConfig struct {
+	Type      string // storage type (s3, oss, etc)
+	Provider  string // specific provider (Alibaba, AWS, etc)
+	AccessKey string
+	SecretKey string
+	Endpoint  string
+	Bucket    string
 }

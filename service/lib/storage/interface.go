@@ -16,4 +16,8 @@ type Storage interface {
 	// Delete removes a file by its path
 	// ctx provides context for cancellation and timeouts
 	Delete(ctx context.Context, path string) error
+
+	// Get reads a file by its path
+	// ctx provides context for cancellation and timeouts
+	Get(ctx context.Context, path string) ([]byte, error)
 }
