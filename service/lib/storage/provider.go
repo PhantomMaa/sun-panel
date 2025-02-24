@@ -71,25 +71,10 @@ func (p *AliyunProvider) ConfigureClient(cfg *aws.Config, opts []func(*s3.Option
 	opts = append(opts, func(o *s3.Options) {
 		o.UsePathStyle = false
 		o.UseAccelerate = false
-		o.UseDualstack = false
 	})
 
 	// 设置阿里云OSS端点
 	endpoint := fmt.Sprintf("https://oss-%s.aliyuncs.com", strings.TrimPrefix(cfg.Region, "oss-"))
-
-	// 添加自定义解析器
-	customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-		if service == "s3" {
-			return aws.Endpoint{
-				URL:               endpoint,
-				HostnameImmutable: true,
-				SigningRegion:     region,
-				Source:            aws.EndpointSourceCustom,
-			}, nil
-		}
-		return aws.Endpoint{}, &aws.EndpointNotFoundError{}
-	})
-	cfg.EndpointResolverWithOptions = customResolver
 
 	// 设置基础端点
 	cfg.BaseEndpoint = aws.String(endpoint)
@@ -117,13 +102,10 @@ func (p *AliyunProvider) AdjustRegion(region string) string {
 type MinIOProvider struct{}
 
 func (p *MinIOProvider) ConfigureClient(cfg *aws.Config, opts []func(*s3.Options)) (aws.Config, []func(*s3.Options)) {
-	// Force path style for MinIO
+	// MinIO特定配置
 	opts = append(opts, func(o *s3.Options) {
 		o.UsePathStyle = true
 	})
-
-	// Add MinIO specific options
-	cfg.DefaultsMode = aws.DefaultsModeLegacy
 
 	return *cfg, opts
 }

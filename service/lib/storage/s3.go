@@ -41,6 +41,7 @@ func NewS3Storage(ctx context.Context, config *S3Config) (*S3Storage, error) {
 		Region:           region,
 		RetryMaxAttempts: 3,
 		RetryMode:        aws.RetryModeAdaptive,
+		BaseEndpoint:     aws.String(config.Endpoint),
 	}
 
 	// 添加基础S3客户端选项
@@ -48,7 +49,6 @@ func NewS3Storage(ctx context.Context, config *S3Config) (*S3Storage, error) {
 		func(o *s3.Options) {
 			if config.DisableSSL {
 				o.UseAccelerate = false
-				o.UseDualstack = false
 			}
 		},
 	}

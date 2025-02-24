@@ -121,15 +121,27 @@ func InitStorage() (storage.Storage, error) {
 		global.Logger.Infof("Initializing local storage with path: %s", storage.LocalStorageBasePath)
 
 	case "s3":
-		// provider := global.Config.GetValueString("s3", "provider")
+		provider := global.Config.GetValueString("s3", "provider")
 		accessKeyID := global.Config.GetValueString("s3", "access_key_id")
 		secretAccessKey := global.Config.GetValueString("s3", "secret_access_key")
 		endpoint := global.Config.GetValueString("s3", "endpoint")
 		bucket := global.Config.GetValueString("s3", "bucket")
 		region := global.Config.GetValueString("s3", "region")
 		timeoutSeconds := global.Config.GetValueInt("s3", "timeout_seconds")
-		// 从字符串转换为布尔值
 		disableSSL := global.Config.GetValueString("s3", "disable_ssl") == "true"
+
+		// 从 provider 解析成 Provider
+		var providerType storage.Provider
+		switch provider {
+		case "aws":
+			providerType = storage.ProviderAWS
+		case "aliyun":
+			providerType = storage.ProviderAliyun
+		case "minio":
+			providerType = storage.ProviderMinIO
+		default:
+			return nil, errors.New("invalid S3 provider: " + provider)
+		}
 
 		if accessKeyID == "" || secretAccessKey == "" || endpoint == "" || bucket == "" || region == "" {
 			return nil, fmt.Errorf("missing required S3 configuration: accessKeyID=%v, secretAccessKey=%v, endpoint=%v, bucket=%v, region=%v",
@@ -141,7 +153,7 @@ func InitStorage() (storage.Storage, error) {
 		config = storage.Config{
 			Type: storage.S3StorageType,
 			S3Config: &storage.S3Config{
-				Provider:        storage.ProviderMinIO,
+				Provider:        providerType,
 				AccessKeyID:     accessKeyID,
 				SecretAccessKey: secretAccessKey,
 				Endpoint:        endpoint,
