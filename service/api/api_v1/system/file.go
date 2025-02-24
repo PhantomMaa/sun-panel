@@ -2,6 +2,7 @@ package system
 
 import (
 	"fmt"
+	"net/http"
 	"path"
 	"strings"
 	"sun-panel/api/api_v1/common/apiData/commonApiStructs"
@@ -82,7 +83,7 @@ func (a *FileApi) UploadImg(c *gin.Context) {
 
 	global.Logger.Infof("Successfully uploaded file %s to %s", f.Filename, filepath)
 	apiReturn.SuccessData(c, gin.H{
-		"imageUrl": filepath,
+		"imageUrl": "/api/file/s3/" + filepath,
 	})
 }
 
@@ -98,7 +99,7 @@ func (a *FileApi) GetList(c *gin.Context) {
 	data := []map[string]interface{}{}
 	for _, v := range list {
 		data = append(data, map[string]interface{}{
-			"src":        v.Src,
+			"src":        "/api/file/s3/" + v.Src,
 			"fileName":   v.FileName,
 			"id":         v.ID,
 			"createTime": v.CreatedAt,
@@ -139,4 +140,49 @@ func (a *FileApi) Deletes(c *gin.Context) {
 
 	apiReturn.Success(c)
 
+}
+
+func (a *FileApi) GetS3File(c *gin.Context) {
+	global.Logger.Info("Entering GetS3File handler")
+	global.Logger.Infof("Full URL Path: %s", c.Request.URL.Path)
+	global.Logger.Infof("Full Request URL: %s", c.Request.URL.String())
+
+	filepath := c.Param("filepath") // 获取 /api/file/s3/ 后的所有部分
+	global.Logger.Infof("Extracted filepath: %s", filepath)
+
+	if filepath == "" {
+		global.Logger.Error("Empty filepath parameter")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file path is required"})
+		return
+	}
+
+	// 从存储中读取文件
+	fileData, err := a.storage.Get(c, filepath)
+	if err != nil {
+		global.Logger.Errorf("Failed to get file %s: %v", filepath, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get file"})
+		return
+	}
+
+	// 设置文件类型
+	contentType := "application/octet-stream"
+	ext := path.Ext(filepath)
+	switch ext {
+	case ".jpg", ".jpeg":
+		contentType = "image/jpeg"
+	case ".png":
+		contentType = "image/png"
+	case ".gif":
+		contentType = "image/gif"
+	case ".pdf":
+		contentType = "application/pdf"
+	}
+
+	// 设置响应头
+	c.Header("Content-Type", contentType)
+	c.Header("Content-Disposition", "inline; filename="+path.Base(filepath))
+
+	global.Logger.Infof("Successfully serving file: %s with content type: %s", filepath, contentType)
+	// 返回文件内容
+	c.Data(http.StatusOK, contentType, fileData)
 }

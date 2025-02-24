@@ -10,13 +10,19 @@ import (
 func InitFileRouter(router *gin.RouterGroup) {
 	FileApi := api_v1.ApiGroupApp.ApiSystem.FileApi
 
-	// 验证项目的权限(有访问密码的需要验证访问token)
+	// 公共访问组，不需要 JWT 认证
+	public := router.Group("")
+	{
+		// S3 文件访问路由
+		public.GET("/file/s3/*filepath", FileApi.GetS3File)
+	}
+
+	// 需要 JWT 认证的私有访问组
 	private := router.Group("")
 	private.Use(middleware.JWTAuth())
 	{
 		private.POST("/file/uploadImg", FileApi.UploadImg)
-		private.POST("/file/getList", FileApi.GetList)
 		private.POST("/file/deletes", FileApi.Deletes)
+		private.GET("/file/getList", FileApi.GetList)
 	}
-
 }

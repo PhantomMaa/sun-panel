@@ -1,7 +1,7 @@
-import { post } from '@/utils/request'
+import { get, post } from '@/utils/request'
 
 export function getList<T>() {
-  return post<T>({
+  return get<T>({
     url: '/file/getList',
   })
 }
