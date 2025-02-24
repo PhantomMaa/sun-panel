@@ -18,7 +18,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type FileApi struct{}
+type FileApi struct {
+	storage storage.Storage
+}
+
+func NewFileApi(s storage.Storage) *FileApi {
+	return &FileApi{
+		storage: s,
+	}
+}
 
 func (a *FileApi) UploadImg(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
@@ -46,10 +54,19 @@ func (a *FileApi) UploadImg(c *gin.Context) {
 
 	fileName := cmn.Md5(fmt.Sprintf("%s%s", f.Filename, time.Now().String())) + fileExt
 
-	// 使用存储接口上传文件
-	storageInstance := storage.GetStorage()
-	filepath, err := storageInstance.Upload(f, fileName)
+	// 打开文件以获取Reader
+	src, err := f.Open()
 	if err != nil {
+		global.Logger.Errorf("Failed to open uploaded file: %v", err)
+		apiReturn.ErrorByCode(c, 1300)
+		return
+	}
+	defer src.Close()
+
+	// 使用存储接口上传文件
+	filepath, err := a.storage.Upload(c.Request.Context(), src, fileName)
+	if err != nil {
+		global.Logger.Errorf("Failed to upload file: %v", err)
 		apiReturn.ErrorByCode(c, 1300)
 		return
 	}
@@ -107,7 +124,7 @@ func (a *FileApi) Deletes(c *gin.Context) {
 		}
 
 		for _, v := range files {
-			if err := storage.GetStorage().Delete(v.Src); err != nil {
+			if err := a.storage.Delete(c.Request.Context(), v.Src); err != nil {
 				global.Logger.Errorf("Failed to delete file %s: %v", v.Src, err)
 				return err
 			}

@@ -1,26 +1,19 @@
 package storage
 
 import (
-	"mime/multipart"
+	"context"
+	"io"
 )
 
 // Storage defines the interface for file storage operations
 type Storage interface {
 	// Upload handles file upload and returns the file path/URL
-	Upload(file *multipart.FileHeader, fileName string) (string, error)
+	// ctx provides context for cancellation and timeouts
+	// reader provides the file content
+	// fileName is the name to save the file as
+	Upload(ctx context.Context, reader io.Reader, fileName string) (string, error)
 
 	// Delete removes a file by its path
-	Delete(path string) error
-}
-
-var storageInstance Storage
-
-// SetStorage sets the global storage instance
-func SetStorage(s Storage) {
-	storageInstance = s
-}
-
-// GetStorage returns the global storage instance
-func GetStorage() Storage {
-	return storageInstance
+	// ctx provides context for cancellation and timeouts
+	Delete(ctx context.Context, path string) error
 }

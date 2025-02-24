@@ -6,7 +6,7 @@ WORKDIR /build
 COPY ./service .
 
 # gcc, musl-dev are required for go-sqlite3
-RUN apk add bash curl gcc git musl-dev && \
+RUN apk add --no-cache bash curl gcc git musl-dev && \
     go env -w GO111MODULE=on && \
     export PATH=$PATH:/go/bin && \
     export CGO_ENABLED=1 && \
@@ -15,6 +15,13 @@ RUN apk add bash curl gcc git musl-dev && \
 # final image
 FROM alpine
 WORKDIR /app
+
+# Setup timezone. (Optional)
+ENV TZ=Asia/Shanghai
+
+RUN apk add --no-cache bash curl tzdata && \
+    ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo "$TZ" > /etc/timezone
+
 COPY --from=builder /build/sun-panel /app/sun-panel
 COPY service/conf /app/conf
 COPY service/lang /app/lang

@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
-	"mime/multipart"
+	"io"
 	"path/filepath"
 	"sun-panel/global"
 	"time"
@@ -17,58 +17,58 @@ type S3Storage struct {
 	client   *s3.Client
 	bucket   string
 	endpoint string
+	config   *S3Config
+	provider ProviderConfigurator
 }
 
 // NewS3Storage creates a new S3 storage instance
-func NewS3Storage(accessKeyID, secretAccessKey, endpoint, bucket, region string) (*S3Storage, error) {
-	fmt.Printf("Creating S3 storage with endpoint: %s, bucket: %s\n", endpoint, bucket)
+func NewS3Storage(ctx context.Context, config *S3Config) (*S3Storage, error) {
+	global.Logger.Infof("Creating S3 storage with provider: %s, endpoint: %s, bucket: %s",
+		config.Provider, config.Endpoint, config.Bucket)
 
-	// Create custom credentials provider
-	creds := credentials.NewStaticCredentialsProvider(accessKeyID, secretAccessKey, "")
+	// 获取对应的provider配置器
+	provider := GetProvider(config.Provider)
 
-	// Create custom endpoint resolver
-	customResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-		if service == "s3" {
-			global.Logger.Infof("Creating S3 endpoint with URL: %s", endpoint)
-			return aws.Endpoint{
-				URL:               endpoint,
-				HostnameImmutable: true,
-				SigningRegion:     region,
-				Source:            aws.EndpointSourceCustom,
-			}, nil
-		}
-		return aws.Endpoint{}, &aws.EndpointNotFoundError{}
-	})
+	// 创建凭证提供者
+	creds := credentials.NewStaticCredentialsProvider(config.AccessKeyID, config.SecretAccessKey, "")
 
-	// Create S3 client config
+	// 调整区域格式
+	region := provider.AdjustRegion(config.Region)
+
+	// 创建基础S3客户端配置
 	cfg := aws.Config{
-		Credentials:                 creds,
-		EndpointResolverWithOptions: customResolver,
-		Region:                      region,
-		// Add retry options
+		Credentials:      creds,
+		Region:           region,
 		RetryMaxAttempts: 3,
-		// Force path style for compatibility with non-AWS S3 implementations
-		DefaultsMode: aws.DefaultsModeInRegion,
+		RetryMode:        aws.RetryModeAdaptive,
 	}
 
-	// Add path style addressing for compatibility
+	// 添加基础S3客户端选项
 	s3Options := []func(*s3.Options){
 		func(o *s3.Options) {
-			o.UsePathStyle = true
+			if config.DisableSSL {
+				o.UseAccelerate = false
+				o.UseDualstack = false
+			}
 		},
 	}
 
-	// Create S3 client with options
+	// 应用provider特定的配置
+	cfg, s3Options = provider.ConfigureClient(&cfg, s3Options)
+
+	// 创建S3客户端
 	client := s3.NewFromConfig(cfg, s3Options...)
 
 	storage := &S3Storage{
 		client:   client,
-		endpoint: endpoint,
-		bucket:   bucket,
+		endpoint: config.Endpoint,
+		bucket:   config.Bucket,
+		config:   config,
+		provider: provider,
 	}
 
-	// Test connection
-	if err := storage.testConnection(); err != nil {
+	// 测试连接
+	if err := storage.testConnection(ctx); err != nil {
 		global.Logger.Errorf("S3 connection test failed: %v", err)
 		return nil, fmt.Errorf("S3 connection test failed: %w", err)
 	}
@@ -78,75 +78,76 @@ func NewS3Storage(accessKeyID, secretAccessKey, endpoint, bucket, region string)
 }
 
 // testConnection verifies the S3 connection and bucket access
-func (s *S3Storage) testConnection() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+func (s *S3Storage) testConnection(ctx context.Context) error {
+	timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	_, err := s.client.HeadBucket(ctx, &s3.HeadBucketInput{
+	// 使用HeadBucket测试连接
+	_, err := s.client.HeadBucket(timeoutCtx, &s3.HeadBucketInput{
 		Bucket: aws.String(s.bucket),
 	})
 	if err != nil {
-		global.Logger.Errorf("Failed to connect to S3 bucket %s: %v", s.bucket, err)
-		return fmt.Errorf("failed to connect to S3 bucket: %w", err)
+		global.Logger.Errorf("Failed to connect to bucket %s: %v", s.bucket, err)
+		return fmt.Errorf("failed to connect to bucket: %w", err)
 	}
-	global.Logger.Infof("Successfully connected to S3 bucket: %s", s.bucket)
+
+	global.Logger.Infof("Successfully connected to bucket: %s", s.bucket)
 	return nil
 }
 
 // Upload implements Storage.Upload for S3
-func (s *S3Storage) Upload(file *multipart.FileHeader, fileName string) (string, error) {
-	// Open the file
-	src, err := file.Open()
-	if err != nil {
-		return "", fmt.Errorf("failed to open file: %w", err)
+func (s *S3Storage) Upload(ctx context.Context, reader io.Reader, fileName string) (string, error) {
+	// 创建上传超时上下文
+	timeoutDuration := time.Duration(s.config.TimeoutSeconds) * time.Second
+	if timeoutDuration == 0 {
+		timeoutDuration = 30 * time.Second
 	}
-	defer src.Close()
+	uploadCtx, cancel := context.WithTimeout(ctx, timeoutDuration)
+	defer cancel()
 
-	// Create the S3 upload input
+	// 创建S3上传输入
 	input := &s3.PutObjectInput{
 		Bucket:      aws.String(s.bucket),
 		Key:         aws.String(fileName),
-		Body:        src,
+		Body:        reader,
 		ContentType: aws.String(getContentType(fileName)),
 	}
 
-	// Upload the file with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
 	global.Logger.Infof("Uploading file to S3 bucket %s with key %s", s.bucket, fileName)
-	_, err = s.client.PutObject(ctx, input)
+	_, err := s.client.PutObject(uploadCtx, input)
 	if err != nil {
-		global.Logger.Errorf("Failed to upload to S3 (bucket: %s, key: %s): %v", s.bucket, fileName, err)
-		return "", fmt.Errorf("failed to upload to S3 (bucket: %s): %w", s.bucket, err)
+		global.Logger.Errorf("Failed to upload to S3 (bucket: %s, key: %s, endpoint: %s): %v", s.bucket, fileName, s.endpoint, err)
+		return "", fmt.Errorf("failed to upload to S3 (bucket: %s, endpoint: %s): %w", s.bucket, s.endpoint, err)
 	}
+
 	global.Logger.Infof("Successfully uploaded file to S3: %s/%s", s.bucket, fileName)
 
-	// Return the S3 URL
-	return fmt.Sprintf("%s/%s/%s", s.endpoint, s.bucket, fileName), nil
+	// 使用provider生成URL
+	return s.provider.GenerateURL(s.endpoint, s.bucket, fileName), nil
 }
 
 // Delete implements Storage.Delete for S3
-func (s *S3Storage) Delete(path string) error {
-	// Extract the key from the full path
+func (s *S3Storage) Delete(ctx context.Context, path string) error {
+	// 创建删除超时上下文
+	timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// 从路径中提取键
 	key := filepath.Base(path)
 
-	// Create the delete input
+	// 创建删除输入
 	input := &s3.DeleteObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 	}
 
-	// Delete the object with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	_, err := s.client.DeleteObject(ctx, input)
+	_, err := s.client.DeleteObject(timeoutCtx, input)
 	if err != nil {
 		global.Logger.Errorf("Failed to delete from S3 (bucket: %s, key: %s): %v", s.bucket, key, err)
 		return fmt.Errorf("failed to delete from S3: %w", err)
 	}
 
+	global.Logger.Infof("Successfully deleted file from S3: %s/%s", s.bucket, key)
 	return nil
 }
 

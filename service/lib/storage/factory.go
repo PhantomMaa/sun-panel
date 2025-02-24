@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"sun-panel/global"
 )
@@ -19,37 +20,31 @@ type Config struct {
 	S3Config *S3Config
 }
 
-// S3Config holds S3-specific configuration
-type S3Config struct {
-	AccessKeyID     string
-	SecretAccessKey string
-	Endpoint        string
-	Bucket          string
-	Region          string
-}
-
 // NewStorage creates a new storage instance based on configuration
-func NewStorage(config Config) (Storage, error) {
+func NewStorage(ctx context.Context, config Config) (Storage, error) {
 	global.Logger.Infof("Creating storage instance with type: %s", config.Type)
+
 	switch config.Type {
 	case LocalStorageType:
 		storage := NewLocalStorage()
 		return storage, nil
+
 	case S3StorageType:
 		if config.S3Config == nil {
 			return nil, fmt.Errorf("S3 configuration is required for S3 storage")
 		}
-		s3Storage, err := NewS3Storage(
-			config.S3Config.AccessKeyID,
-			config.S3Config.SecretAccessKey,
-			config.S3Config.Endpoint,
-			config.S3Config.Bucket,
-			config.S3Config.Region,
-		)
+
+		// 设置默认超时
+		if config.S3Config.TimeoutSeconds == 0 {
+			config.S3Config.TimeoutSeconds = 30
+		}
+
+		s3Storage, err := NewS3Storage(ctx, config.S3Config)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize S3 storage: %w", err)
 		}
 		return s3Storage, nil
+
 	default:
 		return nil, fmt.Errorf("unsupported storage type: %s", config.Type)
 	}

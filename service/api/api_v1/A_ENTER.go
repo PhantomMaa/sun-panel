@@ -3,11 +3,17 @@ package api_v1
 import (
 	"sun-panel/api/api_v1/panel"
 	"sun-panel/api/api_v1/system"
+	"sun-panel/lib/storage"
 )
 
 type ApiGroup struct {
-	ApiSystem system.ApiSystem // 系统功能api
+	ApiSystem *system.ApiSystem // 系统功能api
 	ApiPanel  panel.ApiPanel
 }
 
-var ApiGroupApp = new(ApiGroup)
+var ApiGroupApp = &ApiGroup{}
+
+// InitApiGroup initializes the API group with required dependencies
+func InitApiGroup(storageInstance storage.Storage) {
+	ApiGroupApp.ApiSystem = system.InitApiSystem(storageInstance)
+}
