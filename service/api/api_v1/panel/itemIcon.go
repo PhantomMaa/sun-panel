@@ -14,6 +14,7 @@ import (
 	"sun-panel/global"
 	"sun-panel/lib/cmn"
 	"sun-panel/lib/siteFavicon"
+	"sun-panel/lib/storage"
 	"sun-panel/models"
 	"time"
 
@@ -23,6 +24,13 @@ import (
 )
 
 type ItemIcon struct {
+	storage storage.RcloneStorage
+}
+
+func NewItemIcon(s storage.RcloneStorage) *ItemIcon {
+	return &ItemIcon{
+		storage: s,
+	}
 }
 
 func (a *ItemIcon) Edit(c *gin.Context) {
@@ -93,36 +101,6 @@ func (a *ItemIcon) AddMultiple(c *gin.Context) {
 	apiReturn.SuccessData(c, req)
 }
 
-// // 获取详情
-// func (a *ItemIcon) GetInfo(c *gin.Context) {
-// 	req := systemApiStructs.AiDrawGetInfoReq{}
-
-// 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
-// 		apiReturn.ErrorParamFomat(c, err.Error())
-// 		return
-// 	}
-
-// 	userInfo, _ := base.GetCurrentUserInfo(c)
-
-// 	aiDraw := models.AiDraw{}
-// 	aiDraw.ID = req.ID
-// 	if err := aiDraw.GetInfo(global.Db); err != nil {
-// 		if err == gorm.ErrRecordNotFound {
-// 			apiReturn.Error(c, "不存在记录")
-// 			return
-// 		}
-// 		apiReturn.ErrorDatabase(c, err.Error())
-// 		return
-// 	}
-
-// 	if userInfo.ID != aiDraw.UserID {
-// 		apiReturn.ErrorNoAccess(c)
-// 		return
-// 	}
-
-// 	apiReturn.SuccessData(c, aiDraw)
-// }
-
 func (a *ItemIcon) GetListByGroupId(c *gin.Context) {
 	req := models.ItemIcon{}
 
@@ -155,40 +133,54 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 	}
 
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	if err := global.Db.Delete(&models.ItemIcon{}, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
-		apiReturn.ErrorDatabase(c, err.Error())
-		return
-	}
 
-	apiReturn.Success(c)
-}
+	// Start a transaction to ensure data consistency
+	err := global.Db.Transaction(func(tx *gorm.DB) error {
+		// First find all items to get their icon paths
+		items := []models.ItemIcon{}
+		if err := tx.Find(&items, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
+			return err
+		}
 
-// 保存排序
-func (a *ItemIcon) SaveSort(c *gin.Context) {
-	req := panelApiStructs.ItemIconSaveSortRequest{}
+		// Delete associated files
+		for _, item := range items {
+			var icon map[string]interface{}
+			if err := json.Unmarshal([]byte(item.IconJson), &icon); err != nil {
+				global.Logger.Errorf("Failed to unmarshal icon JSON: %v", err)
+				continue
+			}
 
-	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
-		apiReturn.ErrorParamFomat(c, err.Error())
-		return
-	}
+			// Check if the icon has a src field indicating a file path
+			if src, ok := icon["src"].(string); ok && strings.HasPrefix(src, "/api/file/s3/") {
+				// Extract the file path from the URL
+				filePath := strings.TrimPrefix(src, "/api/file/s3/")
 
-	userInfo, _ := base.GetCurrentUserInfo(c)
+				// Find and delete the file record
+				var file models.File
+				if err := tx.Where("src = ? AND user_id = ?", filePath, userInfo.ID).First(&file).Error; err == nil {
+					if err := tx.Delete(&file).Error; err != nil {
+						return err
+					}
 
-	transactionErr := global.Db.Transaction(func(tx *gorm.DB) error {
-		// 在事务中执行一些 db 操作（从这里开始，您应该使用 'tx' 而不是 'db'）
-		for _, v := range req.SortItems {
-			if err := tx.Model(&models.ItemIcon{}).Where("user_id=? AND id=? AND item_icon_group_id=?", userInfo.ID, v.Id, req.ItemIconGroupId).Update("sort", v.Sort).Error; err != nil {
-				// 返回任何错误都会回滚事务
-				return err
+					// Delete the actual file using storage interface
+					if err := a.storage.Delete(c.Request.Context(), filePath); err != nil {
+						global.Logger.Errorf("Failed to delete file %s: %v", filePath, err)
+						// Continue with deletion even if file removal fails
+					}
+				}
 			}
 		}
 
-		// 返回 nil 提交事务
+		// Finally delete the item icons
+		if err := tx.Delete(&models.ItemIcon{}, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 
-	if transactionErr != nil {
-		apiReturn.ErrorDatabase(c, transactionErr.Error())
+	if err != nil {
+		apiReturn.ErrorDatabase(c, err.Error())
 		return
 	}
 
@@ -269,4 +261,36 @@ func (a *ItemIcon) GetSiteFavicon(c *gin.Context) {
 	}
 	resp.IconUrl = imgInfo.Name()[1:]
 	apiReturn.SuccessData(c, resp)
+}
+
+// 保存排序
+func (a *ItemIcon) SaveSort(c *gin.Context) {
+	req := panelApiStructs.ItemIconSaveSortRequest{}
+
+	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
+		apiReturn.ErrorParamFomat(c, err.Error())
+		return
+	}
+
+	userInfo, _ := base.GetCurrentUserInfo(c)
+
+	transactionErr := global.Db.Transaction(func(tx *gorm.DB) error {
+		// 在事务中执行一些 db 操作（从这里开始，您应该使用 'tx' 而不是 'db'）
+		for _, v := range req.SortItems {
+			if err := tx.Model(&models.ItemIcon{}).Where("user_id=? AND id=? AND item_icon_group_id=?", userInfo.ID, v.Id, req.ItemIconGroupId).Update("sort", v.Sort).Error; err != nil {
+				// 返回任何错误都会回滚事务
+				return err
+			}
+		}
+
+		// 返回 nil 提交事务
+		return nil
+	})
+
+	if transactionErr != nil {
+		apiReturn.ErrorDatabase(c, transactionErr.Error())
+		return
+	}
+
+	apiReturn.Success(c)
 }

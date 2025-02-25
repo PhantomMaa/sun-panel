@@ -28,9 +28,6 @@ func InitRouters(addr string) error {
 		router.StaticFile("/favicon.svg", webPath+"/favicon.svg")
 	}
 
-	// needed only when local storage mode
-	router.Static("/uploads", "./uploads")
-
 	global.Logger.Info("Sun-Panel is Started.  Listening and serving HTTP on ", addr)
 	return router.Run(addr)
 }

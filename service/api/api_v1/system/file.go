@@ -20,10 +20,10 @@ import (
 )
 
 type FileApi struct {
-	storage storage.Storage
+	storage storage.RcloneStorage
 }
 
-func NewFileApi(s storage.Storage) *FileApi {
+func NewFileApi(s storage.RcloneStorage) *FileApi {
 	return &FileApi{
 		storage: s,
 	}

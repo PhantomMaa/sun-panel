@@ -2,10 +2,10 @@ package storage
 
 // RcloneConfig holds configuration for rclone storage
 type RcloneConfig struct {
-	Type      string // storage type (s3, oss, etc)
-	Provider  string // specific provider (Alibaba, AWS, etc)
-	AccessKey string
-	SecretKey string
-	Endpoint  string
+	Type      string // local or s3
 	Bucket    string
+	Provider  string // s3 only
+	AccessKey string // s3 only
+	SecretKey string // s3 only
+	Endpoint  string // s3 only
 }

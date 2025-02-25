@@ -8,12 +8,13 @@ import (
 
 type ApiGroup struct {
 	ApiSystem *system.ApiSystem // 系统功能api
-	ApiPanel  panel.ApiPanel
+	ApiPanel  *panel.ApiPanel
 }
 
 var ApiGroupApp = &ApiGroup{}
 
 // InitApiGroup initializes the API group with required dependencies
-func InitApiGroup(storageInstance storage.Storage) {
+func InitApiGroup(storageInstance *storage.RcloneStorage) {
 	ApiGroupApp.ApiSystem = system.InitApiSystem(storageInstance)
+	ApiGroupApp.ApiPanel = panel.InitApiPanel(storageInstance)
 }

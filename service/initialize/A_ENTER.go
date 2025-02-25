@@ -2,7 +2,6 @@ package initialize
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"sun-panel/api/api_v1"
@@ -22,9 +21,6 @@ import (
 )
 
 var DB_DRIVER = database.SQLITE
-
-// 全局存储实例
-var globalStorage storage.Storage
 
 func InitApp() error {
 	// 打印 logo
@@ -50,23 +46,23 @@ func InitApp() error {
 	// 多语言初始化
 	lang.LangInit("zh-cn") // en-us
 
+	// 初始化数据库
 	DatabaseConnect()
-
-	// 其他的初始化
-	global.SystemSetting = systemSettingCache.InItSystemSettingCache()
-	global.SystemMonitor = global.NewCache[interface{}](5*time.Hour, -1, "systemMonitorCache")
-
-	// 初始化JWT
-	if err := jwt.InitJWT(); err != nil {
-		return fmt.Errorf("JWT initialization error: %w", err)
-	}
 
 	// 初始化存储系统
 	storageInstance, err := InitStorage()
 	if err != nil {
 		return fmt.Errorf("storage initialization error: %w", err)
 	}
-	globalStorage = storageInstance
+
+	// 其他的初始化
+	global.SystemSetting = systemSettingCache.InItSystemSettingCache()
+	global.SystemMonitor = global.NewCache[any](5*time.Hour, -1, "systemMonitorCache")
+
+	// 初始化JWT
+	if err := jwt.InitJWT(); err != nil {
+		return fmt.Errorf("JWT initialization error: %w", err)
+	}
 
 	// 初始化API组件
 	api_v1.InitApiGroup(storageInstance)
@@ -107,58 +103,32 @@ func DatabaseConnect() {
 }
 
 // InitStorage initializes the storage system based on configuration
-func InitStorage() (storage.Storage, error) {
-	storageType := global.Config.GetValueString("base", "storage_drive")
-	global.Logger.Infof("Initializing storage system with type: %s", storageType)
-
-	var config storage.Config
-
-	switch storageType {
-	case "local":
-		config = storage.Config{
-			Type: storage.LocalStorageType,
-		}
-		global.Logger.Infof("Initializing local storage with path: %s", storage.LocalStorageBasePath)
-
-	case "rclone":
-		storageType := global.Config.GetValueString("rclone", "type")
-		provider := global.Config.GetValueString("rclone", "provider")
-		accessKey := global.Config.GetValueString("rclone", "access_key_id")
-		secretKey := global.Config.GetValueString("rclone", "secret_access_key")
-		endpoint := global.Config.GetValueString("rclone", "endpoint")
-		bucket := global.Config.GetValueString("rclone", "bucket")
-
-		config = storage.Config{
-			Type: storage.RcloneStorageType,
-			RcloneConfig: &storage.RcloneConfig{
-				Type:      storageType,
-				Provider:  provider,
-				AccessKey: accessKey,
-				SecretKey: secretKey,
-				Endpoint:  endpoint,
-				Bucket:    bucket,
-			},
-		}
-	default:
-		return nil, errors.New("invalid storage type : " + storageType)
+func InitStorage() (*storage.RcloneStorage, error) {
+	storageType := global.Config.GetValueString("rclone", "type")
+	provider := global.Config.GetValueString("rclone", "provider")
+	accessKey := global.Config.GetValueString("rclone", "access_key_id")
+	secretKey := global.Config.GetValueString("rclone", "secret_access_key")
+	endpoint := global.Config.GetValueString("rclone", "endpoint")
+	bucket := global.Config.GetValueString("rclone", "bucket")
+	rcloneConfig := &storage.RcloneConfig{
+		Type:      storageType,
+		Provider:  provider,
+		AccessKey: accessKey,
+		SecretKey: secretKey,
+		Endpoint:  endpoint,
+		Bucket:    bucket,
 	}
-
 	// 使用带超时的上下文初始化存储
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	storageInstance, err := storage.NewStorage(ctx, config)
+	rcloneStorage, err := storage.NewRcloneStorage(ctx, rcloneConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize storage: %w", err)
+		return nil, fmt.Errorf("failed to initialize rclone storage: %w", err)
 	}
 
 	global.Logger.Info("Storage system initialized successfully")
-	return storageInstance, nil
-}
-
-// GetStorage returns the global storage instance
-func GetStorage() storage.Storage {
-	return globalStorage
+	return rcloneStorage, nil
 }
 
 func Logo() {

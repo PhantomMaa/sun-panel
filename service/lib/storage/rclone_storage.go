@@ -14,7 +14,7 @@ import (
 	"github.com/rclone/rclone/fs/operations"
 	"gopkg.in/ini.v1"
 
-	// 导入 rclone s3 后端
+	_ "github.com/rclone/rclone/backend/local"
 	_ "github.com/rclone/rclone/backend/s3"
 )
 
@@ -31,7 +31,7 @@ func loadConfig() error {
 
 	section := configFile.Section("rclone")
 	for _, key := range section.Keys() {
-		rconfig.FileSetValue("s3", key.Name(), key.Value())
+		rconfig.FileSetValue("rclone", key.Name(), key.Value())
 	}
 	return nil
 }
@@ -43,7 +43,7 @@ func NewRcloneStorage(ctx context.Context, config *RcloneConfig) (*RcloneStorage
 
 	// 创建 rclone fs 实例
 	loadConfig()
-	path := fmt.Sprintf("s3:%s", config.Bucket)
+	path := fmt.Sprintf("rclone:%s", config.Bucket)
 	f, err := fs.NewFs(ctx, path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create rclone fs: %w", err)

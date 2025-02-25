@@ -15,12 +15,12 @@ type ApiSystem struct {
 }
 
 // InitApiSystem initializes the API system with required dependencies
-func InitApiSystem(storageInstance storage.Storage) *ApiSystem {
+func InitApiSystem(storageInstance *storage.RcloneStorage) *ApiSystem {
 	return &ApiSystem{
 		About:           About{},
 		LoginApi:        LoginApi{},
 		UserApi:         UserApi{},
-		FileApi:         NewFileApi(storageInstance),
+		FileApi:         NewFileApi(*storageInstance),
 		NoticeApi:       NoticeApi{},
 		ModuleConfigApi: ModuleConfigApi{},
 		MonitorApi:      MonitorApi{},
