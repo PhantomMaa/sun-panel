@@ -3,7 +3,6 @@ package initialize
 import (
 	"context"
 	"fmt"
-	"log"
 	"sun-panel/api/api_v1"
 	"sun-panel/global"
 	"sun-panel/initialize/config"
@@ -20,34 +19,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var DB_DRIVER = database.SQLITE
-
 func InitApp() error {
 	// 打印 logo
 	Logo()
 	gin.SetMode(global.RUNCODE) // GIN 运行模式
 
 	// 日志
-	if logger, err := runlog.InitRunlog(global.RUNCODE, "running.log"); err != nil {
-		log.Panicln("Log initialization error", err)
-		panic(err)
-	} else {
-		global.Logger = logger
+	logger, err := runlog.InitRunlog(global.RUNCODE, "running.log")
+	if err != nil {
+		return fmt.Errorf("log initialization error, %w", err)
 	}
 
+	global.Logger = logger
 	// 配置初始化
-	config, err := config.ConfigInit()
+	iniConfig, err := config.ConfigInit()
 	if err != nil {
 		return err
 	}
 
-	global.Config = config
+	global.Config = iniConfig
 
 	// 多语言初始化
 	lang.LangInit("zh-cn") // en-us
 
 	// 初始化数据库
-	DatabaseConnect()
+	err = DatabaseConnect()
+	if err != nil {
+		return err
+	}
 
 	// 初始化存储系统
 	storageInstance, err := InitStorage()
@@ -70,7 +69,7 @@ func InitApp() error {
 	return nil
 }
 
-func DatabaseConnect() {
+func DatabaseConnect() error {
 	// 数据库连接 - 开始
 	var dbClientInfo database.DbClient
 	databaseDrive := global.Config.GetValueString("base", "database_drive")
@@ -88,18 +87,25 @@ func DatabaseConnect() {
 			Filename: global.Config.GetValueString("sqlite", "file_path"),
 		}
 	}
-
-	if db, err := database.DbInit(dbClientInfo); err != nil {
-		log.Panicln("Database initialization error", err)
-		panic(err)
-	} else {
-		global.Db = db
-		models.Db = global.Db
+	db, err := database.DbInit(dbClientInfo)
+	if err != nil {
+		return fmt.Errorf("database DbInit error, %w", err)
 	}
 
-	database.CreateDatabase(databaseDrive, global.Db)
+	global.Db = db
+	models.Db = global.Db
 
-	database.NotFoundAndCreateUser(global.Db)
+	err = database.CreateDatabase(databaseDrive, global.Db)
+	if err != nil {
+		return fmt.Errorf("database CreateDatabase error, %w", err)
+	}
+
+	err = database.NotFoundAndCreateUser(global.Db)
+	if err != nil {
+		return fmt.Errorf("database NotFoundAndCreateUser error, %w", err)
+	}
+
+	return nil
 }
 
 // InitStorage initializes the storage system based on configuration

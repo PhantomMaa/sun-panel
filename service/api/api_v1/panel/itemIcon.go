@@ -77,7 +77,7 @@ func (a *ItemIcon) Edit(c *gin.Context) {
 func (a *ItemIcon) AddMultiple(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	// type Request
-	req := []models.ItemIcon{}
+	var req []models.ItemIcon
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
@@ -110,7 +110,7 @@ func (a *ItemIcon) GetListByGroupId(c *gin.Context) {
 	}
 
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	itemIcons := []models.ItemIcon{}
+	var itemIcons []models.ItemIcon
 
 	if err := global.Db.Order("sort ,created_at").Find(&itemIcons, "item_icon_group_id = ? AND user_id=?", req.ItemIconGroupId, userInfo.ID).Error; err != nil {
 		apiReturn.ErrorDatabase(c, err.Error())
@@ -137,7 +137,7 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 	// Start a transaction to ensure data consistency
 	err := global.Db.Transaction(func(tx *gorm.DB) error {
 		// First find all items to get their icon paths
-		items := []models.ItemIcon{}
+		var items []models.ItemIcon
 		if err := tx.Find(&items, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
 			return err
 		}
@@ -187,7 +187,7 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 	apiReturn.Success(c)
 }
 
-// 支持获取并直接下载对方网站图标到服务器
+// GetSiteFavicon 支持获取并直接下载对方网站图标到服务器
 func (a *ItemIcon) GetSiteFavicon(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	req := panelApiStructs.ItemIconGetSiteFaviconReq{}
