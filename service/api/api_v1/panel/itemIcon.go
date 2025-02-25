@@ -27,7 +27,10 @@ type ItemIcon struct {
 	storage storage.RcloneStorage
 }
 
+var filePrefix string
+
 func NewItemIcon(s storage.RcloneStorage) *ItemIcon {
+	filePrefix = global.Config.GetValueString("base", "file_prefix")
 	return &ItemIcon{
 		storage: s,
 	}
@@ -151,9 +154,9 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 			}
 
 			// Check if the icon has a src field indicating a file path
-			if src, ok := icon["src"].(string); ok && strings.HasPrefix(src, "/api/file/s3/") {
+			if src, ok := icon["src"].(string); ok && strings.HasPrefix(src, filePrefix) {
 				// Extract the file path from the URL
-				filePath := strings.TrimPrefix(src, "/api/file/s3/")
+				filePath := strings.TrimPrefix(src, filePrefix)
 
 				// Find and delete the file record
 				var file models.File

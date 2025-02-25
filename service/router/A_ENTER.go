@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// 初始化总路由
 func InitRouters(addr string) error {
 	router := gin.Default()
 	rootRouter := router.Group("/")
@@ -19,7 +18,7 @@ func InitRouters(addr string) error {
 	panel.Init(routerGroup)
 
 	// WEB文件服务
-	if global.Config.GetValueString("base", "static_server") == "true" {
+	if global.Config.GetValueString("base", "enable_static_server") == "true" {
 		webPath := "./web"
 		router.Static("/assets", webPath+"/assets")
 		router.Static("/custom", webPath+"/custom")
