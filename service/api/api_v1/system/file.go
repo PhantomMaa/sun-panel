@@ -177,8 +177,8 @@ func (a *FileApi) GetS3File(c *gin.Context) {
 		contentType = "image/png"
 	case ".gif":
 		contentType = "image/gif"
-	case ".pdf":
-		contentType = "application/pdf"
+	case ".svg":
+		contentType = "image/svg+xml"
 	}
 
 	// 设置响应头
