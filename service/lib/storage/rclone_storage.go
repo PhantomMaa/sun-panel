@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"path"
-	"path/filepath"
 	"sun-panel/global"
 	"time"
 
@@ -22,11 +21,10 @@ type RcloneStorage struct {
 	fs fs.Fs
 }
 
-func loadConfig() error {
-	configPath := filepath.Join("./conf/conf.ini")
+func loadConfig(configPath string) error {
 	configFile, err := ini.Load(configPath)
 	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
+		return fmt.Errorf("ini.Load error : %w", err)
 	}
 
 	section := configFile.Section("rclone")
@@ -37,12 +35,15 @@ func loadConfig() error {
 }
 
 // NewRcloneStorage creates a new rclone storage instance
-func NewRcloneStorage(ctx context.Context, config *RcloneConfig) (*RcloneStorage, error) {
-	global.Logger.Infof("Creating rclone storage with type: %s, provider: %s, endpoint: %s",
-		config.Type, config.Provider, config.Endpoint)
+func NewRcloneStorage(ctx context.Context, config *RcloneConfig, configPath string) (*RcloneStorage, error) {
+	global.Logger.Infof("Creating rclone storage with config: %+v", config)
 
 	// 创建 rclone fs 实例
-	loadConfig()
+	err := loadConfig(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
+
 	path := fmt.Sprintf("rclone:%s", config.Bucket)
 	f, err := fs.NewFs(ctx, path)
 	if err != nil {

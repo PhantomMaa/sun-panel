@@ -25,6 +25,13 @@ func InitRouters(addr string) error {
 		router.StaticFile("/", webPath+"/index.html")
 		router.StaticFile("/favicon.ico", webPath+"/favicon.ico")
 		router.StaticFile("/favicon.svg", webPath+"/favicon.svg")
+
+		if global.Config.GetValueString("rclone", "type") == "local" {
+			// 使用本次存储时，为本次存储设置静态文件服务
+			sourcePath := global.Config.GetValueString("base", "source_path")
+			router.Static("/"+sourcePath, sourcePath)
+		}
+
 		global.Logger.Info("Static file server is enabled")
 	} else {
 		global.Logger.Info("Static file server is disabled")

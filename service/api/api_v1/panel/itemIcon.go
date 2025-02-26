@@ -30,7 +30,8 @@ type ItemIcon struct {
 var filePrefix string
 
 func NewItemIcon(s storage.RcloneStorage) *ItemIcon {
-	filePrefix = global.Config.GetValueString("base", "file_prefix")
+	source_path := global.Config.GetValueString("base", "source_path")
+	filePrefix = fmt.Sprintf("/%s/", source_path)
 	return &ItemIcon{
 		storage: s,
 	}

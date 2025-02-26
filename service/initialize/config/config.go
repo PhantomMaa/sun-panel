@@ -6,16 +6,16 @@ import (
 	"sun-panel/lib/iniConfig"
 )
 
-func ConfigInit() (*iniConfig.IniConfig, error) {
-	exists, err := cmn.PathExists("conf/conf.ini")
+func ConfigInit(configPath string) (*iniConfig.IniConfig, error) {
+	exists, err := cmn.PathExists(configPath)
 	if err != nil {
 		return nil, err
 	}
 
 	if !exists {
-		return nil, errors.New("conf.ini 配置文件不存在，请参考 conf.example.ini 创建")
+		return nil, errors.New("配置文件不存在: " + configPath)
 	}
 
-	config := iniConfig.NewIniConfig("conf/conf.ini")
+	config := iniConfig.NewIniConfig(configPath)
 	return config, nil
 }

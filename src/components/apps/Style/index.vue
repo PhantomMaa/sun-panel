@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { UploadFileInfo } from 'naive-ui'
 import { NButton, NCard, NColorPicker, NGrid, NGridItem, NInput, NInputGroup, NPopconfirm, NSelect, NSlider, NSwitch, NUpload, NUploadDragger, useMessage } from 'naive-ui'
 import { useAuthStore, usePanelState } from '@/store'
@@ -33,6 +33,11 @@ const maxWidthUnitOption = [
     value: '%',
   },
 ]
+
+const maxWidth = computed({
+  get: () => String(panelState.panelConfig.maxWidth),
+  set: (val) => panelState.panelConfig.maxWidth = Number(val)
+})
 
 function handleUploadBackgroundFinish({
   file,
@@ -105,13 +110,20 @@ function resetPanelConfig() {
             @finish="handleUploadFaviconFinish"
           >
             <div class="flex items-center">
-              <img 
-                v-if="panelState.panelConfig.logoImageSrc" 
-                :src="panelState.panelConfig.logoImageSrc" 
+              <img
+                v-if="panelState.panelConfig.logoImageSrc"
+                :src="panelState.panelConfig.logoImageSrc"
                 class="w-[32px] h-[32px] mr-[10px] border border-gray-200 rounded"
               >
-              <NButton size="small">
+              <NButton size="small" class="mr-[10px]">
                 {{ panelState.panelConfig.logoImageSrc ? $t('common.change') : $t('common.upload') }}
+              </NButton>
+              <NButton 
+                v-if="panelState.panelConfig.logoImageSrc"
+                size="small"
+                @click.stop="panelState.panelConfig.logoImageSrc = ''"
+              >
+                {{ $t('common.clear') }}
               </NButton>
             </div>
           </NUpload>
@@ -276,7 +288,13 @@ function resetPanelConfig() {
             <span class="mr-[10px]">{{ $t('apps.baseSettings.maxWidth') }}</span>
             <div class="flex">
               <NInputGroup>
-                <NInput v-model:value="panelState.panelConfig.maxWidth" size="small" type="number" :maxlength="10" :style="{ width: '100px' }" placeholder="1200" />
+                <NInput 
+                  v-model:value="maxWidth"
+                  size="small" 
+                  :maxlength="10" 
+                  :style="{ width: '100px' }" 
+                  placeholder="1200"
+                />
                 <NSelect v-model:value="panelState.panelConfig.maxWidthUnit" :style="{ width: '80px' }" :options="maxWidthUnitOption" size="small" />
               </NInputGroup>
             </div>

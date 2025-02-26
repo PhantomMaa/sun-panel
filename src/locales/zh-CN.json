@@ -171,6 +171,7 @@
     },
     "upload": "上传",
     "change": "更换",
+    "clear": "清空",
     "save": "保存",
     "saveFail": "保存成功",
     "saveSort": "保存排序",

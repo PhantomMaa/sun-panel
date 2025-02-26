@@ -1,4 +1,4 @@
-import { post } from '@/utils/request'
+import { get, post } from '@/utils/request'
 
 export function edit<T>(req: Panel.ItemIconGroup) {
   return post<T>({
@@ -8,7 +8,7 @@ export function edit<T>(req: Panel.ItemIconGroup) {
 }
 
 export function getList<T>() {
-  return post<T>({
+  return get<T>({
     url: '/panel/itemIconGroup/getList',
   })
 }

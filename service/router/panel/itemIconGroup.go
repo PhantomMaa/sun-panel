@@ -20,6 +20,6 @@ func InitItemIconGroup(router *gin.RouterGroup) {
 	// 公开模式
 	rPublic := router.Group("", middleware.PublicModeInterceptor)
 	{
-		rPublic.POST("/panel/itemIconGroup/getList", itemIconGroup.GetList)
+		rPublic.GET("/panel/itemIconGroup/getList", itemIconGroup.GetList)
 	}
 }

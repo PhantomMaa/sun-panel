@@ -26,7 +26,8 @@ type FileApi struct {
 }
 
 func NewFileApi(s storage.RcloneStorage) *FileApi {
-	filePrefix = global.Config.GetValueString("base", "file_prefix")
+	source_path := global.Config.GetValueString("base", "source_path")
+	filePrefix = fmt.Sprintf("/%s/", source_path)
 	return &FileApi{
 		storage: s,
 	}

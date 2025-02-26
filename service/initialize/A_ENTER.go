@@ -19,7 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitApp() error {
+func InitApp(configPath string) error {
 	// 打印 logo
 	Logo()
 	gin.SetMode(global.RUNCODE) // GIN 运行模式
@@ -32,7 +32,7 @@ func InitApp() error {
 
 	global.Logger = logger
 	// 配置初始化
-	iniConfig, err := config.ConfigInit()
+	iniConfig, err := config.ConfigInit(configPath)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func InitApp() error {
 	}
 
 	// 初始化存储系统
-	storageInstance, err := InitStorage()
+	storageInstance, err := InitStorage(configPath)
 	if err != nil {
 		return fmt.Errorf("storage initialization error: %w", err)
 	}
@@ -109,7 +109,7 @@ func DatabaseConnect() error {
 }
 
 // InitStorage initializes the storage system based on configuration
-func InitStorage() (*storage.RcloneStorage, error) {
+func InitStorage(configPath string) (*storage.RcloneStorage, error) {
 	storageType := global.Config.GetValueString("rclone", "type")
 	provider := global.Config.GetValueString("rclone", "provider")
 	accessKey := global.Config.GetValueString("rclone", "access_key_id")
@@ -128,7 +128,7 @@ func InitStorage() (*storage.RcloneStorage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	rcloneStorage, err := storage.NewRcloneStorage(ctx, rcloneConfig)
+	rcloneStorage, err := storage.NewRcloneStorage(ctx, rcloneConfig, configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize rclone storage: %w", err)
 	}

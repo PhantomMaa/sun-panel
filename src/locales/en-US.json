@@ -171,6 +171,7 @@
     },
     "upload": "Upload",
     "change": "Change",
+    "clear": "Clear",
     "save": "Save",
     "saveFail": "Save failed",
     "saveSort": "Save sort",

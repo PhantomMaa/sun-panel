@@ -26,9 +26,15 @@ const infoModalState = ref<InfoModalState>({
 
 async function getFileList() {
   loading.value = true
-  const { data } = await getList<Common.ListResponse<File.Info[]>>()
-  imageList.value = data.list
-  loading.value = false
+  try {
+    const { data } = await getList<Common.ListResponse<File.Info[]>>()
+    imageList.value = data?.list || []
+  } catch (error) {
+    console.error('Failed to fetch image list:', error)
+    imageList.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 async function copyImageUrl(text: string) {

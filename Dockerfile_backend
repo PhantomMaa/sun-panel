@@ -23,8 +23,8 @@ RUN apk add --no-cache bash curl tzdata && \
     ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo "$TZ" > /etc/timezone
 
 COPY --from=builder /build/sun-panel /app/sun-panel
-COPY service/conf /app/conf
 COPY service/lang /app/lang
+COPY service/conf.ini /app/conf.ini
 
 EXPOSE 3002
 RUN chmod +x ./sun-panel
