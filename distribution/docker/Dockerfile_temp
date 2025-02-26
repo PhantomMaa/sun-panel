@@ -1,4 +1,4 @@
 FROM node:18.20.6-alpine
-WORKDIR /build
+WORKDIR /build/frontend
 COPY frontend .
 RUN npm install && npm run build

@@ -54,6 +54,7 @@ export default defineConfig((env) => {
       },
     },
     build: {
+      outDir: path.resolve(__dirname, '../backend/web'),
       reportCompressedSize: false,
       sourcemap: false,
       commonjsOptions: {

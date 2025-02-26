@@ -5,7 +5,7 @@ FROM ghcr.io/${REPO_LOWER}/temp:${VERSION} AS temp
 FROM ghcr.io/${REPO_LOWER}/backend:${VERSION}
 
 WORKDIR /app
-COPY --from=temp /build/dist /app/web
+COPY --from=temp /build/backend/web /app/web
 
 EXPOSE 3002
 CMD ["./sun-panel"]

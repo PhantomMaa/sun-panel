@@ -9,7 +9,7 @@ import (
 )
 
 func InitRunlog(runmode string, filePath string) (*zap.SugaredLogger, error) {
-	runtimePath := "./runtime/runlog"
+	runtimePath := "./logs"
 	if err := os.MkdirAll(runtimePath, 0777); err != nil {
 		return nil, err
 	}

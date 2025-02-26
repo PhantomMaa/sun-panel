@@ -1,17 +1,17 @@
 package siteFavicon
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"regexp"
 	"strconv"
 	"strings"
 	"sun-panel/lib/cmn"
+	"sun-panel/lib/storage"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -64,69 +64,45 @@ func GetRemoteFileSize(url string) (int64, error) {
 }
 
 // 下载图片
-func DownloadImage(url, savePath string, maxSize int64) (*os.File, error) {
+func DownloadImage(ctx context.Context, url string, storage storage.RcloneStorage) (string, error) {
 	// 获取远程文件大小
 	fileSize, err := GetRemoteFileSize(url)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	// 判断文件大小是否在阈值内
+	// 判断文件大小是否在阈值内（设置为 10MB）
+	maxSize := int64(10 * 1024 * 1024)
 	if fileSize > maxSize {
-		return nil, fmt.Errorf("文件太大，不下载。大小：%d字节", fileSize)
+		return "", fmt.Errorf("文件太大，不下载。大小：%d字节", fileSize)
 	}
 
 	// 发送HTTP GET请求获取图片数据
 	response, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer response.Body.Close()
 
 	// 检查HTTP响应状态
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP request failed, status code: %d", response.StatusCode)
+		return "", fmt.Errorf("HTTP request failed, status code: %d", response.StatusCode)
 	}
 
 	urlFileName := path.Base(url)
 	fileExt := path.Ext(url)
+	if fileExt == "" {
+		fileExt = ".ico"
+	}
 	fileName := cmn.Md5(fmt.Sprintf("%s%s", urlFileName, time.Now().String())) + fileExt
 
-	destination := savePath + "/" + fileName
-
-	// 创建本地文件用于保存图片
-	file, err := os.Create(destination)
+	// 使用 rclone 存储接口上传文件
+	filepath, err := storage.Upload(ctx, response.Body, fileName)
 	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	// 将图片数据写入本地文件
-	_, err = io.Copy(file, response.Body)
-	if err != nil {
-		return nil, err
-	}
-	return file, nil
-}
-
-func GetOneFaviconURLAndUpload(urlStr string) (string, bool) {
-	//www.iqiyipic.com/pcwimg/128-128-logo.png
-	iconURLs, err := getFaviconURL(urlStr)
-	if err != nil {
-		return "", false
+		return "", fmt.Errorf("failed to upload file: %v", err)
 	}
 
-	for _, v := range iconURLs {
-		// 标准的路径地址
-		if IsHTTPURL(v) {
-			return v, true
-		} else {
-			urlInfo, _ := url.Parse(urlStr)
-			fullUrl := urlInfo.Scheme + "://" + urlInfo.Host + "/" + strings.TrimPrefix(v, "/")
-			return fullUrl, true
-		}
-	}
-	return "", false
+	return filepath, nil
 }
 
 func getFaviconURL(url string) ([]string, error) {

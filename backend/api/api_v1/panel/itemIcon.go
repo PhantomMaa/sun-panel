@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"os"
 	"path"
 	"strings"
 	"sun-panel/api/api_v1/common/apiData/commonApiStructs"
@@ -12,11 +11,9 @@ import (
 	"sun-panel/api/api_v1/common/apiReturn"
 	"sun-panel/api/api_v1/common/base"
 	"sun-panel/global"
-	"sun-panel/lib/cmn"
 	"sun-panel/lib/siteFavicon"
 	"sun-panel/lib/storage"
 	"sun-panel/models"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -238,32 +235,25 @@ func (a *ItemIcon) GetSiteFavicon(c *gin.Context) {
 	}
 	global.Logger.Debug("fullUrl:", fullUrl)
 
-	// 生成保存目录
-	configUpload := global.Config.GetValueString("base", "source_path")
-	savePath := fmt.Sprintf("%s/%d/%d/%d/", configUpload, time.Now().Year(), time.Now().Month(), time.Now().Day())
-	isExist, _ := cmn.PathExists(savePath)
-	if !isExist {
-		os.MkdirAll(savePath, os.ModePerm)
-	}
-
-	// 下载
-	var imgInfo *os.File
-	{
-		var err error
-		if imgInfo, err = siteFavicon.DownloadImage(fullUrl, savePath, 1024*1024); err != nil {
-			apiReturn.Error(c, "acquisition failed: download"+err.Error())
-			return
-		}
+	// 下载图标
+	filepath, err := siteFavicon.DownloadImage(c.Request.Context(), fullUrl, a.storage)
+	if err != nil {
+		apiReturn.Error(c, "acquisition failed: download "+err.Error())
+		return
 	}
 
 	// 保存到数据库
 	ext := path.Ext(fullUrl)
+	if ext == "" {
+		ext = ".ico"
+	}
 	mFile := models.File{}
-	if _, err := mFile.AddFile(userInfo.ID, parsedURL.Host, ext, imgInfo.Name()); err != nil {
+	if _, err := mFile.AddFile(userInfo.ID, parsedURL.Host, ext, filepath); err != nil {
 		apiReturn.ErrorDatabase(c, err.Error())
 		return
 	}
-	resp.IconUrl = imgInfo.Name()[1:]
+
+	resp.IconUrl = filePrefix + filepath
 	apiReturn.SuccessData(c, resp)
 }
 
