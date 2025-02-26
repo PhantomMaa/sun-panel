@@ -30,18 +30,16 @@ coverage
 .pnpm-store
 
 # Environment variables files
-/service/.env
 .history
 service_node
 
-bindata.go
-service/assets/bindata.go
-service/my_conf.ini
-service/database
-service/web
-service/uploads
-service/plugins
-service/database.db
-service/sun-panel
+backend/assets/bindata.go
+backend/my_conf.ini
+backend/database
+backend/web
+backend/uploads
+backend/plugins
+backend/database.db
+backend/sun-panel
 
 pnpm-lock.yaml

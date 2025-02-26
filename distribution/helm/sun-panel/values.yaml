@@ -1,0 +1,39 @@
+nameOverride: sun-panel
+fullnameOverride: sun-panel
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/phantommaa/sun-panel/monolith
+  pullPolicy: IfNotPresent
+  tag: ""
+
+resources: 
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 20Mi
+
+service:
+  port: 3030
+
+mysql: 
+  host: host_or_ip
+  port: 3306
+  username: root
+  password: password
+  db_name: sunpanel
+
+rclone: 
+  provider: xxx # Minio, Alibaba, AWS, webdav, etc.
+  access_key_id: AK
+  secret_access_key: SK
+  endpoint: example.com
+  bucket: bucket
+  region: 
+
+jwt:
+  secret: replace_me
+  expire: 72  # hours

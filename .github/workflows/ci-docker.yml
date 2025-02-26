@@ -40,7 +40,7 @@ jobs:
       - name: Build temp
         uses: docker/build-push-action@v4
         with:
-          file: ./Dockerfile_temp
+          file: ./distribution/docker/Dockerfile_temp
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
@@ -66,7 +66,7 @@ jobs:
       - name: Build frontend
         uses: docker/build-push-action@v4
         with:
-          file: ./Dockerfile_frontend
+          file: ./distribution/docker/Dockerfile_frontend
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
@@ -96,7 +96,7 @@ jobs:
       - name: Build backend
         uses: docker/build-push-action@v4
         with:
-          file: ./Dockerfile_backend
+          file: ./distribution/docker/Dockerfile_backend
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
@@ -125,7 +125,7 @@ jobs:
       - name: Build monolith
         uses: docker/build-push-action@v4
         with:
-          file: ./Dockerfile_monolith
+          file: ./distribution/docker/Dockerfile_monolith
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
