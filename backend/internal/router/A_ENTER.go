@@ -27,8 +27,9 @@ func InitRouters(addr string) error {
 
 		if global.Config.GetValueString("rclone", "type") == "local" {
 			// 使用本次存储时，为本次存储设置静态文件服务
-			sourcePath := global.Config.GetValueString("base", "source_path")
-			router.Static("/"+sourcePath, sourcePath)
+			bucket := global.Config.GetValueString("rclone", "bucket")
+			urlPrefix := global.Config.GetValueString("base", "url_prefix")
+			router.Static(urlPrefix, bucket)
 		}
 
 		global.Logger.Info("Static file server is enabled")

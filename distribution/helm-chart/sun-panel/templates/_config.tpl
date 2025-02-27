@@ -7,7 +7,7 @@ database_drive=mysql
 # Enable static file server. Default:true
 enable_static_server=true
 # Used as prefix to generate file url. For example, "/uploads/xxxx.png"
-source_path=api/file/s3
+url_prefix=/api/file/s3/
 
 # optional, valid when database_drive=mysql
 [mysql]
@@ -25,8 +25,8 @@ provider={{ .Values.rclone.provider}}
 access_key_id={{ .Values.rclone.access_key_id}}
 secret_access_key={{ .Values.rclone.secret_access_key}}
 endpoint={{ .Values.rclone.endpoint}}
-bucket={{ .Values.rclone.bucket}}
 region={{ .Values.rclone.region}}
+bucket={{ .Values.rclone.bucket}}
 
 [jwt]
 # JWT secret key

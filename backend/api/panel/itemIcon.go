@@ -2,7 +2,6 @@ package panel
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gorm.io/gorm"
@@ -23,11 +22,10 @@ type ItemIcon struct {
 	storage storage.RcloneStorage
 }
 
-var filePrefix string
+var urlPrefix string
 
 func NewItemIcon(s storage.RcloneStorage) *ItemIcon {
-	source_path := global.Config.GetValueString("base", "source_path")
-	filePrefix = fmt.Sprintf("/%s/", source_path)
+	urlPrefix = global.Config.GetValueString("base", "url_prefix")
 	return &ItemIcon{
 		storage: s,
 	}
@@ -151,9 +149,9 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 			}
 
 			// Check if the icon has a src field indicating a file path
-			if src, ok := icon["src"].(string); ok && strings.HasPrefix(src, filePrefix) {
+			if src, ok := icon["src"].(string); ok && strings.HasPrefix(src, urlPrefix) {
 				// Extract the file path from the URL
-				filePath := strings.TrimPrefix(src, filePrefix)
+				filePath := strings.TrimPrefix(src, urlPrefix)
 
 				// Find and delete the file record
 				var file repository2.File
@@ -252,11 +250,11 @@ func (a *ItemIcon) GetSiteFavicon(c *gin.Context) {
 		return
 	}
 
-	resp.IconUrl = filePrefix + filepath
+	resp.IconUrl = urlPrefix + filepath
 	apiReturn.SuccessData(c, resp)
 }
 
-// 保存排序
+// SaveSort 保存排序
 func (a *ItemIcon) SaveSort(c *gin.Context) {
 	req := panelApiStructs.ItemIconSaveSortRequest{}
 
