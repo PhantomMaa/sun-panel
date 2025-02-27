@@ -130,25 +130,11 @@ func DatabaseConnect() error {
 
 // InitStorage initializes the storage system based on configuration
 func InitStorage(configPath string) (*storage.RcloneStorage, error) {
-	storageType := global.Config.GetValueString("rclone", "type")
-	provider := global.Config.GetValueString("rclone", "provider")
-	accessKey := global.Config.GetValueString("rclone", "access_key_id")
-	secretKey := global.Config.GetValueString("rclone", "secret_access_key")
-	endpoint := global.Config.GetValueString("rclone", "endpoint")
-	bucket := global.Config.GetValueString("rclone", "bucket")
-	rcloneConfig := &storage.RcloneConfig{
-		Type:      storageType,
-		Provider:  provider,
-		AccessKey: accessKey,
-		SecretKey: secretKey,
-		Endpoint:  endpoint,
-		Bucket:    bucket,
-	}
 	// 使用带超时的上下文初始化存储
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	rcloneStorage, err := storage.NewRcloneStorage(ctx, rcloneConfig, configPath)
+	rcloneStorage, err := storage.NewRcloneStorage(ctx, configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize rclone storage: %w", err)
 	}

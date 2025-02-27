@@ -26,8 +26,8 @@ type FileApi struct {
 }
 
 func NewFileApi(s storage.RcloneStorage) *FileApi {
-	source_path := global.Config.GetValueString("base", "source_path")
-	filePrefix = fmt.Sprintf("/%s/", source_path)
+	sourcePath := global.Config.GetValueString("base", "source_path")
+	filePrefix = fmt.Sprintf("/%s/", sourcePath)
 	return &FileApi{
 		storage: s,
 	}
@@ -66,7 +66,11 @@ func (a *FileApi) UploadImg(c *gin.Context) {
 		apiReturn.ErrorByCode(c, 1300)
 		return
 	}
-	defer src.Close()
+	defer func() {
+		if err := src.Close(); err != nil {
+			global.Logger.Errorf("Failed to close file: %v", err)
+		}
+	}()
 
 	// 使用存储接口上传文件
 	filepath, err := a.storage.Upload(c.Request.Context(), src, fileName)
@@ -122,7 +126,7 @@ func (a *FileApi) Deletes(c *gin.Context) {
 	}
 
 	global.Db.Transaction(func(tx *gorm.DB) error {
-		files := []repository.File{}
+		var files []repository.File
 
 		if err := tx.Order("created_at desc").Find(&files, "user_id=? AND id in ?", userInfo.ID, req.Ids).Error; err != nil {
 			return err
@@ -143,7 +147,6 @@ func (a *FileApi) Deletes(c *gin.Context) {
 	})
 
 	apiReturn.Success(c)
-
 }
 
 func (a *FileApi) GetS3File(c *gin.Context) {

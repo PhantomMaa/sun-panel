@@ -21,15 +21,6 @@ type RcloneStorage struct {
 	fs fs.Fs
 }
 
-type RcloneConfig struct {
-	Type      string // local or s3
-	Bucket    string
-	Provider  string // s3 only
-	AccessKey string // s3 only
-	SecretKey string // s3 only
-	Endpoint  string // s3 only
-}
-
 func loadConfig(configPath string) error {
 	configFile, err := ini.Load(configPath)
 	if err != nil {
@@ -37,6 +28,8 @@ func loadConfig(configPath string) error {
 	}
 
 	section := configFile.Section("rclone")
+	global.Logger.Infof("loading rclone config : %+v", section.KeysHash())
+
 	for _, key := range section.Keys() {
 		rconfig.FileSetValue("rclone", key.Name(), key.Value())
 	}
@@ -44,17 +37,16 @@ func loadConfig(configPath string) error {
 }
 
 // NewRcloneStorage creates a new rclone storage instance
-func NewRcloneStorage(ctx context.Context, config *RcloneConfig, configPath string) (*RcloneStorage, error) {
-	global.Logger.Infof("Creating rclone storage with config: %+v", config)
-
+func NewRcloneStorage(ctx context.Context, configPath string) (*RcloneStorage, error) {
 	// 创建 rclone fs 实例
 	err := loadConfig(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
-	path := fmt.Sprintf("rclone:%s", config.Bucket)
-	f, err := fs.NewFs(ctx, path)
+	bucket := global.Config.GetValueString("rclone", "bucket")
+	pathName := fmt.Sprintf("rclone:%s", bucket)
+	f, err := fs.NewFs(ctx, pathName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create rclone fs: %w", err)
 	}
