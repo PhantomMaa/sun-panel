@@ -1,0 +1,10 @@
+services:
+  sun-panel:
+    image: ghcr.io/phantommaa/sun-panel/monolith:latest
+    container_name: sun-panel
+    volumes:
+      - ./conf.ini:/app/conf.ini
+      - ./uploads:/app/uploads
+      - ./database:/app/database
+    ports:
+      - 3002:3002

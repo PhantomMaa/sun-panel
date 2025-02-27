@@ -40,7 +40,7 @@ jobs:
       - name: Build temp
         uses: docker/build-push-action@v4
         with:
-          file: ./distribution/docker/Dockerfile_temp
+          file: ./distribution/docker-image/Dockerfile_temp
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
@@ -66,7 +66,7 @@ jobs:
       - name: Build frontend
         uses: docker/build-push-action@v4
         with:
-          file: ./distribution/docker/Dockerfile_frontend
+          file: ./distribution/docker-image/Dockerfile_frontend
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
@@ -96,7 +96,7 @@ jobs:
       - name: Build backend
         uses: docker/build-push-action@v4
         with:
-          file: ./distribution/docker/Dockerfile_backend
+          file: ./distribution/docker-image/Dockerfile_backend
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
@@ -125,7 +125,7 @@ jobs:
       - name: Build monolith
         uses: docker/build-push-action@v4
         with:
-          file: ./distribution/docker/Dockerfile_monolith
+          file: ./distribution/docker-image/Dockerfile_monolith
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
@@ -148,12 +148,12 @@ jobs:
           encoded_package_name=$(printf '%s' "$package_name" | jq -sRr @uri)
 
           echo "Deleting temp image ..."
-          
+
           gh api \
             --method DELETE \
             -H "Accept: application/vnd.github+json" \
             "/users/${user}/packages/container/${encoded_package_name}"
-          
+
           if [ $? -eq 0 ]; then
             echo "Successfully deleted temp image"
           else

@@ -34,3 +34,11 @@ spec:
         - name: volumn-{{ include "sun-panel.fullname" . }}-conf
           configMap:
             name: {{ include "sun-panel.fullname" . }}-conf
+ 			{{- with .Values.affinity }}
+			affinity:
+				{{- toYaml . | nindent 8 }}
+			{{- end }}
+			{{- with .Values.tolerations }}
+			tolerations:
+				{{- toYaml . | nindent 8 }}
+			{{- end }}

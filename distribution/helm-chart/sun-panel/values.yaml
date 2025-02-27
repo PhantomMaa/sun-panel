@@ -8,7 +8,7 @@ image:
   pullPolicy: IfNotPresent
   tag: ""
 
-resources: 
+resources:
   limits:
     cpu: 1000m
     memory: 512Mi
@@ -19,20 +19,24 @@ resources:
 service:
   port: 3030
 
-mysql: 
+tolerations: {}
+
+affinity: {}
+
+mysql:
   host: host_or_ip
   port: 3306
   username: root
   password: password
   db_name: sunpanel
 
-rclone: 
+rclone:
   provider: xxx # Minio, Alibaba, AWS, webdav, etc.
   access_key_id: AK
   secret_access_key: SK
   endpoint: example.com
   bucket: bucket
-  region: 
+  region:
 
 jwt:
   secret: replace_me

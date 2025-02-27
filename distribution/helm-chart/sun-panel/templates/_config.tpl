@@ -7,7 +7,7 @@ database_drive=mysql
 # Enable static file server. Default:true
 enable_static_server=true
 # Used as prefix to generate file url. For example, "/uploads/xxxx.png"
-source_path=uploads
+source_path=api/file/s3
 
 # optional, valid when database_drive=mysql
 [mysql]
