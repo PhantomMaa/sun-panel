@@ -67,14 +67,11 @@ defineExpose({
   async verification(): Promise<boolean> {
     try {
       const errors = await formRef.value?.validate()
-
       if (!errors) {
-        return Promise.resolve(true)
-      }
-      else {
         console.log(errors)
         return Promise.resolve(false)
       }
+      return Promise.resolve(true)
     }
     catch (error) {
       console.error('An error occurred during validation:', error)
