@@ -27,14 +27,7 @@ func LangInit(lang string) {
 
 func NewLang(langPath string) *LangStructObj {
 	langObj := LangStructObj{}
-	exists, _ := common.PathExists(langPath)
-
-	if exists {
-		langObj.LangContet = iniConfig.NewIniConfig(langPath) // 读取配置
-	} else {
-		common.Pln(common.LOG_ERROR, "language file does not exist:"+langPath)
-		os.Exit(1)
-	}
+	langObj.LangContet = iniConfig.NewIniConfig(langPath) // 读取配置
 	return &langObj
 }
 

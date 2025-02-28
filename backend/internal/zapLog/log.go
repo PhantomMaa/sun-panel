@@ -1,4 +1,4 @@
-package common
+package zapLog
 
 import (
 	"fmt"
@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"path"
+	"sun-panel/internal/common"
+	"sun-panel/internal/global"
 	"time"
 
 	"github.com/fatih/color"
@@ -16,7 +18,7 @@ import (
 type LogStruct struct {
 	Writer    io.Writer
 	File      *os.File
-	Print_cfg bool // 此条打印到控制台
+	PrintCfg  bool // 此条打印到控制台
 	Separator string
 }
 
@@ -50,6 +52,23 @@ var spaces = map[string]string{
 // 运行日志静态类
 var runLogStatic = LogStruct{}
 
+func InitLog(runmode string, filePath string) (*zap.SugaredLogger, error) {
+	runtimePath := "./logs"
+	if err := os.MkdirAll(runtimePath, 0777); err != nil {
+		return nil, err
+	}
+
+	var level zap.AtomicLevel
+	if runmode == "debug" {
+		level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	} else {
+		level = global.LoggerLevel
+	}
+
+	logger := InitLogger(runtimePath+"/"+filePath, level)
+	return logger, nil
+}
+
 // 控制台打印
 // Warning Panic Error Info Debug
 func Pln(prefix string, msg string) {
@@ -57,7 +76,7 @@ func Pln(prefix string, msg string) {
 		"%s%s %s %s\n",
 		colors[prefix]("["+prefix+"]"),
 		spaces[prefix],
-		time.Now().Format(TimeFormatMode1),
+		time.Now().Format(common.TimeFormatMode1),
 		msg,
 	)
 }
@@ -67,7 +86,7 @@ func Print(color, key, msg string) {
 	fmt.Printf(
 		"%s%s %s\n",
 		colors[color](key),
-		time.Now().Format(TimeFormatMode1),
+		time.Now().Format(common.TimeFormatMode1),
 		msg,
 	)
 }
@@ -91,7 +110,7 @@ func NewLog(log_file_name string) *LogStruct {
 	logStruct := &LogStruct{}
 	logStruct.Separator = ""
 	logDir := path.Dir(log_file_name)
-	ok, _ := PathExists(logDir)
+	ok, _ := common.PathExists(logDir)
 	if !ok {
 		if err := os.MkdirAll(logDir, 0700); err != nil {
 			fmt.Println("创建日志文件错误", err.Error())
@@ -115,7 +134,7 @@ func RunLog() *LogStruct {
 	// 按小时/日/月/年
 	// 先判断文件（夹）是否存在。否多级创建
 	log_file := "res/runtime/log/"
-	ok, _ := PathExists(log_file)
+	ok, _ := common.PathExists(log_file)
 	if !ok {
 		os.MkdirAll(log_file, 0777)
 	}
@@ -142,7 +161,7 @@ func (t *LogStruct) Write(content string) (n int, err error) {
 }
 
 func (t *LogStruct) Format(log_type string, content string) (n int, err error) {
-	content = log_type + spaces[log_type] + " " + GetTime() + " " + content + "\n"
+	content = log_type + spaces[log_type] + " " + common.GetTime() + " " + content + "\n"
 	return t.Write(content)
 }
 
@@ -156,18 +175,18 @@ func (t *LogStruct) Info(content ...string) (n int, err error) {
 		}
 	}
 	n, err = t.Format("Info", str)
-	if t.Print_cfg == true {
+	if t.PrintCfg == true {
 		Pln("Info", str)
-		t.Print_cfg = false
+		t.PrintCfg = false
 	}
 	return
 }
 
 func (t *LogStruct) Debug(content string) {
 	t.Format("Debug", content)
-	if t.Print_cfg == true {
+	if t.PrintCfg == true {
 		Pln("Debug", content)
-		t.Print_cfg = false
+		t.PrintCfg = false
 	}
 }
 
@@ -181,9 +200,9 @@ func (t *LogStruct) Error(content ...string) {
 		}
 	}
 	t.Format("Error", content_str)
-	if t.Print_cfg == true {
+	if t.PrintCfg == true {
 		Pln("Error", content_str)
-		t.Print_cfg = false
+		t.PrintCfg = false
 	}
 }
 
@@ -216,7 +235,6 @@ func (t *LogStruct) Error(content ...string) {
 // 	return str
 // }
 
-// TODO(GgoCoder) 日志轮转
 func InitLogger(fileName string, level zapcore.LevelEnabler) *zap.SugaredLogger {
 	fileWriteSyncer := getLogWriter(fileName)
 	encoder := getEncoder()

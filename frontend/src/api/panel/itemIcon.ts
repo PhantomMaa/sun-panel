@@ -1,4 +1,4 @@
-import { post } from '../../utils/request'
+import { post } from '@/utils/request'
 
 export function addMultiple<T>(req: Panel.ItemInfo[]) {
   return post<T>({

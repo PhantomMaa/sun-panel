@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -16,7 +17,7 @@ type GoCacheValue[T any] struct {
 	Value T
 }
 
-// 创建一个goCache结构体
+// NewGoCache 创建一个goCache结构体
 // cache.New(5*time.Minute, 60*time.Second)，清理过期的item间隔 0.不清理
 func NewGoCache[T any](defaultExpiration time.Duration, cleanupInterval time.Duration) *GoCacheStruct[T] {
 	cacheAdapter := cache.New(defaultExpiration, cleanupInterval)
@@ -38,12 +39,12 @@ func (c *GoCacheStruct[T]) Get(k string) (T, bool) {
 	return c.Result, false
 }
 
-// 设置cache 无时间参数
+// SetDefault 设置cache 无时间参数
 func (c *GoCacheStruct[T]) SetDefault(k string, v T) {
 	c.gocahce.SetDefault(k, GoCacheValue[T]{Value: v})
 }
 
-// 设置并保持原始的过期时间
+// SetKeepExpiration 设置并保持原始的过期时间
 func (c *GoCacheStruct[T]) SetKeepExpiration(k string, v T) {
 	_, expirationTime, ok := c.gocahce.GetWithExpiration(k)
 
@@ -62,17 +63,20 @@ func (c *GoCacheStruct[T]) SetKeepExpiration(k string, v T) {
 	}
 }
 
-// 删除 cache
+// Delete 删除 cache
 func (c *GoCacheStruct[T]) Delete(k string) {
 	c.gocahce.Delete(k)
 }
 
-// Add() 加入缓存
+// Add 加入缓存
 func (c *GoCacheStruct[T]) Add(k string, v T, d time.Duration) {
-	c.gocahce.Add(k, GoCacheValue[T]{Value: v}, d)
+	err := c.gocahce.Add(k, GoCacheValue[T]{Value: v}, d)
+	if err != nil {
+		return
+	}
 }
 
-// IncrementInt() 对已存在的key 值自增n
+// IncrementInt 对已存在的key 值自增n
 func (c *GoCacheStruct[T]) IncrementInt(k string, n int) (num int, err error) {
 	return c.gocahce.IncrementInt(k, n)
 }
@@ -87,10 +91,10 @@ func (c *GoCacheStruct[T]) Flush() {
 	c.gocahce.Flush()
 }
 
-// func (c *GoCacheStruct[T]) encode(value T) ([]byte, error) {
-// 	return json.Marshal(value)
-// }
+func (c *GoCacheStruct[T]) encode(value T) ([]byte, error) {
+	return json.Marshal(value)
+}
 
-// func (c *GoCacheStruct[T]) decode(valueByte []byte, value T) error {
-// 	return json.Unmarshal(valueByte, value)
-// }
+func (c *GoCacheStruct[T]) decode(valueByte []byte, value T) error {
+	return json.Unmarshal(valueByte, value)
+}

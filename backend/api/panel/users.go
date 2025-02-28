@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/internal/cache"
 	"sun-panel/internal/common"
-	"sun-panel/internal/common/systemSetting"
 	"sun-panel/internal/global"
 	repository2 "sun-panel/internal/repository"
 )
@@ -252,7 +252,7 @@ func (a UsersApi) SetPublicVisitUser(c *gin.Context) {
 		}
 	}
 
-	if err := global.SystemSetting.Set(systemSetting.PanelPublicUserId, req.UserId); err != nil {
+	if err := global.SystemSetting.Set(cache.PanelPublicUserId, req.UserId); err != nil {
 		apiReturn.Error(c, "set fail")
 		return
 	}
@@ -261,7 +261,7 @@ func (a UsersApi) SetPublicVisitUser(c *gin.Context) {
 
 func (a UsersApi) GetPublicVisitUser(c *gin.Context) {
 	var userId *uint
-	if err := global.SystemSetting.GetValueByInterface(systemSetting.PanelPublicUserId, &userId); err == nil && userId != nil {
+	if err := global.SystemSetting.GetValueByInterface(cache.PanelPublicUserId, &userId); err == nil && userId != nil {
 		userInfo := repository2.User{}
 		if err := global.Db.First(&userInfo, "id=?", userId).Error; err == nil {
 			apiReturn.SuccessData(c, userInfo)

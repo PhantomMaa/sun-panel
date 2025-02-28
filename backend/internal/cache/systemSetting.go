@@ -1,10 +1,9 @@
-package systemSetting
+package cache
 
 import (
 	"encoding/json"
 	"errors"
 	"gorm.io/gorm"
-	"sun-panel/internal/cache"
 	"sun-panel/internal/repository"
 )
 
@@ -12,15 +11,8 @@ const (
 	PanelPublicUserId = "panel_public_user_id" // 公开访问模式用户id *uint|null
 )
 
-type SystemSettingCache struct {
-	Cache cache.Cacher[interface{}]
-}
-
-type Email struct {
-	Host     string `json:"host" binding:"required"`
-	Port     int    `json:"port" binding:"required"`
-	Mail     string `json:"mail" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+type SystemSetting struct {
+	Cache Cacher[interface{}]
 }
 
 type Register struct {
@@ -42,8 +34,7 @@ var (
 	ErrorNoExists = errors.New("no exists")
 )
 
-// 系统配置启用缓存功能
-func (s *SystemSettingCache) GetValueString(configName string) (result string, err error) {
+func (s *SystemSetting) GetValueString(configName string) (result string, err error) {
 	if v, ok := s.Cache.Get(configName); ok {
 		if v1, ok1 := v.(string); ok1 {
 			// fmt.Println("读取缓存")
@@ -53,7 +44,7 @@ func (s *SystemSettingCache) GetValueString(configName string) (result string, e
 
 	mSetting := repository.SystemSetting{}
 	result, err = mSetting.Get(configName)
-	if err == gorm.ErrRecordNotFound {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = ErrorNoExists
 	}
 	// 查询出来，缓存起来
@@ -61,10 +52,8 @@ func (s *SystemSettingCache) GetValueString(configName string) (result string, e
 	return
 }
 
-// value 需为指针
-func (s *SystemSettingCache) GetValueByInterface(configName string, value interface{}) error {
+func (s *SystemSetting) GetValueByInterface(configName string, value interface{}) error {
 	if v, ok := s.Cache.Get(configName); ok {
-		// fmt.Println("缓存")
 		if s, sok := v.(string); sok {
 			if err := json.Unmarshal([]byte(s), value); err != nil {
 				return err
@@ -75,10 +64,11 @@ func (s *SystemSettingCache) GetValueByInterface(configName string, value interf
 
 	mSetting := repository.SystemSetting{}
 	result, err := mSetting.Get(configName)
-	if err == gorm.ErrRecordNotFound {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = ErrorNoExists
 		return err
 	}
+
 	err = json.Unmarshal([]byte(result), value)
 	if err != nil {
 		return err
@@ -87,7 +77,7 @@ func (s *SystemSettingCache) GetValueByInterface(configName string, value interf
 	return nil
 }
 
-func (s *SystemSettingCache) Set(configName string, configValue interface{}) error {
+func (s *SystemSetting) Set(configName string, configValue interface{}) error {
 	s.Cache.Delete(configName)
 	mSetting := repository.SystemSetting{}
 	err := mSetting.Set(configName, configValue)

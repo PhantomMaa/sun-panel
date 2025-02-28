@@ -2,11 +2,12 @@ package repository
 
 import (
 	"encoding/json"
+	"errors"
+	"sun-panel/internal/common"
 
 	"gorm.io/gorm"
 )
 
-// 系统设置
 type SystemSetting struct {
 	ID          uint   `gorm:"primaryKey"`
 	ConfigName  string `gorm:"type:varchar(50)"`
@@ -34,20 +35,15 @@ func (m *SystemSetting) GetValueByInterface(configName string, structValue inter
 	return nil
 }
 
-// 暂时仅支持结构体和字符串
 func (m *SystemSetting) Set(configName string, configValue interface{}) error {
 	findRes := SystemSetting{}
 	db := Db.Model(m).First(&findRes, "config_name=?", configName)
-	if err := db.Error; err != nil && err != gorm.ErrRecordNotFound {
+	if err := db.Error; err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
 	}
 	value := ""
 	if s, ok := configValue.(string); !ok {
-		if jsonStr, err := json.Marshal(configValue); err != nil {
-			value = ""
-		} else {
-			value = string(jsonStr)
-		}
+		value = common.ToJSONString(configValue)
 	} else {
 		value = s
 	}

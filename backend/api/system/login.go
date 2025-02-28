@@ -1,11 +1,12 @@
 package system
 
 import (
+	"errors"
 	"strings"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/internal/cache"
 	"sun-panel/internal/common"
-	"sun-panel/internal/common/systemSetting"
 	"sun-panel/internal/global"
 	"sun-panel/internal/jwt" // 新增jwt包导入
 	"sun-panel/internal/repository"
@@ -43,7 +44,7 @@ func (l LoginApi) Login(c *gin.Context) {
 		return
 	}
 
-	settings := systemSetting.ApplicationSetting{}
+	settings := cache.ApplicationSetting{}
 	global.SystemSetting.GetValueByInterface("system_application", &settings)
 
 	mUser := repository.User{}
@@ -55,7 +56,7 @@ func (l LoginApi) Login(c *gin.Context) {
 	param.Username = strings.TrimSpace(param.Username)
 	if info, err = mUser.GetUserInfoByUsernameAndPassword(param.Username, common.PasswordEncryption(param.Password)); err != nil {
 		// 未找到记录 账号或密码错误
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			apiReturn.ErrorByCode(c, 1003)
 			return
 		} else {

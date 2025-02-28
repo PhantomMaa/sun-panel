@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
-	"sun-panel/internal/common/systemSetting"
+	"sun-panel/internal/cache"
 	"sun-panel/internal/global"
 	"sun-panel/internal/jwt"
 	"sun-panel/internal/language"
@@ -41,7 +41,7 @@ func PublicModeInterceptor(c *gin.Context) {
 
 	// 如果JWT验证失败或没有token，使用公开账号
 	var userId *uint
-	if err := global.SystemSetting.GetValueByInterface(systemSetting.PanelPublicUserId, &userId); err == nil && userId != nil {
+	if err := global.SystemSetting.GetValueByInterface(cache.PanelPublicUserId, &userId); err == nil && userId != nil {
 		if err := global.Db.First(&userInfo, "id=?", userId).Error; err != nil {
 			apiReturn.ErrorCode(c, 1001, language.Obj.Get("login.err_token_expire"), nil)
 			c.Abort()

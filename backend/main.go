@@ -8,8 +8,6 @@ import (
 	"log"
 	"sun-panel/api"
 	"sun-panel/internal/cache"
-	"sun-panel/internal/common"
-	"sun-panel/internal/common/systemSetting"
 	"sun-panel/internal/database"
 	"sun-panel/internal/global"
 	"sun-panel/internal/iniConfig"
@@ -73,10 +71,12 @@ func InitApp(configPath string) error {
 	}
 
 	// 其他的初始化
-	global.SystemSetting = &systemSetting.SystemSettingCache{
+	global.SystemSetting = &cache.SystemSetting{
 		Cache: cache.NewGoCache[any](5*time.Hour, -1),
 	}
-	global.SystemMonitor = cache.NewGoCache[any](5*time.Hour, -1)
+	global.Monitor = &cache.Monitor{
+		Cache: cache.NewGoCache[any](5*time.Hour, -1),
+	}
 
 	// 初始化JWT
 	if err := jwt.InitJWT(); err != nil {
@@ -90,10 +90,10 @@ func InitApp(configPath string) error {
 }
 
 func DatabaseConnect() error {
-	// 数据库连接 - 开始
 	var dbClientInfo database.DbClient
 	databaseDrive := global.Config.GetValueString("base", "database_drive")
-	if databaseDrive == database.MYSQL {
+	switch databaseDrive {
+	case database.MYSQL:
 		dbClientInfo = &database.MySQLConfig{
 			Username:    global.Config.GetValueString("mysql", "username"),
 			Password:    global.Config.GetValueString("mysql", "password"),
@@ -102,23 +102,21 @@ func DatabaseConnect() error {
 			Database:    global.Config.GetValueString("mysql", "db_name"),
 			WaitTimeout: global.Config.GetValueInt("mysql", "wait_timeout"),
 		}
-	} else {
+	case database.SQLITE:
 		dbClientInfo = &database.SQLiteConfig{
 			Filename: global.Config.GetValueString("sqlite", "file_path"),
 		}
+	default:
+		return fmt.Errorf("unsupported database drive: %s", databaseDrive)
 	}
+
 	db, err := database.DbInit(dbClientInfo)
 	if err != nil {
 		return fmt.Errorf("database DbInit error, %w", err)
 	}
 
 	global.Db = db
-	repository.Db = global.Db
-
-	err = database.CreateDatabase(databaseDrive, global.Db)
-	if err != nil {
-		return fmt.Errorf("database CreateDatabase error, %w", err)
-	}
+	repository.Db = db
 
 	err = database.NotFoundAndCreateUser(global.Db)
 	if err != nil {
@@ -150,8 +148,7 @@ func Logo() {
 	fmt.Println("  /___/\\_,_/_//_/ /_/   \\_,_/_//_/\\__/_/  ")
 	fmt.Println("")
 
-	version := common.GetVersion()
-	fmt.Println("Version:", version)
+	fmt.Println("Version:", global.VERSION)
 	fmt.Println("Welcome to the Sun-Panel.")
 	fmt.Println("Project address:", "https://github.com/hslr-s/sun-panel")
 }

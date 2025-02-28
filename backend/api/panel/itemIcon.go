@@ -12,8 +12,9 @@ import (
 	"sun-panel/api/common/apiData/panelApiStructs"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/internal/common"
 	"sun-panel/internal/global"
-	repository2 "sun-panel/internal/repository"
+	"sun-panel/internal/repository"
 	"sun-panel/internal/siteFavicon"
 	"sun-panel/internal/storage"
 )
@@ -33,7 +34,7 @@ func NewItemIcon(s storage.RcloneStorage) *ItemIcon {
 
 func (a *ItemIcon) Edit(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	req := repository2.ItemIcon{}
+	req := repository.ItemIcon{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
@@ -41,17 +42,12 @@ func (a *ItemIcon) Edit(c *gin.Context) {
 	}
 
 	if req.ItemIconGroupId == 0 {
-		// apiReturn.Error(c, "Group is mandatory")
 		apiReturn.ErrorParamFomat(c, "Group is mandatory")
 		return
 	}
 
 	req.UserId = userInfo.ID
-
-	// json转字符串
-	if j, err := json.Marshal(req.Icon); err == nil {
-		req.IconJson = string(j)
-	}
+	req.IconJson = common.ToJSONString(req.Icon)
 
 	if req.ID != 0 {
 		// 修改
@@ -59,7 +55,7 @@ func (a *ItemIcon) Edit(c *gin.Context) {
 		if req.Sort != 0 {
 			updateField = append(updateField, "Sort")
 		}
-		global.Db.Model(&repository2.ItemIcon{}).
+		global.Db.Model(&repository.ItemIcon{}).
 			Select(updateField).
 			Where("id=?", req.ID).Updates(&req)
 	} else {
@@ -75,7 +71,7 @@ func (a *ItemIcon) Edit(c *gin.Context) {
 func (a *ItemIcon) AddMultiple(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	// type Request
-	var req []repository2.ItemIcon
+	var req []repository.ItemIcon
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
@@ -100,7 +96,7 @@ func (a *ItemIcon) AddMultiple(c *gin.Context) {
 }
 
 func (a *ItemIcon) GetListByGroupId(c *gin.Context) {
-	req := repository2.ItemIcon{}
+	req := repository.ItemIcon{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
@@ -108,7 +104,7 @@ func (a *ItemIcon) GetListByGroupId(c *gin.Context) {
 	}
 
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	var itemIcons []repository2.ItemIcon
+	var itemIcons []repository.ItemIcon
 
 	if err := global.Db.Order("sort ,created_at").Find(&itemIcons, "item_icon_group_id = ? AND user_id=?", req.ItemIconGroupId, userInfo.ID).Error; err != nil {
 		apiReturn.ErrorDatabase(c, err.Error())
@@ -135,7 +131,7 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 	// Start a transaction to ensure data consistency
 	err := global.Db.Transaction(func(tx *gorm.DB) error {
 		// First find all items to get their icon paths
-		var items []repository2.ItemIcon
+		var items []repository.ItemIcon
 		if err := tx.Find(&items, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
 			return err
 		}
@@ -154,7 +150,7 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 				filePath := strings.TrimPrefix(src, urlPrefix)
 
 				// Find and delete the file record
-				var file repository2.File
+				var file repository.File
 				if err := tx.Where("src = ? AND user_id = ?", filePath, userInfo.ID).First(&file).Error; err == nil {
 					if err := tx.Delete(&file).Error; err != nil {
 						return err
@@ -170,7 +166,7 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 		}
 
 		// Finally delete the item icons
-		if err := tx.Delete(&repository2.ItemIcon{}, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
+		if err := tx.Delete(&repository.ItemIcon{}, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
 			return err
 		}
 
@@ -244,7 +240,7 @@ func (a *ItemIcon) GetSiteFavicon(c *gin.Context) {
 	if ext == "" {
 		ext = ".ico"
 	}
-	mFile := repository2.File{}
+	mFile := repository.File{}
 	if _, err := mFile.AddFile(userInfo.ID, parsedURL.Host, ext, filepath); err != nil {
 		apiReturn.ErrorDatabase(c, err.Error())
 		return
@@ -268,7 +264,7 @@ func (a *ItemIcon) SaveSort(c *gin.Context) {
 	transactionErr := global.Db.Transaction(func(tx *gorm.DB) error {
 		// 在事务中执行一些 db 操作（从这里开始，您应该使用 'tx' 而不是 'db'）
 		for _, v := range req.SortItems {
-			if err := tx.Model(&repository2.ItemIcon{}).Where("user_id=? AND id=? AND item_icon_group_id=?", userInfo.ID, v.Id, req.ItemIconGroupId).Update("sort", v.Sort).Error; err != nil {
+			if err := tx.Model(&repository.ItemIcon{}).Where("user_id=? AND id=? AND item_icon_group_id=?", userInfo.ID, v.Id, req.ItemIconGroupId).Update("sort", v.Sort).Error; err != nil {
 				// 返回任何错误都会回滚事务
 				return err
 			}

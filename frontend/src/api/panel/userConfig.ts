@@ -1,4 +1,4 @@
-import { post } from '../../utils/request'
+import { post } from '@/utils/request'
 
 export function set<T>(req: Panel.userConfig) {
   return post<T>({

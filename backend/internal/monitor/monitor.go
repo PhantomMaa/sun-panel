@@ -50,7 +50,7 @@ type MemoryInfo struct {
 	UsedPercent float64 `json:"usedPercent"`
 }
 
-// 获取CPU信息
+// GetCPUInfo 获取CPU信息
 func GetCPUInfo() (CPUInfo, error) {
 	cpuInfoRes := CPUInfo{}
 	cpuInfo, err := cpu.Info()
@@ -82,9 +82,9 @@ func GetMemoryInfo() (MemoryInfo, error) {
 	return memoryInfo, err
 }
 
-// 获取每个磁盘分区使用情况
+// GetDiskInfo 获取每个磁盘分区使用情况
 func GetDiskInfo() ([]DiskInfo, error) {
-	disks := []DiskInfo{}
+	var disks []DiskInfo
 	// 获取所有磁盘分区的信息
 	partitions, err := disk.Partitions(true)
 	if err != nil {
@@ -128,9 +128,9 @@ func GetDiskInfoByPath(path string) (*DiskInfo, error) {
 	return &diskInfo, nil
 }
 
-// 获取网络统计信息
+// GetNetIOCountersInfo 获取网络统计信息
 func GetNetIOCountersInfo() ([]NetIOCountersInfo, error) {
-	netInfo := []NetIOCountersInfo{}
+	var netInfo []NetIOCountersInfo
 	netStats, err := net.IOCounters(true)
 	if err == nil {
 		for _, netStat := range netStats {
