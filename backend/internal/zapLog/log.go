@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"sun-panel/internal/common"
-	"sun-panel/internal/global"
 	"time"
 
 	"github.com/fatih/color"
@@ -62,15 +61,13 @@ func InitLog(runmode string, filePath string) (*zap.SugaredLogger, error) {
 	if runmode == "debug" {
 		level = zap.NewAtomicLevelAt(zap.DebugLevel)
 	} else {
-		level = global.LoggerLevel
+		level = zap.NewAtomicLevel() // 支持通过http以及配置文件动态修改日志级别
 	}
 
 	logger := InitLogger(runtimePath+"/"+filePath, level)
 	return logger, nil
 }
 
-// 控制台打印
-// Warning Panic Error Info Debug
 func Pln(prefix string, msg string) {
 	fmt.Printf(
 		"%s%s %s %s\n",
@@ -81,7 +78,7 @@ func Pln(prefix string, msg string) {
 	)
 }
 
-// 控制台打印，支持颜色
+// Print 控制台打印，支持颜色
 func Print(color, key, msg string) {
 	fmt.Printf(
 		"%s%s %s\n",

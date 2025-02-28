@@ -5,7 +5,6 @@ import (
 	"strings"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
-	"sun-panel/internal/cache"
 	"sun-panel/internal/common"
 	"sun-panel/internal/global"
 	"sun-panel/internal/jwt" // 新增jwt包导入
@@ -43,9 +42,6 @@ func (l LoginApi) Login(c *gin.Context) {
 		apiReturn.ErrorParamFomat(c, errMsg)
 		return
 	}
-
-	settings := cache.ApplicationSetting{}
-	global.SystemSetting.GetValueByInterface("system_application", &settings)
 
 	mUser := repository.User{}
 	var (
