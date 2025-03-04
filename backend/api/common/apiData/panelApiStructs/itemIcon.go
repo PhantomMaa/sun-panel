@@ -16,7 +16,7 @@ type ItemIconSaveSortRequest struct {
 }
 
 type ItemIconGetSiteFaviconReq struct {
-	Url string `json:"url"`
+	Url string `form:"url" json:"url"`
 }
 
 type ItemIconGetSiteFaviconResp struct {

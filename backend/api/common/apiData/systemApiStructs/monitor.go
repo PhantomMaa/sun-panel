@@ -1,5 +1,5 @@
 package systemApiStructs
 
 type MonitorGetDiskStateByPathReq struct {
-	Path string `json:"path"`
+	Path string `form:"path" json:"path"`
 }

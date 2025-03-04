@@ -3,18 +3,32 @@ package panel
 import (
 	"encoding/json"
 	"errors"
+	"github.com/gin-gonic/gin/binding"
+	"gorm.io/gorm"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/api/middleware"
 	"sun-panel/internal/common"
 	"sun-panel/internal/global"
 	"sun-panel/internal/repository"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"gorm.io/gorm"
 )
 
 type UserConfig struct {
+}
+
+func NewUserConfigRouter() *UserConfig {
+	return &UserConfig{}
+}
+
+func (a *UserConfig) InitRouter(router *gin.RouterGroup) {
+	r := router.Group("")
+	r.Use(middleware.JWTAuth())
+	{
+		r.POST("/panel/userConfig/set", a.Set)
+		r.GET("/panel/userConfig/get", a.Get)
+	}
 }
 
 func (a *UserConfig) Get(c *gin.Context) {

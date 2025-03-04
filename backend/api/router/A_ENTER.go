@@ -2,19 +2,35 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"sun-panel/api/router/panel"
+	"sun-panel/api/router/system"
 	"sun-panel/internal/global"
-	"sun-panel/internal/router/panel"
-	"sun-panel/internal/router/system"
 )
+
+func RouterArray() []IRouter {
+	return []IRouter{
+		system.NewAboutRouter(),
+		system.NewLoginRouter(),
+		system.NewFileRouter(),
+		system.NewUserRouter(),
+		system.NewModuleConfigRouter(),
+		system.NewMonitorRouter(),
+		system.NewNoticeRouter(),
+		panel.NewItemIconRouter(),
+		panel.NewItemIconGroupRouter(),
+		panel.NewUserConfigRouter(),
+		panel.NewUsersRouter(),
+	}
+}
 
 func InitRouters(addr string) error {
 	router := gin.Default()
 	rootRouter := router.Group("/")
 	routerGroup := rootRouter.Group("api")
 
-	// 接口
-	system.Init(routerGroup)
-	panel.Init(routerGroup)
+	for _, router := range RouterArray() {
+		router.InitRouter(routerGroup)
+	}
 
 	// WEB文件服务
 	if global.Config.GetValueString("base", "enable_static_server") == "true" {

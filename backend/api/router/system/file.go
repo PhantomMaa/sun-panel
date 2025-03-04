@@ -2,32 +2,48 @@ package system
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin/binding"
+	"gorm.io/gorm"
 	"net/http"
 	"path"
 	"strings"
 	"sun-panel/api/common/apiData/commonApiStructs"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/api/middleware"
 	"sun-panel/internal/common"
 	"sun-panel/internal/global"
 	"sun-panel/internal/repository"
-	"sun-panel/internal/storage"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
-	"gorm.io/gorm"
 )
 
 type FileApi struct {
-	storage   storage.RcloneStorage
 	urlPrefix string
 }
 
-func NewFileApi(s storage.RcloneStorage) *FileApi {
+func NewFileRouter() *FileApi {
 	return &FileApi{
-		storage:   s,
 		urlPrefix: global.Config.GetValueString("base", "url_prefix"),
+	}
+}
+
+func (a *FileApi) InitRouter(router *gin.RouterGroup) {
+	// 公共访问组，不需要 JWT 认证
+	public := router.Group("")
+	{
+		// S3 文件访问路由
+		public.GET("/file/s3/*filepath", a.GetS3File)
+	}
+
+	// 需要 JWT 认证的私有访问组
+	private := router.Group("")
+	private.Use(middleware.JWTAuth())
+	{
+		private.POST("/file/uploadImg", a.UploadImg)
+		private.POST("/file/deletes", a.Deletes)
+		private.GET("/file/getList", a.GetList)
 	}
 }
 
@@ -71,7 +87,7 @@ func (a *FileApi) UploadImg(c *gin.Context) {
 	}()
 
 	// 使用存储接口上传文件
-	filepath, err := a.storage.Upload(c.Request.Context(), src, fileName)
+	filepath, err := global.Storage.Upload(c.Request.Context(), src, fileName)
 	if err != nil {
 		global.Logger.Errorf("Failed to upload file: %v", err)
 		apiReturn.ErrorByCode(c, 1300)
@@ -131,7 +147,7 @@ func (a *FileApi) Deletes(c *gin.Context) {
 		}
 
 		for _, v := range files {
-			if err := a.storage.Delete(c.Request.Context(), v.Src); err != nil {
+			if err := global.Storage.Delete(c.Request.Context(), v.Src); err != nil {
 				global.Logger.Errorf("Failed to delete file %s: %v", v.Src, err)
 				return err
 			}
@@ -162,7 +178,7 @@ func (a *FileApi) GetS3File(c *gin.Context) {
 	}
 
 	// 从存储中读取文件
-	fileData, err := a.storage.Get(c, filepath)
+	fileData, err := global.Storage.Get(c, filepath)
 	if err != nil {
 		global.Logger.Errorf("Failed to get file %s: %v", filepath, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get file"})

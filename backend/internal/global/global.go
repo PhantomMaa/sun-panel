@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"sun-panel/internal/cache"
 	"sun-panel/internal/iniConfig"
+	"sun-panel/internal/storage"
 )
 
 // 构建时，通过 --ldflags 注入
@@ -19,4 +20,5 @@ var (
 	Db            *gorm.DB
 	SystemSetting *cache.SystemSetting
 	Monitor       *cache.Monitor
+	Storage       *storage.RcloneStorage
 )

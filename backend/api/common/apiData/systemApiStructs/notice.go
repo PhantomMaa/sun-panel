@@ -1,5 +1,5 @@
 package systemApiStructs
 
 type NoticeGetListByDisplayTypeReq struct {
-	DisplayType []int `json:"displayType"`
+	DisplayType []int `form:"displayType" json:"displayType"`
 }

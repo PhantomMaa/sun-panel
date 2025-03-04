@@ -2,15 +2,17 @@ package panel
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gorm.io/gorm"
 	"strings"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/api/middleware"
 	"sun-panel/internal/common"
 	"sun-panel/internal/global"
 	"sun-panel/internal/repository"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UsersApi struct {
@@ -19,6 +21,21 @@ type UsersApi struct {
 var (
 	ErrUsersApiAtLeastKeepOne = errors.New("at least keep one")
 )
+
+func NewUsersRouter() *UsersApi {
+	return &UsersApi{}
+}
+
+func (a UsersApi) InitRouter(router *gin.RouterGroup) {
+	rAdmin := router.Group("")
+	rAdmin.Use(middleware.JWTAuth(), middleware.AdminInterceptor)
+	{
+		rAdmin.POST("panel/users/create", a.Create)
+		rAdmin.GET("panel/users/getList", a.GetList)
+		rAdmin.POST("panel/users/update", a.Update)
+		rAdmin.POST("panel/users/deletes", a.Deletes)
+	}
+}
 
 func (a UsersApi) Create(c *gin.Context) {
 	param := repository.User{}

@@ -1,23 +1,40 @@
 package panel
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gorm.io/gorm"
 	"math"
 	"sun-panel/api/common/apiData/commonApiStructs"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/api/middleware"
 	"sun-panel/internal/global"
-	repository2 "sun-panel/internal/repository"
+	"sun-panel/internal/repository"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ItemIconGroup struct {
 }
 
+func NewItemIconGroupRouter() *ItemIconGroup {
+	return &ItemIconGroup{}
+}
+
+func (a *ItemIconGroup) InitRouter(router *gin.RouterGroup) {
+	r := router.Group("")
+	r.Use(middleware.JWTAuth())
+	{
+		r.POST("/panel/itemIconGroup/edit", a.Edit)
+		r.POST("/panel/itemIconGroup/deletes", a.Deletes)
+		r.POST("/panel/itemIconGroup/saveSort", a.SaveSort)
+		r.GET("/panel/itemIconGroup/getList", a.GetList)
+	}
+}
+
 func (a *ItemIconGroup) Edit(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	req := repository2.ItemIconGroup{}
+	req := repository.ItemIconGroup{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
@@ -32,7 +49,7 @@ func (a *ItemIconGroup) Edit(c *gin.Context) {
 		if req.Sort != 0 {
 			updateField = append(updateField, "Sort")
 		}
-		global.Db.Model(&repository2.ItemIconGroup{}).
+		global.Db.Model(&repository.ItemIconGroup{}).
 			Select(updateField).
 			Where("id=?", req.ID).Updates(&req)
 	} else {
@@ -45,7 +62,7 @@ func (a *ItemIconGroup) Edit(c *gin.Context) {
 
 func (a *ItemIconGroup) GetList(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	var groups []repository2.ItemIconGroup
+	var groups []repository.ItemIconGroup
 
 	err := global.Db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Order("sort ,created_at").Where("user_id=?", userInfo.ID).Find(&groups).Error; err != nil {
@@ -55,7 +72,7 @@ func (a *ItemIconGroup) GetList(c *gin.Context) {
 
 		// 判断分组是否为空，为空将自动创建默认分组
 		if len(groups) == 0 {
-			defaultGroup := repository2.ItemIconGroup{
+			defaultGroup := repository.ItemIconGroup{
 				Title:  "APP",
 				UserId: userInfo.ID,
 				Icon:   "material-symbols:ad-group-outline",
@@ -66,7 +83,7 @@ func (a *ItemIconGroup) GetList(c *gin.Context) {
 			}
 
 			// 并将当前账号下所有无分组的图标更新到当前组
-			if err := tx.Model(&repository2.ItemIcon{}).Where("user_id=?", userInfo.ID).Update("item_icon_group_id", defaultGroup.ID).Error; err != nil {
+			if err := tx.Model(&repository.ItemIcon{}).Where("user_id=?", userInfo.ID).Update("item_icon_group_id", defaultGroup.ID).Error; err != nil {
 				apiReturn.ErrorDatabase(c, err.Error())
 				return err
 			}
@@ -97,7 +114,7 @@ func (a *ItemIconGroup) Deletes(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 
 	var count int64
-	if err := global.Db.Model(&repository2.ItemIconGroup{}).Where(" user_id=?", userInfo.ID).Count(&count).Error; err != nil {
+	if err := global.Db.Model(&repository.ItemIconGroup{}).Where(" user_id=?", userInfo.ID).Count(&count).Error; err != nil {
 		apiReturn.ErrorDatabase(c, err.Error())
 		return
 	} else {
@@ -109,8 +126,8 @@ func (a *ItemIconGroup) Deletes(c *gin.Context) {
 	}
 
 	txErr := global.Db.Transaction(func(tx *gorm.DB) error {
-		mitemIcon := repository2.ItemIcon{}
-		if err := tx.Delete(&repository2.ItemIconGroup{}, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
+		mitemIcon := repository.ItemIcon{}
+		if err := tx.Delete(&repository.ItemIconGroup{}, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
 			return err
 		}
 
@@ -142,7 +159,7 @@ func (a *ItemIconGroup) SaveSort(c *gin.Context) {
 	transactionErr := global.Db.Transaction(func(tx *gorm.DB) error {
 		// 在事务中执行一些 db 操作（从这里开始，您应该使用 'tx' 而不是 'db'）
 		for _, v := range req.SortItems {
-			if err := tx.Model(&repository2.ItemIconGroup{}).Where("user_id=? AND id=?", userInfo.ID, v.Id).Update("sort", v.Sort).Error; err != nil {
+			if err := tx.Model(&repository.ItemIconGroup{}).Where("user_id=? AND id=?", userInfo.ID, v.Id).Update("sort", v.Sort).Error; err != nil {
 				// 返回任何错误都会回滚事务
 				return err
 			}

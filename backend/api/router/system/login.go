@@ -2,16 +2,16 @@ package system
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"strings"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/api/middleware"
 	"sun-panel/internal/common"
 	"sun-panel/internal/global"
-	"sun-panel/internal/jwt" // 新增jwt包导入
+	"sun-panel/internal/jwt"
 	"sun-panel/internal/repository"
-
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type LoginApi struct {
@@ -22,6 +22,22 @@ type LoginLoginVerify struct {
 	Password string `json:"password" validate:"required,max=50"`
 	VCode    string `json:"vcode" validate:"max=6"`
 	Email    string `json:"email"`
+}
+
+func NewLoginRouter() *LoginApi {
+	return &LoginApi{}
+}
+
+func (l *LoginApi) InitRouter(router *gin.RouterGroup) {
+	// 公开接口
+	router.POST("/login", l.Login)
+
+	// 需要认证的接口
+	authGroup := router.Group("")
+	authGroup.Use(middleware.JWTAuth())
+	{
+		authGroup.POST("/logout", l.Logout)
+	}
 }
 
 func (l *LoginApi) Login(c *gin.Context) {

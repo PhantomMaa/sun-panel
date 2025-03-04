@@ -2,7 +2,6 @@ package panel
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"gorm.io/gorm"
 	"net/url"
@@ -12,11 +11,14 @@ import (
 	"sun-panel/api/common/apiData/panelApiStructs"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/api/middleware"
 	"sun-panel/internal/common"
 	"sun-panel/internal/global"
 	"sun-panel/internal/repository"
 	"sun-panel/internal/siteFavicon"
 	"sun-panel/internal/storage"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ItemIcon struct {
@@ -25,10 +27,23 @@ type ItemIcon struct {
 
 var urlPrefix string
 
-func NewItemIcon(s storage.RcloneStorage) *ItemIcon {
+func NewItemIconRouter() *ItemIcon {
 	urlPrefix = global.Config.GetValueString("base", "url_prefix")
 	return &ItemIcon{
-		storage: s,
+		storage: *global.Storage,
+	}
+}
+
+func (a *ItemIcon) InitRouter(router *gin.RouterGroup) {
+	r := router.Group("")
+	r.Use(middleware.JWTAuth())
+	{
+		r.POST("/panel/itemIcon/edit", a.Edit)
+		r.POST("/panel/itemIcon/deletes", a.Deletes)
+		r.POST("/panel/itemIcon/saveSort", a.SaveSort)
+		r.POST("/panel/itemIcon/addMultiple", a.AddMultiple)
+		r.POST("/panel/itemIcon/getSiteFavicon", a.GetSiteFavicon)
+		r.GET("/panel/itemIcon/getListByGroupId", a.GetListByGroupId)
 	}
 }
 
@@ -96,17 +111,22 @@ func (a *ItemIcon) AddMultiple(c *gin.Context) {
 }
 
 func (a *ItemIcon) GetListByGroupId(c *gin.Context) {
-	req := repository.ItemIcon{}
+	type ParamsStruct struct {
+		ItemIconGroupId int `form:"itemIconGroupId" json:"itemIconGroupId"`
+	}
 
-	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
+	// 查询条件
+	param := ParamsStruct{}
+	if err := c.ShouldBind(&param); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
+		c.Abort()
 		return
 	}
 
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	var itemIcons []repository.ItemIcon
 
-	if err := global.Db.Order("sort ,created_at").Find(&itemIcons, "item_icon_group_id = ? AND user_id=?", req.ItemIconGroupId, userInfo.ID).Error; err != nil {
+	if err := global.Db.Order("sort ,created_at").Find(&itemIcons, "item_icon_group_id = ? AND user_id=?", param.ItemIconGroupId, userInfo.ID).Error; err != nil {
 		apiReturn.ErrorDatabase(c, err.Error())
 		return
 	}
@@ -185,11 +205,11 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 func (a *ItemIcon) GetSiteFavicon(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	req := panelApiStructs.ItemIconGetSiteFaviconReq{}
-
-	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
 		return
 	}
+
 	resp := panelApiStructs.ItemIconGetSiteFaviconResp{}
 	fullUrl := ""
 	if iconUrl, err := siteFavicon.GetOneFaviconURL(req.Url); err != nil {

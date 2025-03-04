@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
-	"sun-panel/api"
+	"sun-panel/api/router"
 	"sun-panel/internal/cache"
 	"sun-panel/internal/database"
 	"sun-panel/internal/global"
@@ -14,7 +14,6 @@ import (
 	"sun-panel/internal/jwt"
 	"sun-panel/internal/language"
 	"sun-panel/internal/repository"
-	"sun-panel/internal/router"
 	"sun-panel/internal/storage"
 	"sun-panel/internal/zapLog"
 	"time"
@@ -29,11 +28,6 @@ func main() {
 	err := InitApp(*configPath)
 	if err != nil {
 		log.Panicln("初始化错误:", err)
-	}
-
-	httpPort := global.Config.GetValueString("base", "http_port")
-	if err := router.InitRouters(":" + httpPort); err != nil {
-		panic(err)
 	}
 }
 
@@ -65,7 +59,7 @@ func InitApp(configPath string) error {
 	}
 
 	// 初始化存储系统
-	storageInstance, err := InitStorage(configPath)
+	global.Storage, err = InitStorage(configPath)
 	if err != nil {
 		return fmt.Errorf("storage initialization error: %w", err)
 	}
@@ -83,8 +77,11 @@ func InitApp(configPath string) error {
 		return fmt.Errorf("JWT initialization error: %w", err)
 	}
 
-	// 初始化API组件
-	api.InitApiGroup(storageInstance)
+	// 初始化路由
+	httpPort := global.Config.GetValueString("base", "http_port")
+	if err := router.InitRouters(":" + httpPort); err != nil {
+		panic(err)
+	}
 
 	return nil
 }
@@ -132,7 +129,8 @@ func InitStorage(configPath string) (*storage.RcloneStorage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	rcloneStorage, err := storage.NewRcloneStorage(ctx, configPath)
+	bucket := global.Config.GetValueString("rclone", "bucket")
+	rcloneStorage, err := storage.NewRcloneStorage(ctx, configPath, bucket)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize rclone storage: %w", err)
 	}

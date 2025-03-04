@@ -1,16 +1,33 @@
 package system
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/api/middleware"
 	"sun-panel/internal/common"
 	"sun-panel/internal/global"
 	"sun-panel/internal/repository"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UserApi struct{}
+
+func NewUserRouter() *UserApi {
+	return &UserApi{}
+}
+
+func (a *UserApi) InitRouter(router *gin.RouterGroup) {
+	r := router.Group("")
+	r.Use(middleware.JWTAuth())
+	{
+		r.GET("/user/getInfo", a.GetInfo)
+		r.POST("/user/updatePassword", a.UpdatePasssword)
+		r.POST("/user/updateInfo", a.UpdateInfo)
+		r.GET("/user/getAuthInfo", a.GetAuthInfo)
+	}
+}
 
 func (a *UserApi) GetInfo(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)

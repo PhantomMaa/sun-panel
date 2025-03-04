@@ -1,15 +1,30 @@
 package system
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"sun-panel/api/common/apiReturn"
 	"sun-panel/api/common/base"
+	"sun-panel/api/middleware"
 	"sun-panel/internal/global"
 	"sun-panel/internal/repository"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ModuleConfigApi struct{}
+
+func NewModuleConfigRouter() *ModuleConfigApi {
+	return &ModuleConfigApi{}
+}
+
+func (a *ModuleConfigApi) InitRouter(router *gin.RouterGroup) {
+	r := router.Group("")
+	r.Use(middleware.JWTAuth())
+	{
+		r.GET("/system/moduleConfig/getByName", a.GetByName)
+		r.POST("/system/moduleConfig/save", a.Save)
+	}
+}
 
 func (a *ModuleConfigApi) GetByName(c *gin.Context) {
 	req := repository.ModuleConfig{}

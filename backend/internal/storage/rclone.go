@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"path"
-	"sun-panel/internal/global"
 	"time"
 
 	"github.com/rclone/rclone/fs"
@@ -28,7 +27,8 @@ func loadConfig(configPath string) error {
 	}
 
 	section := configFile.Section("rclone")
-	global.Logger.Infof("loading rclone config : %+v", section.KeysHash())
+
+	fmt.Printf("loading rclone config : %+v", section.KeysHash())
 
 	for _, key := range section.Keys() {
 		rconfig.FileSetValue("rclone", key.Name(), key.Value())
@@ -37,21 +37,20 @@ func loadConfig(configPath string) error {
 }
 
 // NewRcloneStorage creates a new rclone storage instance
-func NewRcloneStorage(ctx context.Context, configPath string) (*RcloneStorage, error) {
+func NewRcloneStorage(ctx context.Context, configPath, bucket string) (*RcloneStorage, error) {
 	// 创建 rclone fs 实例
 	err := loadConfig(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
-	bucket := global.Config.GetValueString("rclone", "bucket")
 	pathName := fmt.Sprintf("rclone:%s", bucket)
 	f, err := fs.NewFs(ctx, pathName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create rclone fs: %w", err)
 	}
 
-	global.Logger.Info("Rclone storage initialized successfully")
+	fmt.Println("Rclone storage initialized successfully")
 	return &RcloneStorage{
 		fs: f,
 	}, nil
@@ -59,7 +58,7 @@ func NewRcloneStorage(ctx context.Context, configPath string) (*RcloneStorage, e
 
 // Upload implements Storage.Upload for rclone
 func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName string) (string, error) {
-	global.Logger.Infof("Uploading file via S3: %s", fileName)
+	fmt.Printf("Uploading file via S3: %s", fileName)
 	// 一定要检查 bucket 是否存在，避免 BucketAlreadyExists
 	_, err := r.fs.List(ctx, "")
 	if err != nil {
@@ -77,13 +76,13 @@ func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName s
 
 	// Generate URL
 	url := path.Join(obj.Remote())
-	global.Logger.Infof("Successfully uploaded file: %s", url)
+	fmt.Printf("Successfully uploaded file: %s", url)
 	return url, nil
 }
 
 // Delete implements Storage.Delete for rclone
 func (r *RcloneStorage) Delete(ctx context.Context, path string) error {
-	global.Logger.Infof("Deleting file: %s", path)
+	fmt.Printf("Deleting file: %s", path)
 
 	// Find the object
 	obj, err := r.fs.NewObject(ctx, path)
@@ -97,7 +96,7 @@ func (r *RcloneStorage) Delete(ctx context.Context, path string) error {
 		return fmt.Errorf("failed to delete file: %w", err)
 	}
 
-	global.Logger.Infof("Successfully deleted file: %s", path)
+	fmt.Printf("Successfully deleted file: %s", path)
 	return nil
 }
 
@@ -114,13 +113,17 @@ func (r *RcloneStorage) Get(ctx context.Context, path string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open object: %w", err)
 	}
-	defer reader.Close()
+	defer func() {
+		if err := reader.Close(); err != nil {
+			_ = fmt.Errorf("failed to close reader: %v", err)
+		}
+	}()
 
 	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read object: %w", err)
 	}
 
-	global.Logger.Infof("Successfully read file: %s", path)
+	fmt.Printf("Successfully read file: %s", path)
 	return data, nil
 }
