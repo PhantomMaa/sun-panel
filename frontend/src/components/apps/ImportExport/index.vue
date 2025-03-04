@@ -3,13 +3,13 @@ import { onMounted, ref } from 'vue'
 import type { UploadFileInfo } from 'naive-ui'
 import { NAlert, NButton, NCheckbox, NCheckboxGroup, NDivider, NInput, NSpace, NUpload, useMessage } from 'naive-ui'
 import { RoundCardModal, SvgIcon } from '../../common'
-import type { IconGroup, ImportJsonResult } from '../../../utils/jsonImportExport'
-import { ConfigVersionLowError, FormatError, exportJson, importJsonString } from '../../../utils/jsonImportExport'
-import { get as getAbout } from '../../../api/system/about'
 import { edit as addGroup, getList as getGroupList } from '../../../api/panel/itemIconGroup'
 import { addMultiple as addMultipleIcons, getListByGroupId } from '../../../api/panel/itemIcon'
+import type { IconGroup, ImportJsonResult } from '@/utils/jsonImportExport'
+import { ConfigVersionLowError, FormatError, exportJson, importJsonString } from '@/utils/jsonImportExport'
+import { getAbout } from '@/api/system/about'
 
-import { t } from '../../../locales'
+import { t } from '@/locales'
 
 interface ItemGroup extends Panel.ItemIconGroup {
   items?: Panel.ItemInfo[]

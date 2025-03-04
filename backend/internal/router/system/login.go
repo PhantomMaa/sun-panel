@@ -3,12 +3,12 @@ package system
 import (
 	"github.com/gin-gonic/gin"
 	"sun-panel/api/middleware"
-	api_v1 "sun-panel/api/system"
+	"sun-panel/api/system"
 )
 
 // InitLogin 初始化登录相关路由
 func InitLogin(router *gin.RouterGroup) {
-	loginApi := api_v1.LoginApi{}
+	loginApi := system.LoginApi{}
 
 	// 公开接口
 	router.POST("/login", loginApi.Login)

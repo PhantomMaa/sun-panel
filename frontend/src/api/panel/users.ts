@@ -1,4 +1,6 @@
-import { post } from '../../utils/request'
+import { get, post } from '@/utils/request'
+
+// For admin to manage users
 
 export function edit<T>(param: User.Info) {
   let url = '/panel/users/create'
@@ -11,9 +13,8 @@ export function edit<T>(param: User.Info) {
   })
 }
 
-// 用户相关
 export function getList<T>(param: AdminUserManage.GetListRequest) {
-  return post<T>({
+  return get<T>({
     url: '/panel/users/getList',
     data: param,
   })
@@ -23,18 +24,5 @@ export function deletes<T>(userIds: number[]) {
   return post<T>({
     url: '/panel/users/deletes',
     data: { userIds },
-  })
-}
-
-export function getPublicVisitUser<T>() {
-  return post<T>({
-    url: '/panel/users/getPublicVisitUser',
-  })
-}
-
-export function setPublicVisitUser<T>(userId: number | null) {
-  return post<T>({
-    url: '/panel/users/setPublicVisitUser',
-    data: { userId },
   })
 }

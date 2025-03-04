@@ -4,7 +4,7 @@ import type { FormInst, FormRules } from 'naive-ui'
 import { NButton, NForm, NFormItem, NInput, NSelect, useMessage } from 'naive-ui'
 import { edit as userManageEdit } from '../../../../api/panel/users'
 import { RoundCardModal } from '../../../common'
-import { t } from '../../../../locales'
+import { t } from '@/locales'
 
 interface Props {
   visible: boolean

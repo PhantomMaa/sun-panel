@@ -44,7 +44,6 @@ func (a *ItemIconGroup) Edit(c *gin.Context) {
 }
 
 func (a *ItemIconGroup) GetList(c *gin.Context) {
-
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	var groups []repository2.ItemIconGroup
 
@@ -94,6 +93,7 @@ func (a *ItemIconGroup) Deletes(c *gin.Context) {
 		apiReturn.ErrorParamFomat(c, err.Error())
 		return
 	}
+
 	userInfo, _ := base.GetCurrentUserInfo(c)
 
 	var count int64

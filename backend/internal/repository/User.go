@@ -4,7 +4,6 @@ import (
 	"errors"
 )
 
-// 用户表
 type User struct {
 	BaseModel
 	Username  string `gorm:"type:varchar(255);uniqueIndex" json:"username"` // 账号
@@ -18,28 +17,24 @@ type User struct {
 	UserId    uint   `gorm:"-"  json:"userId"`
 }
 
-// 获取用户信息
 func (m *User) GetUserInfoByUid(uid uint) (User, error) {
 	mUser := User{}
 	err := Db.Where("id=?", uid).First(&mUser).Error
 	return mUser, err
 }
 
-// 根据用户名和密码查询用户
 func (m *User) GetUserInfoByUsernameAndPassword(username, password string) (User, error) {
 	userInfo := User{}
 	err := Db.Where("username=?", username).Where("password=?", password).First(&userInfo).Error
 	return userInfo, err
 }
 
-// 根据用户名查询用户
 func (m *User) GetUserInfoByUsername(username string) (User, error) {
 	mUser := User{}
 	err := Db.Where("username=?", username).First(&mUser).Error
 	return mUser, err
 }
 
-// 根据邮箱查询用户
 func (m *User) GetUserInfoByMail() *User {
 	mUser := User{}
 	if Db.Where("mail=?", m.Mail).First(&mUser).Error != nil {
@@ -48,16 +43,7 @@ func (m *User) GetUserInfoByMail() *User {
 	return &mUser
 }
 
-// 根据token查询用户
-func (m *User) GetUserInfoByToken(userToken string) (User, error) {
-	mUser := User{}
-	err := Db.Where("token=?", userToken).First(&mUser).Error
-	return mUser, err
-}
-
-// 更新用户基于id
-// 支持：name,autograph,header_image,status,role,mail,token,password,username,gender
-func (m *User) UpdateUserInfoByUserId(user_id uint, updateInfo map[string]interface{}) error {
+func (m *User) UpdateUserInfoByUserId(userId uint, updateInfo map[string]interface{}) error {
 	mUser := User{}
 
 	data := map[string]interface{}{}
@@ -80,7 +66,7 @@ func (m *User) UpdateUserInfoByUserId(user_id uint, updateInfo map[string]interf
 	if v, ok := updateInfo["mail"]; ok {
 		hasUser := User{}
 		count := Db.Where("mail=?", updateInfo["mail"]).First(&hasUser).RowsAffected
-		if count != 0 && hasUser.ID != user_id {
+		if count != 0 && hasUser.ID != userId {
 			return errors.New("the mail already exists")
 		}
 		data["mail"] = v
@@ -88,7 +74,7 @@ func (m *User) UpdateUserInfoByUserId(user_id uint, updateInfo map[string]interf
 	if v, ok := updateInfo["username"]; ok {
 		hasUser := User{}
 		count := Db.Where("username=?", updateInfo["username"]).First(&hasUser).RowsAffected
-		if count != 0 && hasUser.ID != user_id {
+		if count != 0 && hasUser.ID != userId {
 			return errors.New("the username already exists")
 		}
 		data["username"] = v
@@ -97,43 +83,15 @@ func (m *User) UpdateUserInfoByUserId(user_id uint, updateInfo map[string]interf
 		data["password"] = v
 	}
 
-	err := Db.Model(&mUser).Where("id=?", user_id).Updates(data).Error
-
+	err := Db.Model(&mUser).Where("id=?", userId).Updates(data).Error
 	return err
 }
 
-// 添加一个
 func (m *User) CreateOne() (User, error) {
 	err := Db.Create(m).Error
 	return *m, err
 }
 
-// 验证是否有重复的用户名或者邮箱
-func (m *User) CheckMailAndUsername(mail, username string) error {
-	hasUser := User{}
-	count := Db.Where("mail=?", mail).First(&hasUser).RowsAffected
-	if count != 0 {
-		return errors.New("该邮箱已被注册")
-	}
-
-	count = Db.Where("username=?", username).First(&hasUser).RowsAffected
-	if count != 0 {
-		return errors.New("该用户名已被注册")
-	}
-	return nil
-}
-
-// 验证是否有重复的用户名或者邮箱
-func (m *User) CheckMailExist(mail string) (User, error) {
-	hasUser := User{}
-	count := Db.Where("mail=?", mail).First(&hasUser).RowsAffected
-	if count != 0 {
-		return hasUser, errors.New("该邮箱已被注册")
-	}
-	return hasUser, nil
-}
-
-// 验证是否有重复的用户名或者邮箱
 func (m *User) CheckUsernameExist(username string) (User, error) {
 	hasUser := User{}
 	count := Db.Where("username=?", username).First(&hasUser).RowsAffected
@@ -142,13 +100,3 @@ func (m *User) CheckUsernameExist(username string) (User, error) {
 	}
 	return hasUser, nil
 }
-
-// // 根据用户名和密码查询用户
-// func (m *User) CreateUser(uid uint) *User {
-// 	mUser := User{}
-// 	if Db.Where("id=?", uid).First(&mUser).Error != nil {
-// 		return nil
-// 	} else {
-// 		return &mUser
-// 	}
-// }

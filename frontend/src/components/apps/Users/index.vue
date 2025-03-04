@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import { h, onMounted, reactive, ref } from 'vue'
+import {h, onMounted, reactive, ref} from 'vue'
 import { NAlert, NButton, NDataTable, NDropdown, NTag, useDialog, useMessage } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
-import EditUser from './EditUser/index.vue'
-import { getPublicVisitUser, setPublicVisitUser, deletes as usersDeletes, getList as usersGetList } from '../../../api/panel/users'
+import { deletes as usersDeletes, getList as usersGetList } from '../../../api/panel/users'
 import { SvgIcon } from '../../common'
-import { useAuthStore } from '../../../store'
-import { t } from '../../../locales'
-import { AdminAuthRole } from '../../../enums/admin'
+import EditUser from './EditUser/index.vue'
+import { useAuthStore } from '@/store'
+import { t } from '@/locales'
+import { AdminAuthRole } from '@/enums/admin'
 
 const message = useMessage()
 const authStore = useAuthStore()
@@ -16,7 +16,6 @@ const editUserDialogShow = ref<boolean>(false)
 const keyWord = ref<string>()
 const editUserUserInfo = ref<User.Info>()
 const dialog = useDialog()
-const publicVisitUserId = ref<number | null>(null)
 
 const createColumns = ({
   update,
@@ -28,13 +27,9 @@ const createColumns = ({
       title: t('common.username'),
       key: 'username',
       render(row: User.Info) {
-        let publicVisitHtml = ''
-        if (publicVisitUserId.value && publicVisitUserId.value === row.id)
-          publicVisitHtml = `[${t('adminSettingUsers.pblicText')}]-`
-
         if (row.username === authStore.userInfo?.username)
-          return `${publicVisitHtml}${row.username} (${t('adminSettingUsers.currentUseUsername')})`
-        return publicVisitHtml + row.username
+          return `${row.username} (${t('adminSettingUsers.currentUseUsername')})`
+        return row.username
       },
     },
     {
@@ -84,22 +79,6 @@ const createColumns = ({
               case 'update':
                 update(row)
                 break
-              case 'publicMode':
-                // 取消
-                if (publicVisitUserId.value && publicVisitUserId.value === row.id) {
-                  setPublicVisitUser(null).then(({ code }) => {
-                    if (code === 0)
-                      publicVisitUserId.value = null
-                  })
-                }
-                else {
-                // 设置
-                  setPublicVisitUser(row.id as number).then(({ code }) => {
-                    if (code === 0)
-                      publicVisitUserId.value = row.id as number
-                  })
-                }
-                break
               case 'delete':
                 dialog.warning({
                   title: t('common.warning'),
@@ -120,10 +99,6 @@ const createColumns = ({
             {
               label: t('common.edit'),
               key: 'update',
-            },
-            {
-              label: t('adminSettingUsers.setOrUnsetPublicMode'),
-              key: 'publicMode',
             },
             {
               label: t('common.delete'),
@@ -200,14 +175,11 @@ async function deletes(ids: number[]) {
   const { code } = await usersDeletes(ids)
   if (code === 0) {
     message.success(t('common.deleteSuccess'))
-    getList(null)
+    await getList(null)
   }
 }
 
 onMounted(() => {
-  getPublicVisitUser<User.Info>().then(({ data }) => {
-    publicVisitUserId.value = data.id || null
-  })
   getList(null)
 })
 </script>

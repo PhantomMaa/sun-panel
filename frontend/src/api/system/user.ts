@@ -1,13 +1,9 @@
-import { post } from '../../utils/request'
+import {get, post} from '@/utils/request'
 
-// export function getInfo<T>() {
-//   return post<T>({
-//     url: '/user/getInfo',
-//   })
-// }
+// For current user, update himself info
 
 export function getAuthInfo<T>() {
-  return post<T>({
+  return get<T>({
     url: '/user/getAuthInfo',
   })
 }

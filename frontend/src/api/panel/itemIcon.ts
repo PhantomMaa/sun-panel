@@ -1,4 +1,4 @@
-import { post } from '@/utils/request'
+import { get, post } from '@/utils/request'
 
 export function addMultiple<T>(req: Panel.ItemInfo[]) {
   return post<T>({
@@ -22,7 +22,7 @@ export function edit<T>(req: Panel.ItemInfo) {
 // }
 
 export function getListByGroupId<T>(itemIconGroupId: number | undefined) {
-  return post<T>({
+  return get<T>({
     url: '/panel/itemIcon/getListByGroupId',
     data: { itemIconGroupId },
   })

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { NDivider, NGradientText, NTag } from 'naive-ui'
 import { onMounted, ref } from 'vue'
-import { get } from '../../../api/system/about'
-import { useAppStore } from '../../../store'
 import srcSvglogo from '../../../assets/logo.svg'
 import srcGitee from '../../../assets/about_image/gitee.png'
 import srcGithub from '../../../assets/about_image/github.png'
@@ -11,6 +9,8 @@ import srcBilibili from '../../../assets/about_image/bilibili.png'
 import srcYoutube from '../../../assets/about_image/youtube.png'
 import srcQQGroupQR from '../../../assets/about_image/qq_group_qr2.png'
 import { RoundCardModal } from '../../common'
+import { getAbout } from '@/api/system/about'
+import { useAppStore } from '@/store'
 
 interface Version {
   versionName: string
@@ -22,7 +22,7 @@ const qqGroupQRShow = ref(false)
 const frontVersion = import.meta.env.VITE_APP_VERSION || 'unknown'
 
 onMounted(() => {
-  get<Version>().then((res) => {
+  getAbout<Version>().then((res) => {
     if (res.code === 0)
       versionName.value = res.data.versionName
   })

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"encoding/json"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -17,7 +18,7 @@ type ModuleConfig struct {
 func (m *ModuleConfig) GetConfigByUserIdAndName(db *gorm.DB, userId uint, name string) (map[string]interface{}, error) {
 	cfg := ModuleConfig{}
 	if err := db.First(&cfg, "user_id=? AND name=?", userId, name).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		} else {
 			return nil, err
@@ -42,7 +43,7 @@ func (m *ModuleConfig) Save(db *gorm.DB) error {
 
 	// 保存操作
 	if err := db.First(&ModuleConfig{}, "user_id=? AND name=?", m.UserId, m.Name).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// 新增
 			if err := db.Create(&m).Error; err != nil {
 				return err

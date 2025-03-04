@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { defaultState, defaultStatePanelConfig, getLocalState, removeLocalState, setLocalState } from './helper'
-import { router } from '../../../router'
-import type { PanelStateNetworkModeEnum } from '../../../enums'
-import { get as getUserConfig } from '../../../api/panel/userConfig'
+import { getUserConfig } from '@/api/panel/userConfig'
+import { router } from '@/router'
+import type { PanelStateNetworkModeEnum } from '@/enums'
 export const usePanelState = defineStore('panel', {
   state: (): Panel.State => getLocalState() || defaultState(),
 

@@ -13,7 +13,6 @@
     "passwordPlaceholder": "Enter password",
     "pblicText": "Public",
     "role": "Role",
-    "setOrUnsetPublicMode": "Set/Unset public access",
     "userCountText": "Total {count} users"
   },
   "api": {
@@ -26,6 +25,7 @@
     "1005": "Currently no permission to operate",
     "1006": "Account does not exist",
     "1007": "Old password error",
+    "1008": "Account already exists",
     "1200": "database error",
     "1201": "Please keep at least one",
     "1202": "Data record not found",

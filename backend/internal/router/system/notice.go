@@ -6,7 +6,6 @@ import (
 )
 
 func InitNoticeRouter(router *gin.RouterGroup) {
-	api := api.ApiGroupApp.ApiSystem.NoticeApi
-
-	router.POST("/notice/getListByDisplayType", api.GetListByDisplayType)
+	noticeApi := api.ApiGroupApp.ApiSystem.NoticeApi
+	router.POST("/notice/getListByDisplayType", noticeApi.GetListByDisplayType)
 }

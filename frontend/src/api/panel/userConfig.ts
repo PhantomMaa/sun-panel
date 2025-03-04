@@ -1,4 +1,4 @@
-import { post } from '@/utils/request'
+import { get, post } from '@/utils/request'
 
 export function set<T>(req: Panel.userConfig) {
   return post<T>({
@@ -7,8 +7,8 @@ export function set<T>(req: Panel.userConfig) {
   })
 }
 
-export function get<T>() {
-  return post<T>({
+export function getUserConfig<T>() {
+  return get<T>({
     url: '/panel/userConfig/get',
   })
 }

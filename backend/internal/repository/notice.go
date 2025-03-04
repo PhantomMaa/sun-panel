@@ -1,10 +1,5 @@
 package repository
 
-const (
-	NOTICE_DISPLAY_TYPE_LOGIN = iota + 1 // 通知展示类型 登录页
-	NOTICE_DISPLAY_TYPE_HOME             // 通知展示类型 首页
-)
-
 type Notice struct {
 	BaseModel
 	Title       string `gorm:"type:varchar(255)" json:"title"`

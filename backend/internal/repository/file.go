@@ -9,7 +9,6 @@ type File struct {
 	Ext      string `gorm:"varchar(255)" json:"ext"`      // 扩展名
 }
 
-// 添加一个文件记录
 func (m *File) AddFile(userId uint, fileName, ext, src string) (File, error) {
 	file := File{
 		UserId:   userId,

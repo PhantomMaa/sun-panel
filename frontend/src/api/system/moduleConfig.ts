@@ -1,7 +1,7 @@
-import { post } from '../../utils/request'
+import { get, post } from '@/utils/request'
 
 export function getValueByName<T>(name: string) {
-  return post<T>({
+  return get<T>({
     url: '/system/moduleConfig/getByName',
     data: { name },
   })

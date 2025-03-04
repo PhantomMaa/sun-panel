@@ -17,12 +17,10 @@ func ApiReturn(ctx *gin.Context, code int, msg string, data interface{}) {
 	ctx.JSON(200, returnData)
 }
 
-// 返回成功
 func SuccessData(ctx *gin.Context, data interface{}) {
 	ApiReturn(ctx, 0, "OK", data)
 }
 
-// 返回列表
 func SuccessListData(ctx *gin.Context, list interface{}, count int64) {
 	ApiReturn(ctx, 0, "OK", gin.H{
 		"list":  list,
@@ -30,12 +28,10 @@ func SuccessListData(ctx *gin.Context, list interface{}, count int64) {
 	})
 }
 
-// 返回成功，没有data数据
 func Success(ctx *gin.Context) {
 	ApiReturn(ctx, 0, "OK", nil)
 }
 
-// 返回列表数据
 func ListData(ctx *gin.Context, list interface{}, count int64) {
 	data := map[string]interface{}{
 		"list":  list,
@@ -92,7 +88,6 @@ func ErrorDatabase(ctx *gin.Context, errMsg string) {
 
 // 返回错误 数据记录未找到
 func ErrorDataNotFound(ctx *gin.Context) {
-	// ErrorCode(ctx, ERROR_CODE_DATA_RECORD_NOT_FOUND, "未找到数据记录", nil)
 	ErrorByCode(ctx, -1)
 }
 

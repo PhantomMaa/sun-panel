@@ -56,7 +56,6 @@ func validateInputStruct(params interface{}) (errMsg string, err error) {
 	return
 }
 
-// 验证输入是否有效并返回错误
 func ValidateInputStruct(params interface{}) (errMsg string, err error) {
 	return validateInputStruct(params)
 }
@@ -84,7 +83,6 @@ func GetCurrentUserInfo(c *gin.Context) (userInfo repository.User, exist bool) {
 	return
 }
 
-// 获取当前访问模式
 func GetCurrentVisitMode(c *gin.Context) (visitMode int) {
 	if value, exist := c.Get(GIN_GET_VISIT_MODE); exist {
 		if v, ok := value.(int); ok {

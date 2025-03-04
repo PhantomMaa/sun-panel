@@ -7,10 +7,6 @@ import (
 	"sun-panel/internal/repository"
 )
 
-const (
-	PanelPublicUserId = "panel_public_user_id" // 公开访问模式用户id *uint|null
-)
-
 type SystemSetting struct {
 	Cache Cacher[interface{}]
 }

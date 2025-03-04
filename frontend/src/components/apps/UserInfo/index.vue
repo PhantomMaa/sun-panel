@@ -2,14 +2,14 @@
 import type { FormInst, FormRules } from 'naive-ui'
 import { NButton, NCard, NDivider, NForm, NFormItem, NInput, NSelect, useDialog, useMessage } from 'naive-ui'
 import { ref } from 'vue'
-import { useAppStore, useAuthStore, usePanelState, useUserStore } from '../../../store'
-import { languageOptions } from '../../../utils/defaultData'
-import type { Language, Theme } from '../../../store/modules/app/helper'
-import { logout } from '../../../api'
 import { RoundCardModal, SvgIcon } from '../../common'
-import { updateInfo, updatePassword } from '../../../api/system/user'
-import { updateLocalUserInfo } from '../../../utils/cmn'
-import { t } from '../../../locales'
+import { useAppStore, useAuthStore, usePanelState, useUserStore } from '@/store'
+import { languageOptions } from '@/utils/defaultData'
+import type { Language, Theme } from '@/store/modules/app/helper'
+import { logout } from '@/api'
+import { updateInfo, updatePassword } from '@/api/system/user'
+import { updateLocalUserInfo } from '@/utils/cmn'
+import { t } from '@/locales'
 
 const userStore = useUserStore()
 const authStore = useAuthStore()

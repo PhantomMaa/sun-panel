@@ -2,16 +2,17 @@ import moment from 'moment'
 import { h } from 'vue'
 import type { NotificationReactive } from 'naive-ui'
 import { NButton, createDiscreteApi } from 'naive-ui'
-import { useAuthStore, useNoticeStore, useUserStore } from '../../store'
-import { getAuthInfo } from '../../api/system/user'
-import type { VisitMode } from '../../enums/auth'
 import { getListByDisplayType as getListByDisplayTypeApi } from '../../api/notice'
+import { useAuthStore, useNoticeStore, useUserStore } from '@/store'
+import { getAuthInfo } from '@/api/system/user'
+import type { VisitMode } from '@/enums/auth'
 
 const noticeStore = useNoticeStore()
 const userStore = useUserStore()
 const authStore = useAuthStore()
 
 const { notification } = createDiscreteApi(['notification'])
+
 /**
  * 生成指定时间格式
  * @param format 时间格式 默认：'YYYY-MM-DD HH:mm:ss'
@@ -30,7 +31,7 @@ export function timeFormat(timeString?: string) {
 
 /**
  * 创建新的公告
- * @param timeString
+ * @param info
  */
 export function noticeCreate(info: Notice.NoticeInfo) {
   const option: any = {
@@ -101,7 +102,6 @@ export function getTitle(titile: string) {
   document.title = titile
 }
 
-//
 export async function updateLocalUserInfo() {
   interface Req {
     user: User.Info

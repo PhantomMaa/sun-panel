@@ -19,16 +19,15 @@ import (
 	"gorm.io/gorm"
 )
 
-var urlPrefix string
-
 type FileApi struct {
-	storage storage.RcloneStorage
+	storage   storage.RcloneStorage
+	urlPrefix string
 }
 
 func NewFileApi(s storage.RcloneStorage) *FileApi {
-	urlPrefix = global.Config.GetValueString("base", "url_prefix")
 	return &FileApi{
-		storage: s,
+		storage:   s,
+		urlPrefix: global.Config.GetValueString("base", "url_prefix"),
 	}
 }
 
@@ -90,7 +89,7 @@ func (a *FileApi) UploadImg(c *gin.Context) {
 
 	global.Logger.Infof("Successfully uploaded file %s to %s", f.Filename, filepath)
 	apiReturn.SuccessData(c, gin.H{
-		"imageUrl": urlPrefix + filepath,
+		"imageUrl": a.urlPrefix + filepath,
 	})
 }
 
@@ -106,7 +105,7 @@ func (a *FileApi) GetList(c *gin.Context) {
 	var data []map[string]interface{}
 	for _, v := range list {
 		data = append(data, map[string]interface{}{
-			"src":        urlPrefix + v.Src,
+			"src":        a.urlPrefix + v.Src,
 			"fileName":   v.FileName,
 			"id":         v.ID,
 			"createTime": v.CreatedAt,

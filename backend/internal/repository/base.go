@@ -21,16 +21,16 @@ type BaseModelNoId struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
-// 分页的结构体
+// PageLimitStruct 分页的结构体
 type PageLimitStruct struct {
 	PageSize  int `gorm:"-"`
 	LimitSize int `gorm:"-"`
 }
 
 // 计算分页
-func calcPage(page_size, limit_size int) (offset, limit int) {
-	offset = limit_size * (page_size - 1)
-	limit = limit_size
+func calcPage(pageSize, limitSize int) (offset, limit int) {
+	offset = limitSize * (pageSize - 1)
+	limit = limitSize
 	return
 }
 

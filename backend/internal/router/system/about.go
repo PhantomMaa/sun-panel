@@ -8,6 +8,6 @@ import (
 func InitAbout(router *gin.RouterGroup) {
 	about := api.ApiGroupApp.ApiSystem.About
 	{
-		router.POST("about", about.Get)
+		router.GET("about", about.Get)
 	}
 }

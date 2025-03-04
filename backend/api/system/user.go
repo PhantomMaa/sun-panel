@@ -38,7 +38,6 @@ func (a *UserApi) GetAuthInfo(c *gin.Context) {
 	})
 }
 
-// 修改资料
 func (a *UserApi) UpdateInfo(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	type UpdateUserInfoStruct struct {
@@ -69,7 +68,6 @@ func (a *UserApi) UpdateInfo(c *gin.Context) {
 	apiReturn.Success(c)
 }
 
-// 修改密码
 func (a *UserApi) UpdatePasssword(c *gin.Context) {
 	type UpdatePasssStruct struct {
 		OldPassword string `json:"oldPassword"`
@@ -83,18 +81,22 @@ func (a *UserApi) UpdatePasssword(c *gin.Context) {
 		apiReturn.ErrorParamFomat(c, err.Error())
 		return
 	}
+
 	userInfo, _ := base.GetCurrentUserInfo(c)
+
 	mUser := repository.User{}
-	if v, err := mUser.GetUserInfoByUid(userInfo.ID); err != nil {
+	vUser, err := mUser.GetUserInfoByUid(userInfo.ID)
+	if err != nil {
 		apiReturn.ErrorParamFomat(c, err.Error())
 		return
-	} else {
-		if v.Password != common.PasswordEncryption(params.OldPassword) {
-			// 旧密码不正确
-			apiReturn.ErrorByCode(c, 1007)
-			return
-		}
 	}
+
+	if vUser.Password != common.PasswordEncryption(params.OldPassword) {
+		// 旧密码不正确
+		apiReturn.ErrorByCode(c, 1007)
+		return
+	}
+
 	res := global.Db.Model(&repository.User{}).Where("id", userInfo.ID).Updates(map[string]interface{}{
 		"password": common.PasswordEncryption(params.NewPassword),
 		"token":    "",
@@ -103,5 +105,6 @@ func (a *UserApi) UpdatePasssword(c *gin.Context) {
 		apiReturn.ErrorDatabase(c, res.Error.Error())
 		return
 	}
+
 	apiReturn.Success(c)
 }

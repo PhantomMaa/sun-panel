@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 	"sun-panel/internal/common"
-	repository2 "sun-panel/internal/repository"
+	"sun-panel/internal/repository"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -26,7 +26,6 @@ const (
 
 type DbClient interface {
 	Connect() (db *gorm.DB, err error)
-	InitDatabase(db *gorm.DB) (err error)
 }
 
 type MySQLConfig struct {
@@ -48,7 +47,7 @@ func DbInit(dbClient DbClient) (db *gorm.DB, dbErr error) {
 		return
 	}
 
-	dbErr = dbClient.InitDatabase(db)
+	dbErr = initDatabase(db)
 	if dbErr != nil {
 		return nil, fmt.Errorf("database CreateDatabase error, %w", dbErr)
 	}
@@ -66,6 +65,8 @@ func (d *MySQLConfig) Connect() (db *gorm.DB, err error) {
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	sqlDb, _ := db.DB()
+	db.Set("gorm:table_options", "ENGINE=InnoDB")
+
 	sqlDb.SetMaxIdleConns(10)                                                 // SetMaxIdleConns 设置空闲连接池中连接的最大数量
 	sqlDb.SetMaxOpenConns(100)                                                // SetMaxOpenConns 设置打开数据库连接的最大数量。
 	sqlDb.SetConnMaxLifetime(time.Duration(d.WaitTimeout * int(time.Second))) // SetConnMaxLifetime 设置了连接可复用的最大时间。
@@ -78,7 +79,6 @@ func (d *SQLiteConfig) Connect() (db *gorm.DB, err error) {
 	if exists, err = common.PathExists(path.Dir(filePath)); err != nil {
 		return
 	} else {
-		// 创建文件夹
 		if !exists {
 			if err = os.MkdirAll(path.Dir(filePath), 0700); err != nil {
 				return
@@ -96,25 +96,19 @@ func (d *SQLiteConfig) Connect() (db *gorm.DB, err error) {
 	return
 }
 
-func (d *MySQLConfig) InitDatabase(db *gorm.DB) (err error) {
-	db = db.Set("gorm:table_options", "ENGINE=InnoDB")
-
+func initDatabase(db *gorm.DB) (err error) {
 	// 创建数据表
 	err = db.AutoMigrate(
-		&repository2.User{},
-		&repository2.SystemSetting{},
-		&repository2.ItemIcon{},
-		&repository2.UserConfig{},
-		&repository2.File{},
-		&repository2.ItemIconGroup{},
-		&repository2.ModuleConfig{},
+		&repository.User{},
+		&repository.SystemSetting{},
+		&repository.ItemIcon{},
+		&repository.UserConfig{},
+		&repository.File{},
+		&repository.ItemIconGroup{},
+		&repository.ModuleConfig{},
 	)
 
 	return err
-}
-
-func (d *SQLiteConfig) InitDatabase(db *gorm.DB) (err error) {
-	return
 }
 
 func GetLogger() logger.Interface {
@@ -131,7 +125,7 @@ func GetLogger() logger.Interface {
 }
 
 func NotFoundAndCreateUser(db *gorm.DB) error {
-	fUser := repository2.User{}
+	fUser := repository.User{}
 	if err := db.First(&fUser).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err

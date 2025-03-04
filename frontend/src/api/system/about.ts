@@ -1,7 +1,7 @@
-import { post } from '../../utils/request'
+import { get } from '@/utils/request'
 
-export function get<T>() {
-  return post<T>({
+export function getAbout<T>() {
+  return get<T>({
     url: '/about',
   })
 }
