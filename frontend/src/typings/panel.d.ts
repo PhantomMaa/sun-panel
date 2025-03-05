@@ -64,7 +64,6 @@ declare namespace Panel {
 
     interface userConfig{
         panel:panelConfig
-        searchEngine?:any
     }
 
     interface ItemIconSortRequest{

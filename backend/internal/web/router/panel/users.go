@@ -71,7 +71,6 @@ func (a UsersApi) Create(c *gin.Context) {
 	}
 
 	userInfo, err := mUser.CreateOne()
-
 	if err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return

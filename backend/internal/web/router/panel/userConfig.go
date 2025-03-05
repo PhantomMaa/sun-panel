@@ -1,7 +1,9 @@
 package panel
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin/binding"
+	"gorm.io/gorm"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
@@ -28,9 +30,14 @@ func (a *UserConfig) InitRouter(router *gin.RouterGroup) {
 
 func (a *UserConfig) Get(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	
+
 	cfg, err := repository.GetUserConfig(userInfo.ID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.ErrorDataNotFound(c)
+			return
+		}
+
 		response.ErrorDatabase(c, err.Error())
 		return
 	}

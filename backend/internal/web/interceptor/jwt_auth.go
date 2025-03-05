@@ -1,17 +1,18 @@
 package interceptor
 
 import (
-	"github.com/gin-gonic/gin"
 	"strings"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/web/model/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 // JWTAuth JWT认证中间件
 func JWTAuth(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
-		response.ErrorByCode(c, 401)
+		response.ErrorByCode(c, 1001)
 		c.Abort()
 		return
 	}

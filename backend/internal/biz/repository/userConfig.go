@@ -39,13 +39,9 @@ type UserConfig struct {
 	// 面板样式数据
 	PanelJson string       `json:"-"`
 	Panel     *PanelConfig `gorm:"-" json:"panel"`
-
-	// 搜索引擎
-	SearchEngineJson string                 `json:"-"`
-	SearchEngine     map[string]interface{} `gorm:"-" json:"searchEngine"`
 }
 
-// GetUserConfig retrieves user configuration from database by user ID
+// retrieves user configuration from database by user ID
 func GetUserConfig(userId uint) (UserConfig, error) {
 	cfg := UserConfig{}
 	if err := Db.First(&cfg, "user_id=?", userId).Error; err != nil {
@@ -56,19 +52,15 @@ func GetUserConfig(userId uint) (UserConfig, error) {
 	if err := json.Unmarshal([]byte(cfg.PanelJson), &cfg.Panel); err != nil {
 		cfg.Panel = nil
 	}
-	if err := json.Unmarshal([]byte(cfg.SearchEngineJson), &cfg.SearchEngine); err != nil {
-		cfg.SearchEngine = nil
-	}
 
 	return cfg, nil
 }
 
-// SaveUserConfig saves user configuration to database
+// saves user configuration to database
 // It will create a new record if not exists, or update existing one
 func SaveUserConfig(config *UserConfig) error {
 	// Process JSON fields
 	config.PanelJson = common.ToJSONString(config.Panel)
-	config.SearchEngineJson = common.ToJSONString(config.SearchEngine)
 
 	// Check if record exists
 	if err := Db.First(&UserConfig{}, "user_id=?", config.UserId).Error; err != nil {
