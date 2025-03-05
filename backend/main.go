@@ -8,15 +8,15 @@ import (
 	"log"
 	"sun-panel/internal/biz/cache"
 	"sun-panel/internal/biz/repository"
-	"sun-panel/internal/config"
 	"sun-panel/internal/global"
+	"sun-panel/internal/infra/config"
 	"sun-panel/internal/infra/database"
 	"sun-panel/internal/infra/kvcache"
 	"sun-panel/internal/infra/storage"
+	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/language"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/router"
-	"sun-panel/internal/zaplog"
 	"time"
 )
 

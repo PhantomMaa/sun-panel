@@ -4,7 +4,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"sun-panel/internal/biz/cache"
-	"sun-panel/internal/config"
+	"sun-panel/internal/infra/config"
 	"sun-panel/internal/infra/storage"
 )
 

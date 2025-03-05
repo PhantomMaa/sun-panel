@@ -4,8 +4,8 @@ import (
 	"os"
 	"strings"
 	"sun-panel/internal/common"
-	"sun-panel/internal/config"
 	"sun-panel/internal/global"
+	"sun-panel/internal/infra/config"
 )
 
 var Obj *LangStructObj
