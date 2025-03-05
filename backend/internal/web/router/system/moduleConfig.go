@@ -3,7 +3,6 @@ package system
 import (
 	"github.com/gin-gonic/gin/binding"
 	"sun-panel/internal/biz/repository"
-	"sun-panel/internal/global"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
@@ -28,23 +27,20 @@ func (a *ModuleConfigApi) InitRouter(router *gin.RouterGroup) {
 
 func (a *ModuleConfigApi) GetByName(c *gin.Context) {
 	req := repository.ModuleConfig{}
-
-	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		return
 	}
 
 	userInfo, _ := base.GetCurrentUserInfo(c)
 
-	mCfg := repository.ModuleConfig{}
-	if cfg, err := mCfg.GetConfigByUserIdAndName(global.Db, userInfo.ID, req.Name); err != nil {
+	if cfg, err := repository.GetModuleConfigByUserIdAndName(userInfo.ID, req.Name); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	} else {
 		response.SuccessData(c, cfg)
 		return
 	}
-
 }
 
 func (a *ModuleConfigApi) Save(c *gin.Context) {
@@ -53,15 +49,18 @@ func (a *ModuleConfigApi) Save(c *gin.Context) {
 		response.ErrorParamFomat(c, err.Error())
 		return
 	}
-	userInfo, _ := base.GetCurrentUserInfo(c)
-	mCfg := repository.ModuleConfig{}
-	mCfg.UserId = userInfo.ID
-	mCfg.Value = req.Value
-	mCfg.Name = req.Name
 
-	if err := mCfg.Save(global.Db); err != nil {
+	userInfo, _ := base.GetCurrentUserInfo(c)
+	config := repository.ModuleConfig{
+		UserId: userInfo.ID,
+		Value:  req.Value,
+		Name:   req.Name,
+	}
+
+	if err := repository.SaveModuleConfig(&config); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
+
 	response.Success(c)
 }
