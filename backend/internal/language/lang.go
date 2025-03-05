@@ -4,14 +4,14 @@ import (
 	"os"
 	"strings"
 	"sun-panel/internal/common"
+	"sun-panel/internal/config"
 	"sun-panel/internal/global"
-	"sun-panel/internal/iniConfig"
 )
 
 var Obj *LangStructObj
 
 type LangStructObj struct {
-	LangContet *iniConfig.IniConfig
+	LangContet *config.IniConfig
 }
 
 func LangInit(lang string) {
@@ -27,7 +27,7 @@ func LangInit(lang string) {
 
 func NewLang(langPath string) *LangStructObj {
 	langObj := LangStructObj{}
-	langObj.LangContet = iniConfig.NewIniConfig(langPath) // 读取配置
+	langObj.LangContet = config.NewIniConfig(langPath) // 读取配置
 	return &langObj
 }
 
@@ -43,7 +43,7 @@ func (l *LangStructObj) Get(key string) string {
 	}
 }
 
-// GetWithFields 获取并替换字段
+// 获取并替换字段
 func (l *LangStructObj) GetWithFields(key string, fields map[string]string) string {
 	c := l.Get(key)
 	for k, v := range fields {
@@ -52,7 +52,7 @@ func (l *LangStructObj) GetWithFields(key string, fields map[string]string) stri
 	return c
 }
 
-// GetAndInsert 获取值并向后追加
+// 获取值并向后追加
 func (l *LangStructObj) GetAndInsert(key string, insertContent ...string) string {
 	content := l.Get(key) + " "
 	for _, v := range insertContent {

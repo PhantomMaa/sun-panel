@@ -1,0 +1,74 @@
+package system
+
+import (
+	"sun-panel/internal/common/monitor"
+	"sun-panel/internal/global"
+	"sun-panel/internal/web/interceptor"
+	"sun-panel/internal/web/model/param/systemApiStructs"
+	"sun-panel/internal/web/model/response"
+
+	"github.com/gin-gonic/gin"
+)
+
+type MonitorApi struct {
+}
+
+func NewMonitorRouter() *MonitorApi {
+	return &MonitorApi{}
+}
+
+func (a *MonitorApi) InitRouter(router *gin.RouterGroup) {
+	r := router.Group("")
+	r.Use(interceptor.JWTAuth)
+
+	{
+		r.POST("/system/monitor/getDiskMountpoints", a.GetDiskMountpoints)
+		r.POST("/system/monitor/getCpuState", a.GetCpuState)
+		r.POST("/system/monitor/getDiskStateByPath", a.GetDiskStateByPath)
+		r.POST("/system/monitor/getMemonyState", a.GetMemonyState)
+	}
+}
+
+func (a *MonitorApi) GetCpuState(c *gin.Context) {
+	cpuInfo, err := global.CacheMonitor.GetCpuState()
+	if err != nil {
+		response.Error(c, "failed")
+		return
+	}
+
+	response.SuccessData(c, cpuInfo)
+}
+
+func (a *MonitorApi) GetMemonyState(c *gin.Context) {
+	memoryInfo, err := global.CacheMonitor.GetMemonyState()
+	if err != nil {
+		response.Error(c, "failed")
+		return
+	}
+
+	response.SuccessData(c, memoryInfo)
+}
+
+func (a *MonitorApi) GetDiskStateByPath(c *gin.Context) {
+	req := systemApiStructs.MonitorGetDiskStateByPathReq{}
+	if err := c.ShouldBind(&req); err != nil {
+		response.ErrorParamFomat(c, err.Error())
+		return
+	}
+
+	diskState, err := global.CacheMonitor.GetDiskStateByPath(req.Path)
+	if err != nil {
+		response.Error(c, "failed")
+		return
+	}
+
+	response.SuccessData(c, diskState)
+}
+
+func (a *MonitorApi) GetDiskMountpoints(c *gin.Context) {
+	if list, err := monitor.GetDiskMountpoints(); err != nil {
+		response.Error(c, err.Error())
+	} else {
+		response.SuccessData(c, list)
+	}
+}

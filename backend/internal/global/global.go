@@ -3,9 +3,9 @@ package global
 import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"sun-panel/internal/cache"
-	"sun-panel/internal/iniConfig"
-	"sun-panel/internal/storage"
+	"sun-panel/internal/biz/cache"
+	"sun-panel/internal/config"
+	"sun-panel/internal/infra/storage"
 )
 
 // 构建时，通过 --ldflags 注入
@@ -15,10 +15,10 @@ var (
 )
 
 var (
-	Logger        *zap.SugaredLogger
-	Config        *iniConfig.IniConfig
-	Db            *gorm.DB
-	SystemSetting *cache.SystemSetting
-	Monitor       *cache.Monitor
-	Storage       *storage.RcloneStorage
+	Logger             *zap.SugaredLogger
+	Config             *config.IniConfig
+	Db                 *gorm.DB
+	Storage            *storage.RcloneStorage
+	CacheSystemSetting *cache.SystemSetting
+	CacheMonitor       *cache.Monitor
 )

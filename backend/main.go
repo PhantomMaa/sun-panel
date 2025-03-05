@@ -6,16 +6,17 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
-	"sun-panel/api/router"
-	"sun-panel/internal/cache"
-	"sun-panel/internal/database"
+	"sun-panel/internal/biz/cache"
+	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/config"
 	"sun-panel/internal/global"
-	"sun-panel/internal/iniConfig"
-	"sun-panel/internal/jwt"
+	"sun-panel/internal/infra/database"
+	"sun-panel/internal/infra/kvcache"
+	"sun-panel/internal/infra/storage"
 	"sun-panel/internal/language"
-	"sun-panel/internal/repository"
-	"sun-panel/internal/storage"
-	"sun-panel/internal/zapLog"
+	"sun-panel/internal/web/interceptor"
+	"sun-panel/internal/web/router"
+	"sun-panel/internal/zaplog"
 	"time"
 )
 
@@ -37,14 +38,15 @@ func InitApp(configPath string) error {
 	gin.SetMode(global.RUNCODE) // GIN 运行模式
 
 	// 日志
-	logger, err := zapLog.InitLog(global.RUNCODE, "running.log")
+	logger, err := zaplog.InitLog(global.RUNCODE, "running.zaplog")
 	if err != nil {
-		return fmt.Errorf("log initialization error, %w", err)
+		return fmt.Errorf("zaplog initialization error, %w", err)
 	}
 
 	global.Logger = logger
+
 	// 配置初始化
-	global.Config, err = iniConfig.ConfigInit(configPath)
+	global.Config, err = config.Init(configPath)
 	if err != nil {
 		return err
 	}
@@ -65,15 +67,15 @@ func InitApp(configPath string) error {
 	}
 
 	// 其他的初始化
-	global.SystemSetting = &cache.SystemSetting{
-		Cache: cache.NewGoCache[any](5*time.Hour, -1),
+	global.CacheSystemSetting = &cache.SystemSetting{
+		Cache: kvcache.NewLocalCache[any](5*time.Hour, -1),
 	}
-	global.Monitor = &cache.Monitor{
-		Cache: cache.NewGoCache[any](5*time.Hour, -1),
+	global.CacheMonitor = &cache.Monitor{
+		Cache: kvcache.NewLocalCache[any](5*time.Hour, -1),
 	}
 
 	// 初始化JWT
-	if err := jwt.InitJWT(); err != nil {
+	if err := interceptor.InitJWT(); err != nil {
 		return fmt.Errorf("JWT initialization error: %w", err)
 	}
 
@@ -123,7 +125,7 @@ func DatabaseConnect() error {
 	return nil
 }
 
-// InitStorage initializes the storage system based on configuration
+// initializes the storage system based on configuration
 func InitStorage(configPath string) (*storage.RcloneStorage, error) {
 	// 使用带超时的上下文初始化存储
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
