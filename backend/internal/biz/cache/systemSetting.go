@@ -5,11 +5,11 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"sun-panel/internal/biz/repository"
-	cache2 "sun-panel/internal/infra/kvcache"
+	"sun-panel/internal/infra/kvcache"
 )
 
 type SystemSetting struct {
-	Cache cache2.Cacher[interface{}]
+	Cache kvcache.Cacher[interface{}]
 }
 
 type Register struct {
