@@ -6,19 +6,19 @@ import (
 	"sun-panel/internal/web/model/response"
 )
 
-type About struct {
+type AboutRouter struct {
 }
 
-func NewAboutRouter() *About {
-	return &About{}
+func NewAboutRouter() *AboutRouter {
+	return &AboutRouter{}
 }
 
-func (a *About) Get(c *gin.Context) {
+func (a *AboutRouter) Get(c *gin.Context) {
 	response.SuccessData(c, gin.H{
 		"versionName": global.VERSION,
 	})
 }
 
-func (a *About) InitRouter(router *gin.RouterGroup) {
+func (a *AboutRouter) InitRouter(router *gin.RouterGroup) {
 	router.GET("about", a.Get)
 }

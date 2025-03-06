@@ -14,13 +14,6 @@ export function edit<T>(req: Panel.ItemInfo) {
   })
 }
 
-// export function getInfo<T>(id: number) {
-//   return post<T>({
-//     url: '/aiApplet/getInfo',
-//     data: { id },
-//   })
-// }
-
 export function getListByGroupId<T>(itemIconGroupId: number | undefined) {
   return get<T>({
     url: '/panel/itemIcon/getListByGroupId',

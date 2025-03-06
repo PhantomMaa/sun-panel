@@ -12,14 +12,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserConfig struct {
+type UserConfigRouter struct {
 }
 
-func NewUserConfigRouter() *UserConfig {
-	return &UserConfig{}
+func NewUserConfigRouter() *UserConfigRouter {
+	return &UserConfigRouter{}
 }
 
-func (a *UserConfig) InitRouter(router *gin.RouterGroup) {
+func (a *UserConfigRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
 	r.Use(interceptor.JWTAuth)
 	{
@@ -28,7 +28,7 @@ func (a *UserConfig) InitRouter(router *gin.RouterGroup) {
 	}
 }
 
-func (a *UserConfig) Get(c *gin.Context) {
+func (a *UserConfigRouter) Get(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 
 	cfg, err := repository.GetUserConfig(userInfo.ID)
@@ -45,7 +45,7 @@ func (a *UserConfig) Get(c *gin.Context) {
 	response.SuccessData(c, cfg)
 }
 
-func (a *UserConfig) Set(c *gin.Context) {
+func (a *UserConfigRouter) Set(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	req := repository.UserConfig{}
 

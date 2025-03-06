@@ -10,13 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ModuleConfigApi struct{}
+type ModuleConfigRouter struct{}
 
-func NewModuleConfigRouter() *ModuleConfigApi {
-	return &ModuleConfigApi{}
+func NewModuleConfigRouter() *ModuleConfigRouter {
+	return &ModuleConfigRouter{}
 }
 
-func (a *ModuleConfigApi) InitRouter(router *gin.RouterGroup) {
+func (a *ModuleConfigRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
 	r.Use(interceptor.JWTAuth)
 	{
@@ -25,7 +25,7 @@ func (a *ModuleConfigApi) InitRouter(router *gin.RouterGroup) {
 	}
 }
 
-func (a *ModuleConfigApi) GetByName(c *gin.Context) {
+func (a *ModuleConfigRouter) GetByName(c *gin.Context) {
 	req := repository.ModuleConfig{}
 	if err := c.ShouldBind(&req); err != nil {
 		response.ErrorParamFomat(c, err.Error())
@@ -43,7 +43,7 @@ func (a *ModuleConfigApi) GetByName(c *gin.Context) {
 	}
 }
 
-func (a *ModuleConfigApi) Save(c *gin.Context) {
+func (a *ModuleConfigRouter) Save(c *gin.Context) {
 	req := repository.ModuleConfig{}
 	if err := c.ShouldBindWith(&req, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())

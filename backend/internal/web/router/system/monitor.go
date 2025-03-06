@@ -10,14 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type MonitorApi struct {
+type MonitorRouter struct {
 }
 
-func NewMonitorRouter() *MonitorApi {
-	return &MonitorApi{}
+func NewMonitorRouter() *MonitorRouter {
+	return &MonitorRouter{}
 }
 
-func (a *MonitorApi) InitRouter(router *gin.RouterGroup) {
+func (a *MonitorRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
 	r.Use(interceptor.JWTAuth)
 
@@ -29,7 +29,7 @@ func (a *MonitorApi) InitRouter(router *gin.RouterGroup) {
 	}
 }
 
-func (a *MonitorApi) GetCpuState(c *gin.Context) {
+func (a *MonitorRouter) GetCpuState(c *gin.Context) {
 	cpuInfo, err := global.CacheMonitor.GetCpuState()
 	if err != nil {
 		response.Error(c, "failed")
@@ -39,7 +39,7 @@ func (a *MonitorApi) GetCpuState(c *gin.Context) {
 	response.SuccessData(c, cpuInfo)
 }
 
-func (a *MonitorApi) GetMemonyState(c *gin.Context) {
+func (a *MonitorRouter) GetMemonyState(c *gin.Context) {
 	memoryInfo, err := global.CacheMonitor.GetMemonyState()
 	if err != nil {
 		response.Error(c, "failed")
@@ -49,7 +49,7 @@ func (a *MonitorApi) GetMemonyState(c *gin.Context) {
 	response.SuccessData(c, memoryInfo)
 }
 
-func (a *MonitorApi) GetDiskStateByPath(c *gin.Context) {
+func (a *MonitorRouter) GetDiskStateByPath(c *gin.Context) {
 	req := systemApiStructs.MonitorGetDiskStateByPathReq{}
 	if err := c.ShouldBind(&req); err != nil {
 		response.ErrorParamFomat(c, err.Error())
@@ -65,7 +65,7 @@ func (a *MonitorApi) GetDiskStateByPath(c *gin.Context) {
 	response.SuccessData(c, diskState)
 }
 
-func (a *MonitorApi) GetDiskMountpoints(c *gin.Context) {
+func (a *MonitorRouter) GetDiskMountpoints(c *gin.Context) {
 	if list, err := monitor.GetDiskMountpoints(); err != nil {
 		response.Error(c, err.Error())
 	} else {

@@ -3,8 +3,8 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"sun-panel/internal/global"
-	panel2 "sun-panel/internal/web/router/panel"
-	system2 "sun-panel/internal/web/router/system"
+	"sun-panel/internal/web/router/panel"
+	"sun-panel/internal/web/router/system"
 )
 
 type IRouter interface {
@@ -13,17 +13,17 @@ type IRouter interface {
 
 func RouterArray() []IRouter {
 	return []IRouter{
-		system2.NewAboutRouter(),
-		system2.NewLoginRouter(),
-		system2.NewFileRouter(),
-		system2.NewUserRouter(),
-		system2.NewModuleConfigRouter(),
-		system2.NewMonitorRouter(),
-		system2.NewNoticeRouter(),
-		panel2.NewItemIconRouter(),
-		panel2.NewItemIconGroupRouter(),
-		panel2.NewUserConfigRouter(),
-		panel2.NewUsersRouter(),
+		system.NewAboutRouter(),
+		system.NewLoginRouter(),
+		system.NewFileRouter(),
+		system.NewUserRouter(),
+		system.NewModuleConfigRouter(),
+		system.NewMonitorRouter(),
+		system.NewNoticeRouter(),
+		panel.NewItemIconRouter(),
+		panel.NewItemIconGroupRouter(),
+		panel.NewUserConfigRouter(),
+		panel.NewUsersRouter(),
 	}
 }
 

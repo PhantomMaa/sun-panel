@@ -5,10 +5,9 @@ import (
 )
 
 type ItemIconIconInfo struct {
-	ItemType int    `json:"itemType"`
-	Src      string `json:"src"`
-	Text     string `json:"text"`
-	// BgColor  string `json:"bgColor"`
+	ItemType        int    `json:"itemType"`
+	Src             string `json:"src"`
+	Text            string `json:"text"`
 	BackgroundColor string `json:"backgroundColor"`
 }
 

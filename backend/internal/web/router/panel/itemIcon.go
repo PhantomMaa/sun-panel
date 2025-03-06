@@ -21,20 +21,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ItemIcon struct {
+type ItemIconRouter struct {
 	storage storage.RcloneStorage
 }
 
 var urlPrefix string
 
-func NewItemIconRouter() *ItemIcon {
+func NewItemIconRouter() *ItemIconRouter {
 	urlPrefix = global.Config.GetValueString("base", "url_prefix")
-	return &ItemIcon{
+	return &ItemIconRouter{
 		storage: *global.Storage,
 	}
 }
 
-func (a *ItemIcon) InitRouter(router *gin.RouterGroup) {
+func (a *ItemIconRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
 	r.Use(interceptor.JWTAuth)
 	{
@@ -47,7 +47,7 @@ func (a *ItemIcon) InitRouter(router *gin.RouterGroup) {
 	}
 }
 
-func (a *ItemIcon) Edit(c *gin.Context) {
+func (a *ItemIconRouter) Edit(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	req := repository.ItemIcon{}
 
@@ -81,7 +81,7 @@ func (a *ItemIcon) Edit(c *gin.Context) {
 }
 
 // 添加多个图标
-func (a *ItemIcon) AddMultiple(c *gin.Context) {
+func (a *ItemIconRouter) AddMultiple(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	// type Request
 	var req []repository.ItemIcon
@@ -108,7 +108,7 @@ func (a *ItemIcon) AddMultiple(c *gin.Context) {
 	response.SuccessData(c, req)
 }
 
-func (a *ItemIcon) GetListByGroupId(c *gin.Context) {
+func (a *ItemIconRouter) GetListByGroupId(c *gin.Context) {
 	type ParamsStruct struct {
 		ItemIconGroupId int `form:"itemIconGroupId" json:"itemIconGroupId"`
 	}
@@ -136,7 +136,7 @@ func (a *ItemIcon) GetListByGroupId(c *gin.Context) {
 	response.SuccessListData(c, itemIcons, 0)
 }
 
-func (a *ItemIcon) Deletes(c *gin.Context) {
+func (a *ItemIconRouter) Deletes(c *gin.Context) {
 	req := commonApiStructs.RequestDeleteIds[uint]{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
@@ -200,7 +200,7 @@ func (a *ItemIcon) Deletes(c *gin.Context) {
 }
 
 // GetSiteFavicon 支持获取并直接下载对方网站图标到服务器
-func (a *ItemIcon) GetSiteFavicon(c *gin.Context) {
+func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	req := panelApiStructs.ItemIconGetSiteFaviconReq{}
 	if err := c.ShouldBind(&req); err != nil {
@@ -269,7 +269,7 @@ func (a *ItemIcon) GetSiteFavicon(c *gin.Context) {
 }
 
 // SaveSort 保存排序
-func (a *ItemIcon) SaveSort(c *gin.Context) {
+func (a *ItemIconRouter) SaveSort(c *gin.Context) {
 	req := panelApiStructs.ItemIconSaveSortRequest{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {

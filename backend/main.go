@@ -117,9 +117,9 @@ func DatabaseConnect() error {
 	global.Db = db
 	repository.Db = db
 
-	err = database.NotFoundAndCreateUser(global.Db)
+	err = database.CreateDefaultUser(global.Db)
 	if err != nil {
-		return fmt.Errorf("database NotFoundAndCreateUser error, %w", err)
+		return fmt.Errorf("database createDefaultUser error, %w", err)
 	}
 
 	return nil

@@ -1,9 +1,7 @@
 package panel
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin/binding"
-	"gorm.io/gorm"
 	"strings"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/common"
@@ -15,18 +13,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UsersApi struct {
+type UsersRouter struct {
 }
 
-var (
-	ErrUsersApiAtLeastKeepOne = errors.New("at least keep one")
-)
-
-func NewUsersRouter() *UsersApi {
-	return &UsersApi{}
+func NewUsersRouter() *UsersRouter {
+	return &UsersRouter{}
 }
 
-func (a UsersApi) InitRouter(router *gin.RouterGroup) {
+func (a UsersRouter) InitRouter(router *gin.RouterGroup) {
 	rAdmin := router.Group("")
 	rAdmin.Use(interceptor.JWTAuth, interceptor.AdminInterceptor)
 	{
@@ -37,7 +31,7 @@ func (a UsersApi) InitRouter(router *gin.RouterGroup) {
 	}
 }
 
-func (a UsersApi) Create(c *gin.Context) {
+func (a UsersRouter) Create(c *gin.Context) {
 	param := repository.User{}
 	if err := c.ShouldBindBodyWith(&param, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())
@@ -70,84 +64,35 @@ func (a UsersApi) Create(c *gin.Context) {
 		return
 	}
 
-	userInfo, err := mUser.CreateOne()
+	err := global.UserService.CreateUser(&mUser)
 	if err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
 
-	response.SuccessData(c, gin.H{"userId": userInfo.ID})
+	response.SuccessData(c, gin.H{"userId": mUser.ID})
 }
 
-func (a UsersApi) Deletes(c *gin.Context) {
-	type UserIds struct {
+func (a UsersRouter) Deletes(c *gin.Context) {
+	type Param struct {
 		UserIds []uint
 	}
-	param := UserIds{}
+	param := Param{}
 	if err := c.ShouldBindBodyWith(&param, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		c.Abort()
 		return
 	}
 
-	txErr := global.Db.Transaction(func(tx *gorm.DB) error {
-		mitemIconGroup := repository.ItemIconGroup{}
-
-		for _, v := range param.UserIds {
-			// 删除图标
-			if err := tx.Delete(&repository.ItemIcon{}, "user_id=?", v).Error; err != nil {
-				return err
-			}
-
-			// 删除分组
-			if err := mitemIconGroup.DeleteByUserId(tx, v); err != nil {
-				return err
-			}
-
-			// 删除模块配置
-			if err := tx.Delete(&repository.ModuleConfig{}, "user_id=?", v).Error; err != nil {
-				return err
-			}
-
-			// 删除用户配置
-			if err := tx.Delete(&repository.ModuleConfig{}, "user_id=?", v).Error; err != nil {
-				return err
-			}
-
-			// 删除文件记录（不删除资源文件）
-			if err := tx.Delete(&repository.File{}, "user_id=?", v).Error; err != nil {
-				return err
-			}
-		}
-
-		if err := tx.Delete(&repository.User{}, &param.UserIds).Error; err != nil {
-			response.ErrorDatabase(c, err.Error())
-			return err
-		}
-
-		// 验证是否还存在管理员
-		var count int64
-		if err := tx.Model(&repository.User{}).Where("role=?", 1).Count(&count).Error; err != nil {
-			return err
-		} else if count == 0 {
-			return ErrUsersApiAtLeastKeepOne
-		}
-
-		return nil
-	})
-
-	if errors.Is(txErr, ErrUsersApiAtLeastKeepOne) {
-		response.ErrorByCode(c, 1201)
-		return
-	} else if txErr != nil {
-		response.ErrorDatabase(c, txErr.Error())
+	if err := global.UserRepo.Deletes(param.UserIds); err != nil {
+		response.ErrorDatabase(c, err.Error())
 		return
 	}
 
 	response.Success(c)
 }
 
-func (a UsersApi) Update(c *gin.Context) {
+func (a UsersRouter) Update(c *gin.Context) {
 	param := repository.User{}
 	if err := c.ShouldBindBodyWith(&param, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())
@@ -197,7 +142,7 @@ func (a UsersApi) Update(c *gin.Context) {
 	response.SuccessData(c, param)
 }
 
-func (a UsersApi) GetList(c *gin.Context) {
+func (a UsersRouter) GetList(c *gin.Context) {
 	type ParamsStruct struct {
 		repository.User
 		Limit   int    `form:"limit" json:"limit"`

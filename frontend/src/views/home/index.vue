@@ -2,18 +2,18 @@
 import { VueDraggable } from 'vue-draggable-plus'
 import { NBackTop, NButton, NButtonGroup, NDropdown, NModal, NSkeleton, NSpin, useDialog, useMessage } from 'naive-ui'
 import { nextTick, onMounted, ref } from 'vue'
-import { AppIcon, AppStarter, EditItem } from './components'
+import { getList as getGroupList } from '../../api/panel/itemIconGroup'
 import { Clock, SearchBox, SystemMonitor } from '../../components/deskModule'
 import { SvgIcon } from '../../components/common'
-import { deletes, getListByGroupId, saveSort } from '../../api/panel/itemIcon'
-import { getList as getGroupList } from '../../api/panel/itemIconGroup'
+import { AppIcon, AppStarter, EditItem } from './components'
+import { deletes, getListByGroupId, saveSort } from '@/api/panel/itemIcon'
 
-import { setTitle, updateLocalUserInfo } from '../../utils/cmn'
-import { useAuthStore, usePanelState } from '../../store'
-import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '../../enums'
-import { VisitMode } from '../../enums/auth'
-import { router } from '../../router'
-import { t } from '../../locales'
+import { setTitle, updateLocalUserInfo } from '@/utils/cmn'
+import { useAuthStore, usePanelState } from '@/store'
+import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/enums'
+import { VisitMode } from '@/enums/auth'
+import { router } from '@/router'
+import { t } from '@/locales'
 
 interface ItemGroup extends Panel.ItemIconGroup {
   sortStatus?: boolean

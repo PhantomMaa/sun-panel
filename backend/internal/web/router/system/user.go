@@ -12,13 +12,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserApi struct{}
+type UserRouter struct{}
 
-func NewUserRouter() *UserApi {
-	return &UserApi{}
+func NewUserRouter() *UserRouter {
+	return &UserRouter{}
 }
 
-func (a *UserApi) InitRouter(router *gin.RouterGroup) {
+func (a *UserRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
 	r.Use(interceptor.JWTAuth)
 	{
@@ -29,7 +29,7 @@ func (a *UserApi) InitRouter(router *gin.RouterGroup) {
 	}
 }
 
-func (a *UserApi) GetInfo(c *gin.Context) {
+func (a *UserRouter) GetInfo(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	response.SuccessData(c, gin.H{
 		"userId":    userInfo.ID,
@@ -40,7 +40,7 @@ func (a *UserApi) GetInfo(c *gin.Context) {
 	})
 }
 
-func (a *UserApi) GetAuthInfo(c *gin.Context) {
+func (a *UserRouter) GetAuthInfo(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	visitMode := base.GetCurrentVisitMode(c)
 	user := repository.User{}
@@ -55,7 +55,7 @@ func (a *UserApi) GetAuthInfo(c *gin.Context) {
 	})
 }
 
-func (a *UserApi) UpdateInfo(c *gin.Context) {
+func (a *UserRouter) UpdateInfo(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	type UpdateUserInfoStruct struct {
 		HeadImage string `json:"headImage"`
@@ -85,7 +85,7 @@ func (a *UserApi) UpdateInfo(c *gin.Context) {
 	response.Success(c)
 }
 
-func (a *UserApi) UpdatePasssword(c *gin.Context) {
+func (a *UserRouter) UpdatePasssword(c *gin.Context) {
 	type UpdatePasssStruct struct {
 		OldPassword string `json:"oldPassword"`
 		NewPassword string `json:"newPassword"`
@@ -126,6 +126,6 @@ func (a *UserApi) UpdatePasssword(c *gin.Context) {
 	response.Success(c)
 }
 
-func (a *UserApi) Logout(c *gin.Context) {
+func (a *UserRouter) Logout(c *gin.Context) {
 	c.SetCookie("cloud_tk", "", 0, "/source/", "", false, true)
 }

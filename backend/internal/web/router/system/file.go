@@ -19,17 +19,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type FileApi struct {
+type FileRouter struct {
 	urlPrefix string
 }
 
-func NewFileRouter() *FileApi {
-	return &FileApi{
+func NewFileRouter() *FileRouter {
+	return &FileRouter{
 		urlPrefix: global.Config.GetValueString("base", "url_prefix"),
 	}
 }
 
-func (a *FileApi) InitRouter(router *gin.RouterGroup) {
+func (a *FileRouter) InitRouter(router *gin.RouterGroup) {
 	// 公共访问组，不需要 JWT 认证
 	public := router.Group("")
 	{
@@ -47,7 +47,7 @@ func (a *FileApi) InitRouter(router *gin.RouterGroup) {
 	}
 }
 
-func (a *FileApi) UploadImg(c *gin.Context) {
+func (a *FileRouter) UploadImg(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	f, err := c.FormFile("imgfile")
 	if err != nil {
@@ -109,7 +109,7 @@ func (a *FileApi) UploadImg(c *gin.Context) {
 	})
 }
 
-func (a *FileApi) GetList(c *gin.Context) {
+func (a *FileRouter) GetList(c *gin.Context) {
 	var list []repository.File
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	var count int64
@@ -131,7 +131,7 @@ func (a *FileApi) GetList(c *gin.Context) {
 	response.SuccessListData(c, data, count)
 }
 
-func (a *FileApi) Deletes(c *gin.Context) {
+func (a *FileRouter) Deletes(c *gin.Context) {
 	req := commonApiStructs.RequestDeleteIds[uint]{}
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
@@ -163,7 +163,7 @@ func (a *FileApi) Deletes(c *gin.Context) {
 	response.Success(c)
 }
 
-func (a *FileApi) GetS3File(c *gin.Context) {
+func (a *FileRouter) GetS3File(c *gin.Context) {
 	global.Logger.Info("Entering GetS3File handler")
 	global.Logger.Infof("Full URL Path: %s", c.Request.URL.Path)
 	global.Logger.Infof("Full Request URL: %s", c.Request.URL.String())

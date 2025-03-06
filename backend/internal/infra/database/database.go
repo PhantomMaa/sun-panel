@@ -7,6 +7,7 @@ import (
 	"os"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/common"
+	"sun-panel/internal/global"
 	"time"
 
 	_ "gorm.io/driver/mysql"
@@ -66,22 +67,22 @@ func GetLogger() logger.Interface {
 
 }
 
-func NotFoundAndCreateUser(db *gorm.DB) error {
-	fUser := repository.User{}
-	if err := db.First(&fUser).Error; err != nil {
+func CreateDefaultUser(db *gorm.DB) error {
+	mUser := repository.User{}
+	if err := db.First(&mUser).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
 
 		username := "admin@sun.cc"
-		fUser.Mail = username
-		fUser.Username = username
-		fUser.Name = username
-		fUser.Status = 1
-		fUser.Role = 1
-		fUser.Password = common.PasswordEncryption("12345678")
+		mUser.Mail = username
+		mUser.Username = username
+		mUser.Name = username
+		mUser.Status = 1
+		mUser.Role = 1
+		mUser.Password = common.PasswordEncryption("12345678")
 
-		if errCreate := db.Create(&fUser).Error; errCreate != nil {
+		if errCreate := global.UserService.CreateUser(&mUser); errCreate != nil {
 			return errCreate
 		}
 	}

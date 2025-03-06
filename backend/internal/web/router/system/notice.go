@@ -8,18 +8,18 @@ import (
 	"sun-panel/internal/web/model/response"
 )
 
-type NoticeApi struct {
+type NoticeRouter struct {
 }
 
-func NewNoticeRouter() *NoticeApi {
-	return &NoticeApi{}
+func NewNoticeRouter() *NoticeRouter {
+	return &NoticeRouter{}
 }
 
-func (a *NoticeApi) InitRouter(router *gin.RouterGroup) {
+func (a *NoticeRouter) InitRouter(router *gin.RouterGroup) {
 	router.POST("/notice/getListByDisplayType", a.GetListByDisplayType)
 }
 
-func (a *NoticeApi) GetListByDisplayType(c *gin.Context) {
+func (a *NoticeRouter) GetListByDisplayType(c *gin.Context) {
 	req := systemApiStructs.NoticeGetListByDisplayTypeReq{}
 	if err := c.ShouldBind(&req); err != nil {
 		response.ErrorParamFomat(c, err.Error())

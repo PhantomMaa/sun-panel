@@ -13,7 +13,7 @@ import (
 	"sun-panel/internal/web/model/response"
 )
 
-type LoginApi struct {
+type LoginRouter struct {
 }
 
 type LoginLoginVerify struct {
@@ -23,11 +23,11 @@ type LoginLoginVerify struct {
 	Email    string `json:"email"`
 }
 
-func NewLoginRouter() *LoginApi {
-	return &LoginApi{}
+func NewLoginRouter() *LoginRouter {
+	return &LoginRouter{}
 }
 
-func (l *LoginApi) InitRouter(router *gin.RouterGroup) {
+func (l *LoginRouter) InitRouter(router *gin.RouterGroup) {
 	// 公开接口
 	router.POST("/login", l.Login)
 
@@ -39,7 +39,7 @@ func (l *LoginApi) InitRouter(router *gin.RouterGroup) {
 	}
 }
 
-func (l *LoginApi) Login(c *gin.Context) {
+func (l *LoginRouter) Login(c *gin.Context) {
 	param := LoginLoginVerify{}
 	if err := c.ShouldBindJSON(&param); err != nil {
 		response.ErrorParamFomat(c, err.Error())
@@ -93,6 +93,6 @@ func (l *LoginApi) Login(c *gin.Context) {
 }
 
 // Logout 安全退出
-func (l *LoginApi) Logout(c *gin.Context) {
+func (l *LoginRouter) Logout(c *gin.Context) {
 	response.Success(c)
 }
