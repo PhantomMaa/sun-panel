@@ -5,81 +5,9 @@ import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 
-// 资源路径处理插件 - 优化版本
-function createAssetsPlugin(): PluginOption {
-  return {
-    name: 'assets-plugin',
-    configureServer(server) {
-      // 添加中间件处理资源路径
-      server.middlewares.use((req, res, next) => {
-        if (!req.url) {
-          return next();
-        }
-        
-        let modified = false;
-        let newUrl = req.url;
-        
-        // 处理 /@fs/assets/ 路径 - 主要用于开发环境
-        if (newUrl.includes('/@fs/assets/')) {
-          newUrl = newUrl.replace('/@fs/assets/', '/assets/');
-          modified = true;
-        }
-        
-        // 保留对 /src/assets/ 路径的处理作为安全网
-        // 虽然我们已经删除了 src/assets 目录，但某些代码可能仍然引用它
-        if (newUrl.includes('/src/assets/')) {
-          newUrl = newUrl.replace('/src/assets/', '/assets/');
-          modified = true;
-        }
-        
-        if (modified) {
-          console.log(`Rewriting URL from ${req.url} to ${newUrl}`);
-          req.url = newUrl;
-        }
-        
-        next();
-      });
-    },
-    transform(code, id) {
-      if (!code) return code;
-      
-      // 只有当代码中包含需要替换的路径时才进行处理
-      if (!code.includes('/assets/') && 
-          !code.includes('/@fs/assets/') && 
-          !code.includes('/src/assets/') && 
-          !code.includes('http://127.0.0.1:') && 
-          !code.includes('http://localhost:')) {
-        return code;
-      }
-      
-      let newCode = code;
-      
-      // 统一替换所有资源路径格式为标准的 /assets/ 格式
-      const replacements = [
-        // 基本路径替换
-        { pattern: /\/src\/assets\//g, replacement: '/assets/' },
-        { pattern: /\/@fs\/assets\//g, replacement: '/assets/' },
-        
-        // 带有特定端口的路径替换
-        { pattern: /http:\/\/127\.0\.0\.1:\d+\/@fs\/assets\//g, replacement: '/assets/' },
-        { pattern: /http:\/\/localhost:\d+\/@fs\/assets\//g, replacement: '/assets/' }
-      ];
-      
-      // 应用所有替换
-      for (const { pattern, replacement } of replacements) {
-        newCode = newCode.replace(pattern, replacement);
-      }
-      
-      return newCode !== code ? newCode : code;
-    }
-  };
-}
-
 function setupPlugins(env: ImportMetaEnv): PluginOption[] {
   return [
     vue(),
-    // 添加全面的资源路径处理插件，支持开发和生产环境
-    createAssetsPlugin(),
     env.VITE_GLOB_APP_PWA === 'true' && VitePWA({
       injectRegister: 'auto',
       manifest: {
@@ -115,9 +43,6 @@ export default defineConfig((env) => {
         '@': path.resolve(process.cwd(), 'src'),
         // 添加资源路径别名，指向 public/assets 目录
         '/assets': path.resolve(process.cwd(), 'public/assets'),
-        '/@fs/assets': path.resolve(process.cwd(), 'public/assets'),
-        // 兼容旧的资源路径
-        '/src/assets': path.resolve(process.cwd(), 'public/assets'),
       },
     },
     plugins: setupPlugins(viteEnv),
@@ -131,16 +56,6 @@ export default defineConfig((env) => {
       host: '0.0.0.0',
       port: 1002,
       open: false,
-      // 开发服务器静态资源处理
-      fs: {
-        strict: false,
-        allow: [
-          // 允许访问项目根目录
-          path.resolve(process.cwd()),
-          // 显式允许访问 src/assets 目录
-          path.resolve(process.cwd(), 'src/assets'),
-        ],
-      },
       proxy: {
         '/api': {
           target: viteEnv.VITE_APP_API_BASE_URL,

@@ -41,5 +41,3 @@ backend/uploads
 backend/plugins
 backend/database.db
 backend/sun-panel
-
-pnpm-lock.yaml
