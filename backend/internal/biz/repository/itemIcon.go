@@ -3,7 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"gorm.io/gorm"
-	"sun-panel/internal/web/model/param/commonApiStructs"
+	"sun-panel/internal/web/model/param/commonApi"
 )
 
 type ItemIconIconInfo struct {
@@ -36,7 +36,7 @@ type IItemIconRepo interface {
 	BatchSave(itemIcons []ItemIcon) error
 	GetList(userId, groupId uint) ([]ItemIcon, error)
 	Delete(userId, id uint) error
-	BatchSaveSort(userId, groupId uint, sortItems []commonApiStructs.SortRequestItem) error
+	BatchSaveSort(userId, groupId uint, sortItems []commonApi.SortRequestItem) error
 }
 
 func NewItemIconRepo() *ItemIconRepo {
@@ -116,7 +116,7 @@ func (itemIconRepo *ItemIconRepo) Delete(userId, id uint) error {
 	})
 }
 
-func (itemIconRepo *ItemIconRepo) BatchSaveSort(userId, groupId uint, sortItems []commonApiStructs.SortRequestItem) error {
+func (itemIconRepo *ItemIconRepo) BatchSaveSort(userId, groupId uint, sortItems []commonApi.SortRequestItem) error {
 	return Db.Transaction(func(tx *gorm.DB) error {
 		for _, v := range sortItems {
 			if err := tx.Model(&ItemIcon{}).Where("user_id=? AND id=? AND item_icon_group_id=?", userId, v.Id, groupId).Update("sort", v.Sort).Error; err != nil {

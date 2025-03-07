@@ -1,4 +1,4 @@
-package adminApiStructs
+package adminApi
 
 type GetStatisticsResp struct {
 	UserCount   int64 `json:"userCount"`

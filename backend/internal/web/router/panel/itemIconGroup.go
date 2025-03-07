@@ -6,7 +6,7 @@ import (
 	"sun-panel/internal/global"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
-	"sun-panel/internal/web/model/param/commonApiStructs"
+	"sun-panel/internal/web/model/param/commonApi"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin/binding"
@@ -67,7 +67,7 @@ func (a *ItemIconGroupRouter) GetList(c *gin.Context) {
 }
 
 func (a *ItemIconGroupRouter) Deletes(c *gin.Context) {
-	req := commonApiStructs.RequestDeleteIds[uint]{}
+	req := commonApi.RequestDeleteIds[uint]{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())
@@ -95,7 +95,7 @@ func (a *ItemIconGroupRouter) Deletes(c *gin.Context) {
 }
 
 func (a *ItemIconGroupRouter) SaveSort(c *gin.Context) {
-	req := commonApiStructs.SortRequest{}
+	req := commonApi.SortRequest{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())

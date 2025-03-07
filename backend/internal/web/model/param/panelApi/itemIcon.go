@@ -1,8 +1,8 @@
-package panelApiStructs
+package panelApi
 
 import (
 	"sun-panel/internal/biz/repository"
-	"sun-panel/internal/web/model/param/commonApiStructs"
+	"sun-panel/internal/web/model/param/commonApi"
 )
 
 type ItemIconEditRequest struct {
@@ -11,8 +11,8 @@ type ItemIconEditRequest struct {
 }
 
 type ItemIconSaveSortRequest struct {
-	SortItems       []commonApiStructs.SortRequestItem `json:"sortItems"`
-	ItemIconGroupId uint                               `json:"itemIconGroupId"`
+	SortItems       []commonApi.SortRequestItem `json:"sortItems"`
+	ItemIconGroupId uint                        `json:"itemIconGroupId"`
 }
 
 type ItemIconGetSiteFaviconReq struct {

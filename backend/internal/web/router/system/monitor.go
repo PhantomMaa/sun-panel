@@ -4,7 +4,7 @@ import (
 	"sun-panel/internal/global"
 	"sun-panel/internal/util/monitor"
 	"sun-panel/internal/web/interceptor"
-	"sun-panel/internal/web/model/param/systemApiStructs"
+	"sun-panel/internal/web/model/param/systemApi"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin"
@@ -50,7 +50,7 @@ func (a *MonitorRouter) GetMemonyState(c *gin.Context) {
 }
 
 func (a *MonitorRouter) GetDiskStateByPath(c *gin.Context) {
-	req := systemApiStructs.MonitorGetDiskStateByPathReq{}
+	req := systemApi.MonitorGetDiskStateByPathReq{}
 	if err := c.ShouldBind(&req); err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		return

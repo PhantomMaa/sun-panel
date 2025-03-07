@@ -1,4 +1,4 @@
-package commonApiStructs
+package commonApi
 
 type RequestPage struct {
 	Page    int    `json:"page"`

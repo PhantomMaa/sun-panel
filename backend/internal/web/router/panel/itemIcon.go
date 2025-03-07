@@ -12,7 +12,7 @@ import (
 	"sun-panel/internal/util/favicon"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
-	"sun-panel/internal/web/model/param/panelApiStructs"
+	"sun-panel/internal/web/model/param/panelApi"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin"
@@ -169,13 +169,13 @@ func (a *ItemIconRouter) Delete(c *gin.Context) {
 // 支持获取并直接下载对方网站图标到服务器
 func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	req := panelApiStructs.ItemIconGetSiteFaviconReq{}
+	req := panelApi.ItemIconGetSiteFaviconReq{}
 	if err := c.ShouldBind(&req); err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		return
 	}
 
-	resp := panelApiStructs.ItemIconGetSiteFaviconResp{}
+	resp := panelApi.ItemIconGetSiteFaviconResp{}
 	fullUrl := ""
 	if iconUrl, err := favicon.GetOneFaviconURL(req.Url); err != nil {
 		response.Error(c, "acquisition failed: get ico error:"+err.Error())
@@ -234,7 +234,7 @@ func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 
 // SaveSort 保存排序
 func (a *ItemIconRouter) SaveSort(c *gin.Context) {
-	req := panelApiStructs.ItemIconSaveSortRequest{}
+	req := panelApi.ItemIconSaveSortRequest{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())

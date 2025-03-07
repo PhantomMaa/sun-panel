@@ -2,7 +2,7 @@ package repository
 
 import (
 	"gorm.io/gorm"
-	"sun-panel/internal/web/model/param/commonApiStructs"
+	"sun-panel/internal/web/model/param/commonApi"
 )
 
 type ItemIconGroupRepo struct {
@@ -13,7 +13,7 @@ type IItemIconGroupRepo interface {
 	GetList(userId uint) ([]ItemIconGroup, error)
 	Count(userId uint) (int, error)
 	Deletes(userId uint, ids []uint) error
-	BatchSaveSort(userId uint, sortItems []commonApiStructs.SortRequestItem) error
+	BatchSaveSort(userId uint, sortItems []commonApi.SortRequestItem) error
 }
 
 func NewItemIconGroupRepo() IItemIconGroupRepo {
@@ -82,7 +82,7 @@ func (r *ItemIconGroupRepo) Deletes(userId uint, ids []uint) error {
 	return txErr
 }
 
-func (r *ItemIconGroupRepo) BatchSaveSort(userId uint, sortItems []commonApiStructs.SortRequestItem) error {
+func (r *ItemIconGroupRepo) BatchSaveSort(userId uint, sortItems []commonApi.SortRequestItem) error {
 	return Db.Transaction(func(tx *gorm.DB) error {
 		// 在事务中执行一些 db 操作（从这里开始，您应该使用 'tx' 而不是 'db'）
 		for _, v := range sortItems {
