@@ -2,9 +2,10 @@ package system
 
 import (
 	"github.com/gin-gonic/gin/binding"
+	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/biz/repository"
-	"sun-panel/internal/common"
 	"sun-panel/internal/global"
+	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
@@ -108,14 +109,14 @@ func (a *UserRouter) UpdatePasssword(c *gin.Context) {
 		return
 	}
 
-	if vUser.Password != common.PasswordEncryption(params.OldPassword) {
+	if vUser.Password != util.PasswordEncryption(params.OldPassword) {
 		// 旧密码不正确
-		response.ErrorByCode(c, 1007)
+		response.ErrorByCode(c, constant.CodeOldPasswordWrong)
 		return
 	}
 
 	res := global.Db.Model(&repository.User{}).Where("id", userInfo.ID).Updates(map[string]interface{}{
-		"password": common.PasswordEncryption(params.NewPassword),
+		"password": util.PasswordEncryption(params.NewPassword),
 		"token":    "",
 	})
 	if res.Error != nil {

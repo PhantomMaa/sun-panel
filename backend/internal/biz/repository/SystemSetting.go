@@ -3,7 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"errors"
-	"sun-panel/internal/common"
+	"sun-panel/internal/util"
 
 	"gorm.io/gorm"
 )
@@ -43,7 +43,7 @@ func (m *SystemSetting) Set(configName string, configValue interface{}) error {
 	}
 	value := ""
 	if s, ok := configValue.(string); !ok {
-		value = common.ToJSONString(configValue)
+		value = util.ToJSONString(configValue)
 	} else {
 		value = s
 	}

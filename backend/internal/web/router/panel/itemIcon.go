@@ -6,10 +6,10 @@ import (
 	"path"
 	"strings"
 	"sun-panel/internal/biz/repository"
-	"sun-panel/internal/common"
-	"sun-panel/internal/common/favicon"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/storage"
+	"sun-panel/internal/util"
+	"sun-panel/internal/util/favicon"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/param/panelApiStructs"
@@ -59,7 +59,7 @@ func (a *ItemIconRouter) Edit(c *gin.Context) {
 	}
 
 	itemIcon.UserId = userInfo.ID
-	itemIcon.IconJson = common.ToJSONString(itemIcon.Icon)
+	itemIcon.IconJson = util.ToJSONString(itemIcon.Icon)
 	if err := global.ItemIconRepo.Save(&itemIcon); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
@@ -153,9 +153,7 @@ func (a *ItemIconRouter) Delete(c *gin.Context) {
 			// Extract the file path from the URL
 			filepath := strings.TrimPrefix(src, urlPrefix)
 			if err := a.storage.Delete(c.Request.Context(), filepath); err != nil {
-				global.Logger.Errorf("Failed to delete file %s: %v", filepath, err)
-				response.ErrorParamFomat(c, err.Error())
-				return
+				global.Logger.Warnf("Failed to delete file %s: %v", filepath, err)
 			}
 		}
 	}

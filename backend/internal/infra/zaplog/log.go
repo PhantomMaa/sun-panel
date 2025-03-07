@@ -5,7 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"sun-panel/internal/common"
+	"sun-panel/internal/util"
 	"time"
 
 	"github.com/fatih/color"
@@ -73,7 +73,7 @@ func Pln(prefix string, msg string) {
 		"%s%s %s %s\n",
 		colors[prefix]("["+prefix+"]"),
 		spaces[prefix],
-		time.Now().Format(common.TimeFormatMode1),
+		time.Now().Format(util.TimeFormatMode1),
 		msg,
 	)
 }
@@ -84,7 +84,7 @@ func (t *LogStruct) Write(content string) (n int, err error) {
 }
 
 func (t *LogStruct) Format(log_type string, content string) (n int, err error) {
-	content = log_type + spaces[log_type] + " " + common.GetTime() + " " + content + "\n"
+	content = log_type + spaces[log_type] + " " + util.GetTime() + " " + content + "\n"
 	return t.Write(content)
 }
 

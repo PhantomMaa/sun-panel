@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm/schema"
 	"os"
 	"path"
-	"sun-panel/internal/common"
+	"sun-panel/internal/util"
 )
 
 type SQLiteConfig struct {
@@ -18,7 +18,7 @@ type SQLiteConfig struct {
 func (d *SQLiteConfig) Connect() (db *gorm.DB, err error) {
 	filePath := d.Filename
 	exists := false
-	if exists, err = common.PathExists(path.Dir(filePath)); err != nil {
+	if exists, err = util.PathExists(path.Dir(filePath)); err != nil {
 		return
 	} else {
 		if !exists {

@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"path"
 	"strings"
-	"sun-panel/internal/common"
+	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/global"
+	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
@@ -48,7 +49,7 @@ func (a *FileRouter) UploadImg(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	f, err := c.FormFile("imgfile")
 	if err != nil {
-		response.ErrorByCode(c, 1300)
+		response.ErrorByCode(c, constant.CodeUploadFailed)
 		return
 	}
 
@@ -63,20 +64,21 @@ func (a *FileRouter) UploadImg(c *gin.Context) {
 		".ico",
 	}
 
-	if !common.InArray(agreeExts, fileExt) {
-		response.ErrorByCode(c, 1301)
+	if !util.InArray(agreeExts, fileExt) {
+		response.ErrorByCode(c, constant.CodeUnsupportFileFormat)
 		return
 	}
 
-	fileName := common.Md5(fmt.Sprintf("%s%s", f.Filename, time.Now().String())) + fileExt
+	fileName := util.Md5(fmt.Sprintf("%s%s", f.Filename, time.Now().String())) + fileExt
 
 	// 打开文件以获取Reader
 	src, err := f.Open()
 	if err != nil {
 		global.Logger.Errorf("Failed to open uploaded file: %v", err)
-		response.ErrorByCode(c, 1300)
+		response.ErrorByCode(c, constant.CodeUploadFailed)
 		return
 	}
+
 	defer func() {
 		if err := src.Close(); err != nil {
 			global.Logger.Errorf("Failed to close file. error : %v", err)
@@ -87,7 +89,7 @@ func (a *FileRouter) UploadImg(c *gin.Context) {
 	filepath, err := global.Storage.Upload(c.Request.Context(), src, fileName)
 	if err != nil {
 		global.Logger.Errorf("Failed to upload file: %v", err)
-		response.ErrorByCode(c, 1300)
+		response.ErrorByCode(c, constant.CodeUploadFailed)
 		return
 	}
 
@@ -95,7 +97,7 @@ func (a *FileRouter) UploadImg(c *gin.Context) {
 	_, err = global.FileRepo.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
 	if err != nil {
 		global.Logger.Errorf("Failed to add file record to database: %v", err)
-		response.ErrorByCode(c, 1300)
+		response.ErrorByCode(c, constant.CodeUploadFailed)
 		return
 	}
 

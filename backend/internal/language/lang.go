@@ -3,9 +3,9 @@ package language
 import (
 	"os"
 	"strings"
-	"sun-panel/internal/common"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/config"
+	"sun-panel/internal/util"
 )
 
 var Obj *LangStructObj
@@ -16,7 +16,7 @@ type LangStructObj struct {
 
 func LangInit(lang string) {
 	filename := "lang/" + lang + ".ini"
-	exists, err := common.PathExists(filename)
+	exists, err := util.PathExists(filename)
 	if err != nil || !exists {
 		global.Logger.Errorln("语言文件不存在:", filename)
 		os.Exit(1)

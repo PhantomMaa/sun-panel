@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"sun-panel/internal/common/monitor"
 	"sun-panel/internal/infra/kvcache"
+	"sun-panel/internal/util/monitor"
 	"time"
 )
 

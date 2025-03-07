@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"gorm.io/gorm"
-	"sun-panel/internal/common"
+	"sun-panel/internal/util"
 )
 
 type PanelConfig struct {
@@ -60,7 +60,7 @@ func GetUserConfig(userId uint) (UserConfig, error) {
 // It will create a new record if not exists, or update existing one
 func SaveUserConfig(config *UserConfig) error {
 	// Process JSON fields
-	config.PanelJson = common.ToJSONString(config.Panel)
+	config.PanelJson = util.ToJSONString(config.Panel)
 
 	// Check if record exists
 	if err := Db.First(&UserConfig{}, "user_id=?", config.UserId).Error; err != nil {

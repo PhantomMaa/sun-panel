@@ -5,9 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"strings"
+	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/biz/repository"
-	"sun-panel/internal/common"
 	"sun-panel/internal/global"
+	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
@@ -58,10 +59,10 @@ func (l *LoginRouter) Login(c *gin.Context) {
 	)
 
 	param.Username = strings.TrimSpace(param.Username)
-	if info, err = mUser.GetUserInfoByUsernameAndPassword(param.Username, common.PasswordEncryption(param.Password)); err != nil {
+	if info, err = mUser.GetUserInfoByUsernameAndPassword(param.Username, util.PasswordEncryption(param.Password)); err != nil {
 		// 未找到记录 账号或密码错误
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			response.ErrorByCode(c, 1003)
+			response.ErrorByCode(c, constant.CodePasswordWrong)
 			return
 		} else {
 			// 未知错误
@@ -72,7 +73,7 @@ func (l *LoginRouter) Login(c *gin.Context) {
 
 	// 停用或未激活
 	if info.Status != 1 {
-		response.ErrorByCode(c, 1004)
+		response.ErrorByCode(c, constant.CodeStatusError)
 		return
 	}
 

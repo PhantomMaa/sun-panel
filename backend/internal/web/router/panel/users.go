@@ -3,9 +3,10 @@ package panel
 import (
 	"github.com/gin-gonic/gin/binding"
 	"strings"
+	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/biz/repository"
-	"sun-panel/internal/common"
 	"sun-panel/internal/global"
+	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
@@ -51,7 +52,7 @@ func (a UsersRouter) Create(c *gin.Context) {
 
 	mUser := repository.User{
 		Username:  strings.TrimSpace(param.Username),
-		Password:  common.PasswordEncryption(param.Password),
+		Password:  util.PasswordEncryption(param.Password),
 		Name:      param.Name,
 		HeadImage: param.HeadImage,
 		Status:    1,
@@ -60,7 +61,7 @@ func (a UsersRouter) Create(c *gin.Context) {
 
 	// 验证账号是否存在
 	if _, err := mUser.CheckUsernameExist(param.Username); err != nil {
-		response.ErrorByCode(c, 1008)
+		response.ErrorByCode(c, constant.CodeAccountAlreadyExist)
 		return
 	}
 
@@ -120,7 +121,7 @@ func (a UsersRouter) Update(c *gin.Context) {
 
 	// 密码不为默认“-”空，修改密码
 	if param.Password != "-" {
-		param.Password = common.PasswordEncryption(param.Password)
+		param.Password = util.PasswordEncryption(param.Password)
 		allowField = append(allowField, "Password")
 	}
 

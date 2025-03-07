@@ -10,9 +10,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sun-panel/internal/common"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/storage"
+	"sun-panel/internal/util"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -103,7 +103,7 @@ func DownloadImage(ctx context.Context, url string, storage storage.RcloneStorag
 	if fileExt == "" {
 		fileExt = ".ico"
 	}
-	fileName := common.Md5(fmt.Sprintf("%s%s", urlFileName, time.Now().String())) + fileExt
+	fileName := util.Md5(fmt.Sprintf("%s%s", urlFileName, time.Now().String())) + fileExt
 
 	// 使用 rclone 存储接口上传文件
 	filepath, err := storage.Upload(ctx, response.Body, fileName)

@@ -1,8 +1,8 @@
 package system
 
 import (
-	"sun-panel/internal/common/monitor"
 	"sun-panel/internal/global"
+	"sun-panel/internal/util/monitor"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/param/systemApiStructs"
 	"sun-panel/internal/web/model/response"

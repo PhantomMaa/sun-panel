@@ -2,6 +2,7 @@ package interceptor
 
 import (
 	"strings"
+	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/web/model/response"
 
@@ -12,7 +13,7 @@ import (
 func JWTAuth(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
-		response.ErrorByCode(c, 1001)
+		response.ErrorByCode(c, constant.CodeNotLogin)
 		c.Abort()
 		return
 	}
@@ -42,7 +43,7 @@ func JWTAuth(c *gin.Context) {
 
 	// 检查用户状态
 	if userInfo.Status != 1 {
-		response.ErrorByCode(c, 1004)
+		response.ErrorByCode(c, constant.CodeStatusError)
 		c.Abort()
 		return
 	}

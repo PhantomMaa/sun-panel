@@ -2,11 +2,11 @@ package config
 
 import (
 	"errors"
-	"sun-panel/internal/common"
+	"sun-panel/internal/util"
 )
 
 func Init(configPath string) (*IniConfig, error) {
-	exists, err := common.PathExists(configPath)
+	exists, err := util.PathExists(configPath)
 	if err != nil {
 		return nil, err
 	}
