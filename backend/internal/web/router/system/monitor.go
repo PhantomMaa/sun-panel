@@ -26,6 +26,7 @@ func (a *MonitorRouter) InitRouter(router *gin.RouterGroup) {
 		r.POST("/system/monitor/getCpuState", a.GetCpuState)
 		r.POST("/system/monitor/getDiskStateByPath", a.GetDiskStateByPath)
 		r.POST("/system/monitor/getMemonyState", a.GetMemonyState)
+		r.POST("/system/monitor/getEnableStatus", a.GetEnableStatus)
 	}
 }
 
@@ -71,4 +72,12 @@ func (a *MonitorRouter) GetDiskMountpoints(c *gin.Context) {
 	} else {
 		response.SuccessData(c, list)
 	}
+}
+
+// GetEnableStatus returns the enableMonitor configuration from conf.ini
+func (a *MonitorRouter) GetEnableStatus(c *gin.Context) {
+	enableMonitor := global.Config.GetValueString("base", "enable_monitor")
+	response.SuccessData(c, gin.H{
+		"enabled": enableMonitor == "true",
+	})
 }

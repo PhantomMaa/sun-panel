@@ -30,3 +30,9 @@ export function getDiskMountpoints<T>() {
     url: '/system/monitor/getDiskMountpoints',
   })
 }
+
+export function getEnableStatus<T>() {
+  return post<T>({
+    url: '/system/monitor/getEnableStatus',
+  })
+}

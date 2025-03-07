@@ -6,6 +6,8 @@ http_port=3002
 database_drive=mysql
 # Enable static file server. Default:true
 enable_static_server=true
+# Enable system monitor feature. Default:true
+enable_monitor=false
 # Used as prefix to generate file url. For example, "/uploads/xxxx.png"
 url_prefix=/api/file/s3/
 

@@ -1,16 +1,34 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import type { UploadFileInfo } from 'naive-ui'
 import { NButton, NCard, NColorPicker, NGrid, NGridItem, NInput, NInputGroup, NPopconfirm, NSelect, NSlider, NSwitch, NUpload, NUploadDragger, useMessage } from 'naive-ui'
-import { useAuthStore, usePanelState } from '../../../store'
 import { set as setUserConfig } from '../../../api/panel/userConfig'
-import { PanelPanelConfigStyleEnum } from '../../../enums/panel'
-import { t } from '../../../locales'
+import { useAuthStore, usePanelState } from '@/store'
+import { PanelPanelConfigStyleEnum } from '@/enums'
+import { t } from '@/locales'
+import { getEnableStatus } from '@/api/system/systemMonitor'
 
 const authStore = useAuthStore()
 const panelState = usePanelState()
 const ms = useMessage()
 const showWallpaperInput = ref(false)
+const monitorEnabled = ref(true) // 默认为 true，避免闪烁
+
+// 获取后端 enableMonitor 配置
+onMounted(async () => {
+  try {
+    // 修正类型定义，确保与实际 API 响应结构匹配
+    interface EnableStatusResponse {
+      enabled: boolean
+    }
+    const { data, code } = await getEnableStatus<EnableStatusResponse>()
+    if (code === 0)
+      monitorEnabled.value = data.enabled
+  }
+  catch (error) {
+    console.error('Failed to get monitor enable status:', error)
+  }
+})
 
 const iconTypeOptions = [
   {
@@ -36,7 +54,7 @@ const maxWidthUnitOption = [
 
 const maxWidth = computed({
   get: () => String(panelState.panelConfig.maxWidth),
-  set: (val) => panelState.panelConfig.maxWidth = Number(val)
+  set: val => panelState.panelConfig.maxWidth = Number(val),
 })
 
 function handleUploadBackgroundFinish({
@@ -104,7 +122,7 @@ function resetPanelConfig() {
             :show-file-list="false"
             name="imgfile"
             :headers="{
-              Authorization: `Bearer ${authStore.token}`
+              Authorization: `Bearer ${authStore.token}`,
             }"
             accept=".ico,.png,.svg"
             @finish="handleUploadFaviconFinish"
@@ -155,7 +173,7 @@ function resetPanelConfig() {
       </div>
     </NCard>
 
-    <NCard style="border-radius:10px" class="mt-[10px]" size="small">
+    <NCard v-if="monitorEnabled" style="border-radius:10px" class="mt-[10px]" size="small">
       <div class="text-slate-500 mb-[5px] font-bold">
         {{ $t('apps.baseSettings.systemMonitorStatus') }}
       </div>
@@ -234,7 +252,7 @@ function resetPanelConfig() {
         :show-file-list="false"
         name="imgfile"
         :headers="{
-          Authorization: `Bearer ${authStore.token}`
+          Authorization: `Bearer ${authStore.token}`,
         }"
         :directory-dnd="true"
         @finish="handleUploadBackgroundFinish"
