@@ -15,8 +15,20 @@ type ModuleConfig struct {
 	Value     map[string]interface{} `gorm:"-" json:"value"`
 }
 
-// GetModuleConfigByUserIdAndName retrieves module configuration by user ID and module name
-func GetModuleConfigByUserIdAndName(userId uint, name string) (map[string]interface{}, error) {
+type ModuleConfigRepo struct {
+}
+
+type IModuleConfigRepo interface {
+	GetModuleConfigByUserIdAndName(userId uint, name string) (map[string]interface{}, error)
+	SaveModuleConfig(config *ModuleConfig) error
+}
+
+func NewModuleConfigRepo() IModuleConfigRepo {
+	return &ModuleConfigRepo{}
+}
+
+// retrieves module configuration by user ID and module name
+func (r *ModuleConfigRepo) GetModuleConfigByUserIdAndName(userId uint, name string) (map[string]interface{}, error) {
 	cfg := ModuleConfig{}
 	if err := Db.First(&cfg, "user_id=? AND name=?", userId, name).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -33,8 +45,8 @@ func GetModuleConfigByUserIdAndName(userId uint, name string) (map[string]interf
 	return cfg.Value, nil
 }
 
-// SaveModuleConfig saves module configuration to database
-func SaveModuleConfig(config *ModuleConfig) error {
+// saves module configuration to database
+func (r *ModuleConfigRepo) SaveModuleConfig(config *ModuleConfig) error {
 	// Process JSON field
 	if jb, err := json.Marshal(config.Value); err != nil {
 		config.ValueJson = "{}"

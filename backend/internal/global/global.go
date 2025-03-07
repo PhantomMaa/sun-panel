@@ -30,6 +30,7 @@ var (
 	ItemIconGroupRepo = repository.NewItemIconGroupRepo()
 	UserRepo          = repository.NewUserRepo()
 	FileRepo          = repository.NewFileRepo()
+	ModuleConfigRepo  = repository.NewModuleConfigRepo()
 )
 
 var (

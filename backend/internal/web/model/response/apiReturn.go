@@ -1,7 +1,7 @@
 package response
 
 import (
-	"sun-panel/internal/language"
+	"sun-panel/internal/util/i18n"
 
 	"github.com/gin-gonic/gin"
 )
@@ -70,12 +70,12 @@ func Error(ctx *gin.Context, errMsg string) {
 
 // 返回错误 需要个性化定义的错误|带返回数据的错误
 func ErrorNoAccess(ctx *gin.Context) {
-	ErrorCode(ctx, 1005, language.Obj.Get("common.no_access"), nil)
+	ErrorCode(ctx, 1005, i18n.Obj.Get("common.no_access"), nil)
 }
 
 // 返回错误 参数错误
 func ErrorParamFomat(ctx *gin.Context, errMsg string) {
-	Error(ctx, language.Obj.GetAndInsert("common.api_error_param_format", "[", errMsg, "]"))
+	Error(ctx, i18n.Obj.GetAndInsert("common.api_error_param_format", "[", errMsg, "]"))
 	// Error(ctx, "参数错误")
 }
 

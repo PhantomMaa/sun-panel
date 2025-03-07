@@ -1,4 +1,4 @@
-package language
+package i18n
 
 import (
 	"os"

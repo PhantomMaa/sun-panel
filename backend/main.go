@@ -14,7 +14,7 @@ import (
 	"sun-panel/internal/infra/kvcache"
 	"sun-panel/internal/infra/storage"
 	"sun-panel/internal/infra/zaplog"
-	"sun-panel/internal/language"
+	"sun-panel/internal/util/i18n"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/router"
 	"time"
@@ -52,7 +52,7 @@ func InitApp(configPath string) error {
 	}
 
 	// 多语言初始化
-	language.LangInit("zh-cn") // en-us
+	i18n.LangInit("zh-cn") // en-us
 
 	// 初始化数据库
 	err = DatabaseConnect()
