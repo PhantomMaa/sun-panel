@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { NDivider, NGradientText, NTag } from 'naive-ui'
 import { onMounted, ref } from 'vue'
-import srcSvglogo from '../../../assets/logo.svg'
-import srcGitee from '../../../assets/about_image/gitee.png'
-import srcGithub from '../../../assets/about_image/github.png'
-import srcDocker from '../../../assets/about_image/docker.png'
-import srcBilibili from '../../../assets/about_image/bilibili.png'
-import srcYoutube from '../../../assets/about_image/youtube.png'
-import srcQQGroupQR from '../../../assets/about_image/qq_group_qr2.png'
+// 使用 public 目录下的资源，直接使用绝对路径
+// 在 Vite 中，public 目录下的文件会被原样复制到构建输出目录，不会经过任何处理
+const srcSvglogo = '/assets/logo.svg'
+const srcGitee = '/assets/about_image/gitee.png'
+const srcGithub = '/assets/about_image/github.png'
+const srcDocker = '/assets/about_image/docker.png'
+const srcBilibili = '/assets/about_image/bilibili.png'
+const srcYoutube = '/assets/about_image/youtube.png'
+const srcQQGroupQR = '/assets/about_image/qq_group_qr2.png'
 import { RoundCardModal } from '../../common'
 import { getAbout } from '@/api/system/about'
 import { useAppStore } from '@/store'

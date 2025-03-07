@@ -2,9 +2,14 @@
 import { defineEmits, onMounted, ref } from 'vue'
 import { NAvatar, NCheckbox } from 'naive-ui'
 import { SvgIcon } from '../../common'
-import SvgSrcBaidu from '@/assets/search_engine_svg/baidu.svg'
-import SvgSrcBing from '@/assets/search_engine_svg/bing.svg'
-import SvgSrcGoogle from '@/assets/search_engine_svg/google.svg'
+// 使用 public 目录下的资源，直接使用绝对路径
+// 在 Vite 中，public 目录下的文件会被原样复制到构建输出目录，不会经过任何处理
+// 确保使用绝对路径，不包含任何特定的端口号或主机名
+
+// 定义图标资源路径
+const SvgSrcBaidu = '/assets/search_engine_svg/baidu.svg'
+const SvgSrcBing = '/assets/search_engine_svg/bing.svg'
+const SvgSrcGoogle = '/assets/search_engine_svg/google.svg'
 import { useAuthStore, useModuleConfig } from '@/store'
 import { VisitMode } from '@/enums/auth'
 
