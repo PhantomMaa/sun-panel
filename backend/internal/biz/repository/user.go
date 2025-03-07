@@ -23,6 +23,7 @@ type UserRepo struct {
 
 type IUserRepo interface {
 	Get(id uint) (User, error)
+	Count() (uint, error)
 	GetByUsername(username string) (User, error)
 	GetByUsernameAndPassword(username, password string) (User, error)
 	GetList(pagedParam PagedParam) ([]User, uint, error)
@@ -41,6 +42,12 @@ func (r *UserRepo) Get(id uint) (User, error) {
 	mUser := User{}
 	err := Db.Where("id=?", id).First(&mUser).Error
 	return mUser, err
+}
+
+func (r *UserRepo) Count() (uint, error) {
+	var count int64
+	err := Db.Model(&User{}).Count(&count).Error
+	return uint(count), err
 }
 
 func (r *UserRepo) GetByUsernameAndPassword(username, password string) (User, error) {

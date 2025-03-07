@@ -1,7 +1,6 @@
 package database
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -36,11 +35,6 @@ func DbInit(dbClient DbClient) (db *gorm.DB, dbErr error) {
 		return nil, fmt.Errorf("database CreateDatabase error, %w", dbErr)
 	}
 
-	err := createDefaultUser(db)
-	if err != nil {
-		return nil, fmt.Errorf("database createDefaultUser error, %w", err)
-	}
-
 	return
 }
 
@@ -59,21 +53,21 @@ func initDatabase(db *gorm.DB) (err error) {
 	return err
 }
 
-func createDefaultUser(db *gorm.DB) error {
-	mUser := repository.User{}
-	if err := db.First(&mUser).Error; err != nil {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
-		}
+func CreateDefaultUser() error {
+	count, err := global.UserRepo.Count()
+	if err != nil {
+		return err
+	}
 
-		username := "admin@sun.cc"
-		mUser.Mail = username
-		mUser.Username = username
-		mUser.Name = username
+	if count == 0 {
+		mUser := repository.User{}
+		mail := "admin@sun.cc"
+		mUser.Mail = mail
+		mUser.Username = mail
+		mUser.Name = mail
 		mUser.Status = 1
 		mUser.Role = 1
 		mUser.Password = util.PasswordEncryption("12345678")
-
 		if errCreate := global.UserService.CreateUser(&mUser); errCreate != nil {
 			return errCreate
 		}

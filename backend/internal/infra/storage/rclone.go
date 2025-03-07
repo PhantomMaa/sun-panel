@@ -58,11 +58,19 @@ func NewRcloneStorage(ctx context.Context, configPath, bucket string) (*RcloneSt
 
 // implements Storage.Upload for rclone
 func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName string) (string, error) {
-	fmt.Printf("Uploading file via S3: %s", fileName)
-	// 一定要检查 bucket 是否存在，避免 BucketAlreadyExists
+	//global.Logger.Infof("Uploading file via rclone, file : %s", fileName)
+	// Check if bucket exists, if not, create it
 	_, err := r.fs.List(ctx, "")
 	if err != nil {
-		return "", fmt.Errorf("bucket check failed: %w", err)
+		fmt.Printf("Bucket does not exist or cannot be accessed: %v, attempting to create it\n", err)
+
+		// Try to create the bucket/directory
+		err = operations.Mkdir(ctx, r.fs, "")
+		if err != nil {
+			return "", fmt.Errorf("failed to create bucket: %w", err)
+		}
+
+		fmt.Println("Successfully created bucket")
 	}
 
 	// 将 io.Reader 转换为 io.ReadCloser

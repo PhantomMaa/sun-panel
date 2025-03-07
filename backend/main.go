@@ -105,6 +105,10 @@ func DatabaseConnect() error {
 	}
 
 	repository.Db = db
+	err = database.CreateDefaultUser()
+	if err != nil {
+		return fmt.Errorf("database CreateDefaultUser error, %w", err)
+	}
 
 	return nil
 }
