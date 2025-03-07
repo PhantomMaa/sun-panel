@@ -36,6 +36,11 @@ func DbInit(dbClient DbClient) (db *gorm.DB, dbErr error) {
 		return nil, fmt.Errorf("database CreateDatabase error, %w", dbErr)
 	}
 
+	err := createDefaultUser(db)
+	if err != nil {
+		return nil, fmt.Errorf("database createDefaultUser error, %w", err)
+	}
+
 	return
 }
 
@@ -54,20 +59,7 @@ func initDatabase(db *gorm.DB) (err error) {
 	return err
 }
 
-func GetLogger() logger.Interface {
-	return logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
-		logger.Config{
-			SlowThreshold:             time.Second, // 慢 SQL 阈值
-			LogLevel:                  logger.Warn, // 日志级别
-			IgnoreRecordNotFoundError: true,        // 忽略ErrRecordNotFound（记录未找到）错误
-			Colorful:                  true,        // 彩色打印
-		},
-	)
-
-}
-
-func CreateDefaultUser(db *gorm.DB) error {
+func createDefaultUser(db *gorm.DB) error {
 	mUser := repository.User{}
 	if err := db.First(&mUser).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -88,4 +80,17 @@ func CreateDefaultUser(db *gorm.DB) error {
 	}
 
 	return nil
+}
+
+func GetLogger() logger.Interface {
+	return logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
+		logger.Config{
+			SlowThreshold:             time.Second, // 慢 SQL 阈值
+			LogLevel:                  logger.Warn, // 日志级别
+			IgnoreRecordNotFoundError: true,        // 忽略ErrRecordNotFound（记录未找到）错误
+			Colorful:                  true,        // 彩色打印
+		},
+	)
+
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"gorm.io/gorm"
 	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/global"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
@@ -30,8 +31,7 @@ func (a *UserConfigRouter) InitRouter(router *gin.RouterGroup) {
 
 func (a *UserConfigRouter) Get(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-
-	cfg, err := repository.GetUserConfig(userInfo.ID)
+	cfg, err := global.UserConfigRepo.GetUserConfig(userInfo.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			response.ErrorDataNotFound(c)
@@ -58,7 +58,7 @@ func (a *UserConfigRouter) Set(c *gin.Context) {
 	req.UserId = userInfo.ID
 
 	// Save to database
-	if err := repository.SaveUserConfig(&req); err != nil {
+	if err := global.UserConfigRepo.SaveUserConfig(&req); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}

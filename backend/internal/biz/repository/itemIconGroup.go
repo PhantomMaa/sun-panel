@@ -32,11 +32,7 @@ type ItemIconGroup struct {
 
 func (r *ItemIconGroupRepo) Save(itemIconGroup *ItemIconGroup) error {
 	if itemIconGroup.ID != 0 {
-		updateField := []string{"IconJson", "Icon", "Title", "Url", "LanUrl", "Description", "OpenMethod", "GroupId", "UserId"}
-		if itemIconGroup.Sort != 0 {
-			updateField = append(updateField, "Sort")
-		}
-		if err := Db.Select(updateField).Where("id=?", itemIconGroup.ID).Updates(&itemIconGroup).Error; err != nil {
+		if err := Db.Where("id=?", itemIconGroup.ID).Updates(&itemIconGroup).Error; err != nil {
 			return err
 		}
 	} else {

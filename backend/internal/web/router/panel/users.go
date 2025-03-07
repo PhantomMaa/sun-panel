@@ -50,6 +50,12 @@ func (a UsersRouter) Create(c *gin.Context) {
 		return
 	}
 
+	// 验证账号是否存在
+	if _, err := global.UserRepo.CheckUsernameExist(param.Username); err != nil {
+		response.ErrorByCode(c, constant.CodeAccountAlreadyExist)
+		return
+	}
+
 	mUser := repository.User{
 		Username:  strings.TrimSpace(param.Username),
 		Password:  util.PasswordEncryption(param.Password),
@@ -58,13 +64,6 @@ func (a UsersRouter) Create(c *gin.Context) {
 		Status:    1,
 		Role:      param.Role,
 	}
-
-	// 验证账号是否存在
-	if _, err := mUser.CheckUsernameExist(param.Username); err != nil {
-		response.ErrorByCode(c, constant.CodeAccountAlreadyExist)
-		return
-	}
-
 	err := global.UserService.CreateUser(&mUser)
 	if err != nil {
 		response.ErrorDatabase(c, err.Error())
@@ -94,24 +93,24 @@ func (a UsersRouter) Deletes(c *gin.Context) {
 }
 
 func (a UsersRouter) Update(c *gin.Context) {
-	param := repository.User{}
-	if err := c.ShouldBindBodyWith(&param, binding.JSON); err != nil {
+	user := repository.User{}
+	if err := c.ShouldBindBodyWith(&user, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		c.Abort()
 		return
 	}
 
-	if param.Password == "" {
-		param.Password = "-" // 修改不允许修改密码，为了验证通过
+	if user.Password == "" {
+		user.Password = "-" // 修改不允许修改密码，为了验证通过
 	}
 
-	if errMsg, err := base.ValidateInputStruct(param); err != nil {
+	if errMsg, err := base.ValidateInputStruct(user); err != nil {
 		response.ErrorParamFomat(c, errMsg)
 		return
 	}
 
-	param.Username = strings.Trim(param.Username, " ")
-	if len(param.Username) < 3 {
+	user.Username = strings.Trim(user.Username, " ")
+	if len(user.Username) < 3 {
 		// 账号不得少于3个字符
 		response.ErrorParamFomat(c, "The account must be no less than 3 characters long")
 		return
@@ -120,45 +119,33 @@ func (a UsersRouter) Update(c *gin.Context) {
 	allowField := []string{"Username", "Name", "Mail", "Token", "Role"}
 
 	// 密码不为默认“-”空，修改密码
-	if param.Password != "-" {
-		param.Password = util.PasswordEncryption(param.Password)
+	if user.Password != "-" {
+		user.Password = util.PasswordEncryption(user.Password)
 		allowField = append(allowField, "Password")
 	}
 
 	// 验证账号是否存在
-	mUser := repository.User{}
-	_, err := mUser.GetUserInfoByUid(param.ID)
+	_, err := global.UserRepo.Get(user.ID)
 	if err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		return
 	}
 
-	param.Token = "" // 修改资料就重置token
-	if err := global.Db.Select(allowField).Where("id=?", param.ID).Updates(&param).Error; err != nil {
+	user.Token = "" // 修改资料就重置token
+	if err := global.UserRepo.Update(user.ID, &user); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
 
 	// 返回token等基本信息
-	response.SuccessData(c, param)
+	response.SuccessData(c, user)
 }
 
 func (a UsersRouter) GetList(c *gin.Context) {
 	type ParamsStruct struct {
-		repository.User
-		Limit   int    `form:"limit" json:"limit"`
-		Page    int    `form:"page" json:"page"`
-		Keyword string `form:"keyword" json:"keyword"`
+		repository.PagedParam
 	}
 
-	var (
-		list  []repository.User
-		count int64
-	)
-
-	db := global.Db
-
-	// 查询条件
 	param := ParamsStruct{}
 	if err := c.ShouldBind(&param); err != nil {
 		response.ErrorParamFomat(c, err.Error())
@@ -166,14 +153,11 @@ func (a UsersRouter) GetList(c *gin.Context) {
 		return
 	}
 
-	if param.Keyword != "" {
-		db = db.Where("name LIKE ? OR username LIKE ?", "%"+param.Keyword+"%", "%"+param.Keyword+"%")
-	}
-
-	if err := db.Omit("Password").Limit(param.Limit).Offset((param.Page - 1) * param.Limit).Find(&list).Limit(-1).Offset(-1).Count(&count).Error; err != nil {
+	list, count, err := global.UserRepo.GetList(param.PagedParam)
+	if err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
 
-	response.SuccessListData(c, list, uint(count))
+	response.SuccessListData(c, list, count)
 }

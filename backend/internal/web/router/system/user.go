@@ -75,8 +75,7 @@ func (a *UserRouter) UpdateInfo(c *gin.Context) {
 		return
 	}
 
-	mUser := repository.User{}
-	err = mUser.UpdateUserInfoByUserId(userInfo.ID, map[string]interface{}{
+	err = global.UserRepo.UpdateUserInfo(userInfo.ID, map[string]interface{}{
 		"head_image": params.HeadImage,
 		"name":       params.Name,
 	})
@@ -101,9 +100,7 @@ func (a *UserRouter) UpdatePasssword(c *gin.Context) {
 	}
 
 	userInfo, _ := base.GetCurrentUserInfo(c)
-
-	mUser := repository.User{}
-	vUser, err := mUser.GetUserInfoByUid(userInfo.ID)
+	vUser, err := global.UserRepo.Get(userInfo.ID)
 	if err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		return
@@ -115,12 +112,12 @@ func (a *UserRouter) UpdatePasssword(c *gin.Context) {
 		return
 	}
 
-	res := global.Db.Model(&repository.User{}).Where("id", userInfo.ID).Updates(map[string]interface{}{
+	err = global.UserRepo.UpdateUserInfo(userInfo.ID, map[string]interface{}{
 		"password": util.PasswordEncryption(params.NewPassword),
 		"token":    "",
 	})
-	if res.Error != nil {
-		response.ErrorDatabase(c, res.Error.Error())
+	if err != nil {
+		response.ErrorDatabase(c, err.Error())
 		return
 	}
 

@@ -66,7 +66,7 @@ func (r *ModuleConfigRepo) SaveModuleConfig(config *ModuleConfig) error {
 		}
 	} else {
 		// Update existing record
-		if err := Db.Select("Name", "UserId", "ValueJson").Where("user_id=? AND name=?", config.UserId, config.Name).Updates(config).Error; err != nil {
+		if err := Db.Where("user_id=? AND name=?", config.UserId, config.Name).Updates(config).Error; err != nil {
 			return err
 		}
 	}

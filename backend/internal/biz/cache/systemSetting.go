@@ -9,7 +9,8 @@ import (
 )
 
 type SystemSetting struct {
-	Cache kvcache.Cacher[interface{}]
+	Cache             kvcache.Cacher[interface{}]
+	SystemSettingRepo *repository.SystemSettingRepo
 }
 
 type Register struct {
@@ -39,8 +40,7 @@ func (s *SystemSetting) GetValueString(configName string) (result string, err er
 		}
 	}
 
-	mSetting := repository.SystemSetting{}
-	result, err = mSetting.Get(configName)
+	result, err = s.SystemSettingRepo.Get(configName)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = ErrorNoExists
 	}
@@ -59,8 +59,7 @@ func (s *SystemSetting) GetValueByInterface(configName string, value interface{}
 		}
 	}
 
-	mSetting := repository.SystemSetting{}
-	result, err := mSetting.Get(configName)
+	result, err := s.SystemSettingRepo.Get(configName)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		err = ErrorNoExists
 		return err
@@ -76,7 +75,6 @@ func (s *SystemSetting) GetValueByInterface(configName string, value interface{}
 
 func (s *SystemSetting) Set(configName string, configValue interface{}) error {
 	s.Cache.Delete(configName)
-	mSetting := repository.SystemSetting{}
-	err := mSetting.Set(configName, configValue)
+	err := s.SystemSettingRepo.Set(configName, configValue)
 	return err
 }

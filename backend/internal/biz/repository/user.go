@@ -22,43 +22,58 @@ type UserRepo struct {
 }
 
 type IUserRepo interface {
+	Get(id uint) (User, error)
+	GetByUsername(username string) (User, error)
+	GetByUsernameAndPassword(username, password string) (User, error)
+	GetList(pagedParam PagedParam) ([]User, uint, error)
+	Update(id uint, user *User) error
+	UpdateUserInfo(id uint, updateInfo map[string]interface{}) error
 	Create(user *User) error
-	Deletes(userIds []uint) error
+	Deletes(ids []uint) error
+	CheckUsernameExist(username string) (User, error)
 }
 
 func NewUserRepo() IUserRepo {
 	return &UserRepo{}
 }
 
-func (m *User) GetUserInfoByUid(uid uint) (User, error) {
+func (r *UserRepo) Get(id uint) (User, error) {
 	mUser := User{}
-	err := Db.Where("id=?", uid).First(&mUser).Error
+	err := Db.Where("id=?", id).First(&mUser).Error
 	return mUser, err
 }
 
-func (m *User) GetUserInfoByUsernameAndPassword(username, password string) (User, error) {
+func (r *UserRepo) GetByUsernameAndPassword(username, password string) (User, error) {
 	userInfo := User{}
 	err := Db.Where("username=?", username).Where("password=?", password).First(&userInfo).Error
 	return userInfo, err
 }
 
-func (m *User) GetUserInfoByUsername(username string) (User, error) {
+func (r *UserRepo) GetByUsername(username string) (User, error) {
 	mUser := User{}
 	err := Db.Where("username=?", username).First(&mUser).Error
 	return mUser, err
 }
 
-func (m *User) GetUserInfoByMail() *User {
-	mUser := User{}
-	if Db.Where("mail=?", m.Mail).First(&mUser).Error != nil {
-		return nil
+func (r *UserRepo) GetList(pagedParam PagedParam) ([]User, uint, error) {
+	var count int64
+	if err := Db.Model(&User{}).Count(&count).Error; err != nil {
+		return nil, 0, err
 	}
-	return &mUser
+
+	var list []User
+	if err := Db.Omit("Password").Limit(pagedParam.Limit).Offset(CalcOffset(pagedParam)).Find(&list).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return list, uint(count), nil
 }
 
-func (m *User) UpdateUserInfoByUserId(userId uint, updateInfo map[string]interface{}) error {
-	mUser := User{}
+func (r *UserRepo) Update(id uint, user *User) error {
+	return Db.Where("id=?", id).Updates(user).Error
+}
 
+func (r *UserRepo) UpdateUserInfo(userId uint, updateInfo map[string]interface{}) error {
 	data := map[string]interface{}{}
 	if v, ok := updateInfo["name"]; ok {
 		data["name"] = v
@@ -96,6 +111,7 @@ func (m *User) UpdateUserInfoByUserId(userId uint, updateInfo map[string]interfa
 		data["password"] = v
 	}
 
+	mUser := User{}
 	err := Db.Model(&mUser).Where("id=?", userId).Updates(data).Error
 	return err
 }
@@ -105,12 +121,13 @@ func (r *UserRepo) Create(user *User) error {
 	return err
 }
 
-func (m *User) CheckUsernameExist(username string) (User, error) {
+func (r *UserRepo) CheckUsernameExist(username string) (User, error) {
 	hasUser := User{}
 	count := Db.Where("username=?", username).First(&hasUser).RowsAffected
 	if count != 0 {
 		return hasUser, errors.New("该用户名已被注册")
 	}
+
 	return hasUser, nil
 }
 

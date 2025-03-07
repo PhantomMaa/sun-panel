@@ -21,17 +21,14 @@ type BaseModelNoId struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
-// PageLimitStruct 分页的结构体
-type PageLimitStruct struct {
-	PageSize  int `gorm:"-"`
-	LimitSize int `gorm:"-"`
+type PagedParam struct {
+	Limit int `form:"limit" json:"limit" gorm:"-"`
+	Page  int `form:"page" json:"page" gorm:"-"`
 }
 
 // 计算分页
-func calcPage(pageSize, limitSize int) (offset, limit int) {
-	offset = limitSize * (pageSize - 1)
-	limit = limitSize
-	return
+func CalcOffset(pagedParam PagedParam) int {
+	return pagedParam.Limit * (pagedParam.Page - 1)
 }
 
 var Db *gorm.DB

@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
-	"sun-panel/internal/biz/cache"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/config"
 	"sun-panel/internal/infra/database"
-	"sun-panel/internal/infra/kvcache"
 	"sun-panel/internal/infra/storage"
 	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util/i18n"
@@ -66,14 +64,6 @@ func InitApp(configPath string) error {
 		return fmt.Errorf("storage initialization error: %w", err)
 	}
 
-	// 其他的初始化
-	global.CacheSystemSetting = &cache.SystemSetting{
-		Cache: kvcache.NewLocalCache[any](5*time.Hour, -1),
-	}
-	global.CacheMonitor = &cache.Monitor{
-		Cache: kvcache.NewLocalCache[any](5*time.Hour, -1),
-	}
-
 	// 初始化JWT
 	if err := interceptor.InitJWT(); err != nil {
 		return fmt.Errorf("JWT initialization error: %w", err)
@@ -114,13 +104,7 @@ func DatabaseConnect() error {
 		return fmt.Errorf("database DbInit error, %w", err)
 	}
 
-	global.Db = db
 	repository.Db = db
-
-	err = database.CreateDefaultUser(global.Db)
-	if err != nil {
-		return fmt.Errorf("database createDefaultUser error, %w", err)
-	}
 
 	return nil
 }

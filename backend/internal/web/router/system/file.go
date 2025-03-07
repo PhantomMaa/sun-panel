@@ -149,8 +149,6 @@ func (a *FileRouter) Delete(c *gin.Context) {
 	// 从存储中删除文件
 	if err := global.Storage.Delete(c.Request.Context(), file.Src); err != nil {
 		global.Logger.Errorf("Failed to delete file %s: %v", file.Src, err)
-		response.ErrorParamFomat(c, err.Error())
-		return
 	}
 
 	// 从数据库中删除记录

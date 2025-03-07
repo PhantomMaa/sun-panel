@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 	"strings"
 	"sun-panel/internal/biz/constant"
-	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/global"
 	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
@@ -52,14 +51,9 @@ func (l *LoginRouter) Login(c *gin.Context) {
 		return
 	}
 
-	mUser := repository.User{}
-	var (
-		err  error
-		info repository.User
-	)
-
 	param.Username = strings.TrimSpace(param.Username)
-	if info, err = mUser.GetUserInfoByUsernameAndPassword(param.Username, util.PasswordEncryption(param.Password)); err != nil {
+	user, err := global.UserRepo.GetByUsernameAndPassword(param.Username, util.PasswordEncryption(param.Password))
+	if err != nil {
 		// 未找到记录 账号或密码错误
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			response.ErrorByCode(c, constant.CodePasswordWrong)
@@ -72,25 +66,25 @@ func (l *LoginRouter) Login(c *gin.Context) {
 	}
 
 	// 停用或未激活
-	if info.Status != 1 {
+	if user.Status != 1 {
 		response.ErrorByCode(c, constant.CodeStatusError)
 		return
 	}
 
 	// 生成JWT Token
-	tokenString, err := interceptor.GenerateToken(info.ID)
+	tokenString, err := interceptor.GenerateToken(user.ID)
 	if err != nil {
 		global.Logger.Error("JWT生成失败:", err)
 		response.Error(c, "系统错误")
 		return
 	}
 
-	info.Password = "" // 清除敏感信息
-	info.Token = tokenString
+	user.Password = "" // 清除敏感信息
+	user.Token = tokenString
 
 	// 设置当前用户信息
-	c.Set("userInfo", info)
-	response.SuccessData(c, info)
+	c.Set("userInfo", user)
+	response.SuccessData(c, user)
 }
 
 // Logout 安全退出

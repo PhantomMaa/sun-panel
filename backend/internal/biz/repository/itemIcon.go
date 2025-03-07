@@ -55,15 +55,9 @@ func (itemIconRepo *ItemIconRepo) Get(userId, id uint) (*ItemIcon, error) {
 
 func (itemIconRepo *ItemIconRepo) Save(itemIcon *ItemIcon) error {
 	if itemIcon.ID != 0 {
-		// 修改
-		updateField := []string{"IconJson", "Icon", "Title", "Url", "LanUrl", "Description", "OpenMethod", "GroupId", "UserId", "ItemIconGroupId"}
-		if itemIcon.Sort != 0 {
-			updateField = append(updateField, "Sort")
-		}
-		Db.Model(&ItemIcon{}).Select(updateField).Where("id=?", itemIcon.ID).Updates(&itemIcon)
+		Db.Where("id=?", itemIcon.ID).Updates(&itemIcon)
 	} else {
 		itemIcon.Sort = 9999
-		// 创建
 		Db.Create(&itemIcon)
 	}
 	return nil

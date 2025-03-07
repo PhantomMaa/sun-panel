@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {h, onMounted, reactive, ref} from 'vue'
+import { h, onMounted, reactive, ref } from 'vue'
 import { NAlert, NButton, NDataTable, NDropdown, NTag, useDialog, useMessage } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import { deletes as usersDeletes, getList as usersGetList } from '../../../api/panel/users'
@@ -13,7 +13,6 @@ const message = useMessage()
 const authStore = useAuthStore()
 const tableIsLoading = ref<boolean>(false)
 const editUserDialogShow = ref<boolean>(false)
-const keyWord = ref<string>()
 const editUserUserInfo = ref<User.Info>()
 const dialog = useDialog()
 
@@ -139,10 +138,6 @@ const pagination = reactive({
   },
 })
 
-function handlePageChange(page: number) {
-  getList(page)
-}
-
 // 添加
 function handleAdd() {
   editUserDialogShow.value = true
@@ -161,9 +156,6 @@ async function getList(page: number | null) {
     page: page || pagination.page,
     limit: pagination.pageSize,
   }
-  if (keyWord.value !== '')
-    req.keyWord = keyWord.value
-
   const { data } = await usersGetList<Common.ListResponse<User.Info[]>>(req)
   pagination.itemCount = data.count
   if (data.list)
@@ -202,8 +194,6 @@ onMounted(() => {
       :bordered="false"
       :loading="tableIsLoading"
       :remote="true"
-
-      @update:page="handlePageChange"
     />
     <EditUser v-model:visible="editUserDialogShow" :user-info="editUserUserInfo" @done="handelDone" />
   </div>

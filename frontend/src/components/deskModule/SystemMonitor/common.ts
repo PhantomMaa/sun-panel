@@ -1,5 +1,5 @@
 import type { MonitorData } from './typings'
-import { useModuleConfig } from '../../../store/modules'
+import { useModuleConfig } from '@/store'
 
 const modelName = 'systemMonitor'
 const moduleConfig = useModuleConfig()

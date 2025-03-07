@@ -2,13 +2,11 @@
 import { defineEmits, onMounted, ref } from 'vue'
 import { NAvatar, NCheckbox } from 'naive-ui'
 import { SvgIcon } from '../../common'
-import { useModuleConfig } from '../../../store/modules'
-import { useAuthStore } from '../../../store'
-import { VisitMode } from '../../../enums/auth'
-
-import SvgSrcBaidu from '../../../assets/search_engine_svg/baidu.svg'
-import SvgSrcBing from '../../../assets/search_engine_svg/bing.svg'
-import SvgSrcGoogle from '../../../assets/search_engine_svg/google.svg'
+import SvgSrcBaidu from '@/assets/search_engine_svg/baidu.svg'
+import SvgSrcBing from '@/assets/search_engine_svg/bing.svg'
+import SvgSrcGoogle from '@/assets/search_engine_svg/google.svg'
+import { useAuthStore, useModuleConfig } from '@/store'
+import { VisitMode } from '@/enums/auth'
 
 withDefaults(defineProps<{
   background?: string

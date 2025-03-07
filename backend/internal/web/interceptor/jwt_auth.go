@@ -3,7 +3,7 @@ package interceptor
 import (
 	"strings"
 	"sun-panel/internal/biz/constant"
-	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/global"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin"
@@ -27,16 +27,17 @@ func JWTAuth(c *gin.Context) {
 	// 解析Token
 	claims, err := ParseToken(authHeader)
 	if err != nil {
-		response.Error(c, "无效的访问凭证")
+		global.Logger.Infof("invalid token. %v", err)
+		response.ErrorByCode(c, constant.CodeNotLogin)
 		c.Abort()
 		return
 	}
 
 	// 获取用户信息
-	mUser := repository.User{}
-	userInfo, err := mUser.GetUserInfoByUid(claims.UserID)
+	userInfo, err := global.UserRepo.Get(claims.UserID)
 	if err != nil {
-		response.Error(c, "用户不存在")
+		global.Logger.Infof("user not exist. %v", err)
+		response.ErrorByCode(c, constant.CodeNotLogin)
 		c.Abort()
 		return
 	}

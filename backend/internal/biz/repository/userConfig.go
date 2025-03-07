@@ -41,8 +41,20 @@ type UserConfig struct {
 	Panel     *PanelConfig `gorm:"-" json:"panel"`
 }
 
+type UserConfigRepo struct {
+}
+
+type IUserConfigRepo interface {
+	GetUserConfig(userId uint) (UserConfig, error)
+	SaveUserConfig(config *UserConfig) error
+}
+
+func NewUserConfigRepo() IUserConfigRepo {
+	return &UserConfigRepo{}
+}
+
 // retrieves user configuration from database by user ID
-func GetUserConfig(userId uint) (UserConfig, error) {
+func (r *UserConfigRepo) GetUserConfig(userId uint) (UserConfig, error) {
 	cfg := UserConfig{}
 	if err := Db.First(&cfg, "user_id=?", userId).Error; err != nil {
 		return cfg, err
@@ -58,7 +70,7 @@ func GetUserConfig(userId uint) (UserConfig, error) {
 
 // saves user configuration to database
 // It will create a new record if not exists, or update existing one
-func SaveUserConfig(config *UserConfig) error {
+func (r *UserConfigRepo) SaveUserConfig(config *UserConfig) error {
 	// Process JSON fields
 	config.PanelJson = util.ToJSONString(config.Panel)
 
