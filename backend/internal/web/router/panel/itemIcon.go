@@ -2,8 +2,6 @@ package panel
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin/binding"
-	"gorm.io/gorm"
 	"net/url"
 	"path"
 	"strings"
@@ -14,11 +12,11 @@ import (
 	"sun-panel/internal/infra/storage"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
-	"sun-panel/internal/web/model/param/commonApiStructs"
 	"sun-panel/internal/web/model/param/panelApiStructs"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type ItemIconRouter struct {
@@ -39,7 +37,7 @@ func (a *ItemIconRouter) InitRouter(router *gin.RouterGroup) {
 	r.Use(interceptor.JWTAuth)
 	{
 		r.POST("/panel/itemIcon/edit", a.Edit)
-		r.POST("/panel/itemIcon/deletes", a.Deletes)
+		r.POST("/panel/itemIcon/delete", a.Delete)
 		r.POST("/panel/itemIcon/saveSort", a.SaveSort)
 		r.POST("/panel/itemIcon/addMultiple", a.AddMultiple)
 		r.POST("/panel/itemIcon/getSiteFavicon", a.GetSiteFavicon)
@@ -49,35 +47,25 @@ func (a *ItemIconRouter) InitRouter(router *gin.RouterGroup) {
 
 func (a *ItemIconRouter) Edit(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	req := repository.ItemIcon{}
-
-	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
+	itemIcon := repository.ItemIcon{}
+	if err := c.ShouldBindBodyWith(&itemIcon, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		return
 	}
 
-	if req.ItemIconGroupId == 0 {
+	if itemIcon.ItemIconGroupId == 0 {
 		response.ErrorParamFomat(c, "Group is mandatory")
 		return
 	}
 
-	req.UserId = userInfo.ID
-	req.IconJson = common.ToJSONString(req.Icon)
-
-	if req.ID != 0 {
-		// 修改
-		updateField := []string{"IconJson", "Icon", "Title", "Url", "LanUrl", "Description", "OpenMethod", "GroupId", "UserId", "ItemIconGroupId"}
-		if req.Sort != 0 {
-			updateField = append(updateField, "Sort")
-		}
-		global.Db.Model(&repository.ItemIcon{}).Select(updateField).Where("id=?", req.ID).Updates(&req)
-	} else {
-		req.Sort = 9999
-		// 创建
-		global.Db.Create(&req)
+	itemIcon.UserId = userInfo.ID
+	itemIcon.IconJson = common.ToJSONString(itemIcon.Icon)
+	if err := global.ItemIconRepo.Save(&itemIcon); err != nil {
+		response.ErrorDatabase(c, err.Error())
+		return
 	}
 
-	response.SuccessData(c, req)
+	response.SuccessData(c, itemIcon)
 }
 
 // 添加多个图标
@@ -91,11 +79,12 @@ func (a *ItemIconRouter) AddMultiple(c *gin.Context) {
 		return
 	}
 
-	for i := 0; i < len(req); i++ {
+	for i := range req {
 		if req[i].ItemIconGroupId == 0 {
 			response.ErrorParamFomat(c, "Group is mandatory")
 			return
 		}
+
 		req[i].UserId = userInfo.ID
 		// json转字符串
 		if j, err := json.Marshal(req[i].Icon); err == nil {
@@ -103,14 +92,17 @@ func (a *ItemIconRouter) AddMultiple(c *gin.Context) {
 		}
 	}
 
-	global.Db.Create(&req)
+	if err := global.ItemIconRepo.BatchSave(req); err != nil {
+		response.ErrorDatabase(c, err.Error())
+		return
+	}
 
 	response.SuccessData(c, req)
 }
 
 func (a *ItemIconRouter) GetListByGroupId(c *gin.Context) {
 	type ParamsStruct struct {
-		ItemIconGroupId int `form:"itemIconGroupId" json:"itemIconGroupId"`
+		ItemIconGroupId uint `form:"itemIconGroupId" json:"itemIconGroupId"`
 	}
 
 	// 查询条件
@@ -122,9 +114,8 @@ func (a *ItemIconRouter) GetListByGroupId(c *gin.Context) {
 	}
 
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	var itemIcons []repository.ItemIcon
-
-	if err := global.Db.Order("sort ,created_at").Find(&itemIcons, "item_icon_group_id = ? AND user_id=?", param.ItemIconGroupId, userInfo.ID).Error; err != nil {
+	itemIcons, err := global.ItemIconRepo.GetList(userInfo.ID, param.ItemIconGroupId)
+	if err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
@@ -136,9 +127,12 @@ func (a *ItemIconRouter) GetListByGroupId(c *gin.Context) {
 	response.SuccessListData(c, itemIcons, 0)
 }
 
-func (a *ItemIconRouter) Deletes(c *gin.Context) {
-	req := commonApiStructs.RequestDeleteIds[uint]{}
+func (a *ItemIconRouter) Delete(c *gin.Context) {
+	type RequestDeleteId struct {
+		Id uint `json:"id" binding:"required"`
+	}
 
+	req := RequestDeleteId{}
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		return
@@ -146,52 +140,27 @@ func (a *ItemIconRouter) Deletes(c *gin.Context) {
 
 	userInfo, _ := base.GetCurrentUserInfo(c)
 
-	// Start a transaction to ensure data consistency
-	err := global.Db.Transaction(func(tx *gorm.DB) error {
-		// First find all items to get their icon paths
-		var items []repository.ItemIcon
-		if err := tx.Find(&items, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
-			return err
-		}
-
-		// Delete associated files
-		for _, item := range items {
-			var icon map[string]interface{}
-			if err := json.Unmarshal([]byte(item.IconJson), &icon); err != nil {
-				global.Logger.Errorf("Failed to unmarshal icon JSON: %v", err)
-				continue
-			}
-
-			// Check if the icon has a src field indicating a file path
-			if src, ok := icon["src"].(string); ok && strings.HasPrefix(src, urlPrefix) {
-				// Extract the file path from the URL
-				filePath := strings.TrimPrefix(src, urlPrefix)
-
-				// Find and delete the file record
-				var file repository.File
-				if err := tx.Where("src = ? AND user_id = ?", filePath, userInfo.ID).First(&file).Error; err == nil {
-					if err := tx.Delete(&file).Error; err != nil {
-						return err
-					}
-
-					// Delete the actual file using storage interface
-					if err := a.storage.Delete(c.Request.Context(), filePath); err != nil {
-						global.Logger.Errorf("Failed to delete file %s: %v", filePath, err)
-						// Continue with deletion even if file removal fails
-					}
-				}
-			}
-		}
-
-		// Finally delete the item icons
-		if err := tx.Delete(&repository.ItemIcon{}, "id in ? AND user_id=?", req.Ids, userInfo.ID).Error; err != nil {
-			return err
-		}
-
-		return nil
-	})
-
+	item, err := global.ItemIconRepo.Get(userInfo.ID, req.Id)
 	if err != nil {
+		return
+	}
+
+	// Delete the actual file using storage interface
+	var icon map[string]interface{}
+	if err := json.Unmarshal([]byte(item.IconJson), &icon); err == nil {
+		// Check if the icon has a src field indicating a file path
+		if src, ok := icon["src"].(string); ok && strings.HasPrefix(src, urlPrefix) {
+			// Extract the file path from the URL
+			filepath := strings.TrimPrefix(src, urlPrefix)
+			if err := a.storage.Delete(c.Request.Context(), filepath); err != nil {
+				global.Logger.Errorf("Failed to delete file %s: %v", filepath, err)
+				response.ErrorParamFomat(c, err.Error())
+				return
+			}
+		}
+	}
+
+	if err := global.ItemIconRepo.Delete(userInfo.ID, req.Id); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
@@ -199,7 +168,7 @@ func (a *ItemIconRouter) Deletes(c *gin.Context) {
 	response.Success(c)
 }
 
-// GetSiteFavicon 支持获取并直接下载对方网站图标到服务器
+// 支持获取并直接下载对方网站图标到服务器
 func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	req := panelApiStructs.ItemIconGetSiteFaviconReq{}
@@ -224,8 +193,6 @@ func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 	}
 
 	protocol := parsedURL.Scheme
-	global.Logger.Debug("protocol:", protocol)
-	global.Logger.Debug("fullUrl:", fullUrl)
 
 	// 如果URL以双斜杠（//）开头，则使用当前页面协议
 	if strings.HasPrefix(fullUrl, "//") {
@@ -258,8 +225,7 @@ func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 	if ext == "" {
 		ext = ".ico"
 	}
-	mFile := repository.File{}
-	if _, err := mFile.AddFile(userInfo.ID, parsedURL.Host, ext, filepath); err != nil {
+	if _, err := global.FileRepo.AddFile(userInfo.ID, parsedURL.Host, ext, filepath); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
@@ -279,21 +245,9 @@ func (a *ItemIconRouter) SaveSort(c *gin.Context) {
 
 	userInfo, _ := base.GetCurrentUserInfo(c)
 
-	transactionErr := global.Db.Transaction(func(tx *gorm.DB) error {
-		// 在事务中执行一些 db 操作（从这里开始，您应该使用 'tx' 而不是 'db'）
-		for _, v := range req.SortItems {
-			if err := tx.Model(&repository.ItemIcon{}).Where("user_id=? AND id=? AND item_icon_group_id=?", userInfo.ID, v.Id, req.ItemIconGroupId).Update("sort", v.Sort).Error; err != nil {
-				// 返回任何错误都会回滚事务
-				return err
-			}
-		}
-
-		// 返回 nil 提交事务
-		return nil
-	})
-
-	if transactionErr != nil {
-		response.ErrorDatabase(c, transactionErr.Error())
+	err := global.ItemIconRepo.BatchSaveSort(userInfo.ID, req.ItemIconGroupId, req.SortItems)
+	if err != nil {
+		response.ErrorDatabase(c, err.Error())
 		return
 	}
 

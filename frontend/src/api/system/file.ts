@@ -6,9 +6,9 @@ export function getList<T>() {
   })
 }
 
-export function deletes<T>(ids: number[]) {
+export function deleteFile<T>(id: number) {
   return post<T>({
-    url: '/file/deletes',
-    data: { ids },
+    url: '/file/delete',
+    data: { id },
   })
 }

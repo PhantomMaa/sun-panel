@@ -21,10 +21,10 @@ export function getListByGroupId<T>(itemIconGroupId: number | undefined) {
   })
 }
 
-export function deletes<T>(ids: number[]) {
+export function deleteItem<T>(id: number) {
   return post<T>({
-    url: '/panel/itemIcon/deletes',
-    data: { ids },
+    url: '/panel/itemIcon/delete',
+    data: { id },
   })
 }
 

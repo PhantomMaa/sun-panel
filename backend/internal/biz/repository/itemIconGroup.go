@@ -68,12 +68,11 @@ func (r *ItemIconGroupRepo) Count(userId uint) (int, error) {
 
 func (r *ItemIconGroupRepo) Deletes(userId uint, ids []uint) error {
 	txErr := Db.Transaction(func(tx *gorm.DB) error {
-		mitemIcon := ItemIcon{}
 		if err := tx.Delete(&ItemIconGroup{}, "id in ? AND user_id=?", ids, userId).Error; err != nil {
 			return err
 		}
 
-		if err := mitemIcon.DeleteByItemIconGroupIds(tx, userId, ids); err != nil {
+		if err := tx.Delete(&ItemIcon{}, "item_icon_group_id in ? AND user_id=?", ids, userId).Error; err != nil {
 			return err
 		}
 

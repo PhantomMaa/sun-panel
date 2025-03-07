@@ -2,21 +2,18 @@ package system
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin/binding"
-	"gorm.io/gorm"
 	"net/http"
 	"path"
 	"strings"
-	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/common"
 	"sun-panel/internal/global"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
-	"sun-panel/internal/web/model/param/commonApiStructs"
 	"sun-panel/internal/web/model/response"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type FileRouter struct {
@@ -42,7 +39,7 @@ func (a *FileRouter) InitRouter(router *gin.RouterGroup) {
 	private.Use(interceptor.JWTAuth)
 	{
 		private.POST("/file/uploadImg", a.UploadImg)
-		private.POST("/file/deletes", a.Deletes)
+		private.POST("/file/delete", a.Delete)
 		private.GET("/file/getList", a.GetList)
 	}
 }
@@ -95,8 +92,7 @@ func (a *FileRouter) UploadImg(c *gin.Context) {
 	}
 
 	// 向数据库添加记录
-	mFile := repository.File{}
-	_, err = mFile.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
+	_, err = global.FileRepo.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
 	if err != nil {
 		global.Logger.Errorf("Failed to add file record to database: %v", err)
 		response.ErrorByCode(c, 1300)
@@ -110,10 +106,9 @@ func (a *FileRouter) UploadImg(c *gin.Context) {
 }
 
 func (a *FileRouter) GetList(c *gin.Context) {
-	var list []repository.File
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	var count int64
-	if err := global.Db.Order("created_at desc").Find(&list, "user_id=?", userInfo.ID).Count(&count).Error; err != nil {
+	list, count, err := global.FileRepo.GetList(userInfo.ID)
+	if err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
@@ -131,34 +126,36 @@ func (a *FileRouter) GetList(c *gin.Context) {
 	response.SuccessListData(c, data, count)
 }
 
-func (a *FileRouter) Deletes(c *gin.Context) {
-	req := commonApiStructs.RequestDeleteIds[uint]{}
+func (a *FileRouter) Delete(c *gin.Context) {
+	type RequestDeleteId struct {
+		Id uint `json:"id" binding:"required"`
+	}
+
+	req := RequestDeleteId{}
 	userInfo, _ := base.GetCurrentUserInfo(c)
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		return
 	}
 
-	global.Db.Transaction(func(db *gorm.DB) error {
-		var files []repository.File
+	file, err := global.FileRepo.Get(userInfo.ID, req.Id)
+	if err != nil {
+		response.ErrorDatabase(c, err.Error())
+		return
+	}
 
-		if err := db.Find(&files, "user_id=? AND id in ?", userInfo.ID, req.Ids).Order("created_at desc").Error; err != nil {
-			return err
-		}
+	// 从存储中删除文件
+	if err := global.Storage.Delete(c.Request.Context(), file.Src); err != nil {
+		global.Logger.Errorf("Failed to delete file %s: %v", file.Src, err)
+		response.ErrorParamFomat(c, err.Error())
+		return
+	}
 
-		for _, v := range files {
-			if err := global.Storage.Delete(c.Request.Context(), v.Src); err != nil {
-				global.Logger.Errorf("Failed to delete file %s: %v", v.Src, err)
-				return err
-			}
-		}
-
-		if err := db.Delete(&files, "user_id=? AND id in ?", userInfo.ID, req.Ids).Error; err != nil {
-			return err
-		}
-
-		return nil
-	})
+	// 从数据库中删除记录
+	if err := global.FileRepo.Delete(userInfo.ID, req.Id); err != nil {
+		response.ErrorDatabase(c, err.Error())
+		return
+	}
 
 	response.Success(c)
 }

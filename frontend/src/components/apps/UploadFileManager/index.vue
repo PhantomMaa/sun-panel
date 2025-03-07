@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { NAlert, NButton, NButtonGroup, NCard, NEllipsis, NGrid, NGridItem, NImage, NImageGroup, NSpin, useDialog, useMessage } from 'naive-ui'
 import { onMounted, ref } from 'vue'
-import { deletes, getList } from '../../../api/system/file'
 import { set as savePanelConfig } from '../../../api/panel/userConfig'
 import { RoundCardModal, SvgIcon } from '../../common'
-import { copyToClipboard, timeFormat } from '../../../utils/cmn'
-import { t } from '../../../locales'
-import { usePanelState } from '../../../store'
+import { deleteFile, getList } from '@/api/system/file'
+import { copyToClipboard, timeFormat } from '@/utils/cmn'
+import { t } from '@/locales'
+import { usePanelState } from '@/store'
 
 interface InfoModalState {
   title: string
@@ -53,14 +53,14 @@ function handleDelete(id: number) {
     positiveText: t('common.confirm'),
     negativeText: t('common.cancel'),
     onPositiveClick: () => {
-      deletesImges(id)
+      deleteImage(id)
     },
   })
 }
 
-async function deletesImges(id: number) {
+async function deleteImage(id: number) {
   try {
-    const { code, msg } = await deletes([id])
+    const { code, msg } = await deleteFile(id)
     if (code === 0) {
       getFileList()
       ms.success(t('common.success'))

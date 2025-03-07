@@ -21,7 +21,7 @@ func SuccessData(ctx *gin.Context, data interface{}) {
 	ApiReturn(ctx, 0, "OK", data)
 }
 
-func SuccessListData(ctx *gin.Context, list interface{}, count int64) {
+func SuccessListData(ctx *gin.Context, list interface{}, count uint) {
 	ApiReturn(ctx, 0, "OK", gin.H{
 		"list":  list,
 		"count": count,

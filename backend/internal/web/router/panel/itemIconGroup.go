@@ -1,7 +1,6 @@
 package panel
 
 import (
-	"github.com/gin-gonic/gin/binding"
 	"math"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/global"
@@ -9,6 +8,8 @@ import (
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/param/commonApiStructs"
 	"sun-panel/internal/web/model/response"
+
+	"github.com/gin-gonic/gin/binding"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,7 +41,7 @@ func (a *ItemIconGroupRouter) Edit(c *gin.Context) {
 		return
 	}
 
-	if itemIconGroup.UserId != userInfo.ID {
+	if itemIconGroup.ID != 0 && itemIconGroup.UserId != userInfo.ID {
 		response.ErrorCode(c, 1203, "You do not have permission to edit this item", nil)
 		return
 	}

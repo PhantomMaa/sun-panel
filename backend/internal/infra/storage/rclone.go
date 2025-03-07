@@ -81,11 +81,11 @@ func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName s
 }
 
 // implements Storage.Delete for rclone
-func (r *RcloneStorage) Delete(ctx context.Context, path string) error {
-	fmt.Printf("Deleting file: %s", path)
+func (r *RcloneStorage) Delete(ctx context.Context, filepath string) error {
+	fmt.Printf("Deleting file: %s", filepath)
 
 	// Find the object
-	obj, err := r.fs.NewObject(ctx, path)
+	obj, err := r.fs.NewObject(ctx, filepath)
 	if err != nil {
 		return fmt.Errorf("failed to find object: %w", err)
 	}
@@ -96,14 +96,14 @@ func (r *RcloneStorage) Delete(ctx context.Context, path string) error {
 		return fmt.Errorf("failed to delete file: %w", err)
 	}
 
-	fmt.Printf("Successfully deleted file: %s", path)
+	fmt.Printf("Successfully deleted file: %s", filepath)
 	return nil
 }
 
 // implements file reading from storage
-func (r *RcloneStorage) Get(ctx context.Context, path string) ([]byte, error) {
+func (r *RcloneStorage) Get(ctx context.Context, filepath string) ([]byte, error) {
 	// Find the object
-	obj, err := r.fs.NewObject(ctx, path)
+	obj, err := r.fs.NewObject(ctx, filepath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find object: %w", err)
 	}
@@ -124,6 +124,6 @@ func (r *RcloneStorage) Get(ctx context.Context, path string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to read object: %w", err)
 	}
 
-	fmt.Printf("Successfully read file: %s", path)
+	fmt.Printf("Successfully read file: %s", filepath)
 	return data, nil
 }

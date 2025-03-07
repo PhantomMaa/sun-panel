@@ -6,7 +6,7 @@ import { getList as getGroupList } from '../../api/panel/itemIconGroup'
 import { Clock, SearchBox, SystemMonitor } from '../../components/deskModule'
 import { SvgIcon } from '../../components/common'
 import { AppIcon, AppStarter, EditItem } from './components'
-import { deletes, getListByGroupId, saveSort } from '@/api/panel/itemIcon'
+import { deleteItem, getListByGroupId, saveSort } from '@/api/panel/itemIcon'
 
 import { setTitle, updateLocalUserInfo } from '@/utils/cmn'
 import { useAuthStore, usePanelState } from '@/store'
@@ -140,7 +140,7 @@ function handleRightMenuSelect(key: string | number) {
         positiveText: t('common.confirm'),
         negativeText: t('common.cancel'),
         onPositiveClick: () => {
-          deletes([currentRightSelectItem.value?.id as number]).then(({ code, msg }) => {
+          deleteItem(currentRightSelectItem.value?.id as number).then(({ code, msg }) => {
             if (code === 0) {
               ms.success(t('common.deleteSuccess'))
               getList()

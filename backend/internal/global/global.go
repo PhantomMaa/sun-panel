@@ -26,8 +26,10 @@ var (
 )
 
 var (
+	ItemIconRepo      = repository.NewItemIconRepo()
 	ItemIconGroupRepo = repository.NewItemIconGroupRepo()
 	UserRepo          = repository.NewUserRepo()
+	FileRepo          = repository.NewFileRepo()
 )
 
 var (

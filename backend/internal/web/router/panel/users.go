@@ -174,5 +174,5 @@ func (a UsersRouter) GetList(c *gin.Context) {
 		return
 	}
 
-	response.SuccessListData(c, list, count)
+	response.SuccessListData(c, list, uint(count))
 }
