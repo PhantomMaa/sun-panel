@@ -91,15 +91,16 @@ function handWindowIframeIdLoad(payload: Event) {
 function getList() {
   // 获取组数据
   getGroupList<Common.ListResponse<ItemGroup[]>>().then(({ code, data, msg }) => {
-    if (code === 0)
+    if (code === 0 && data && data.list) {
       items.value = data.list
-    for (let i = 0; i < data.list.length; i++) {
-      const element = data.list[i]
-      if (element.id)
-        updateItemIconGroupByNet(i, element.id)
+      for (let i = 0; i < data.list.length; i++) {
+        const element = data.list[i]
+        if (element.id)
+          updateItemIconGroupByNet(i, element.id)
+      }
+      filterItems.value = items.value
+      // console.log(items)
     }
-    filterItems.value = items.value
-    // console.log(items)
   })
 }
 

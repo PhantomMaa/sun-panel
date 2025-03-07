@@ -36,10 +36,18 @@ export async function updateLocalUserInfo() {
     visitMode: VisitMode
   }
 
-  const { data } = await getAuthInfo<Req>()
-  userStore.updateUserInfo({ headImage: data.user.headImage, name: data.user.name })
-  authStore.setUserInfo(data.user)
-  authStore.setVisitMode(data.visitMode)
+  try {
+    const { data } = await getAuthInfo<Req>()
+    if (data && data.user) {
+      userStore.updateUserInfo({ headImage: data.user.headImage, name: data.user.name })
+      authStore.setUserInfo(data.user)
+      if (data.visitMode !== undefined)
+        authStore.setVisitMode(data.visitMode)
+    }
+  }
+  catch (error) {
+    console.error('Failed to update local user info:', error)
+  }
 }
 
 // 复制文字到剪切板
