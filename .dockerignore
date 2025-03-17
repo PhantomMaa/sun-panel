@@ -1,7 +1,6 @@
-**/node_modules
-*/node_modules
-node_modules
-Dockerfile
-.*
-*/.*
-!.env
+frontend/node_modules
+.git
+.idea
+.vscode
+.github
+.husky
