@@ -48,7 +48,29 @@ func GetOneFaviconURL(urlStr string) (string, error) {
 
 // 获取远程文件的大小
 func GetRemoteFileSize(url string) (int64, error) {
-	resp, err := http.Head(url)
+	// 创建一个自定义的 HTTP 客户端
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		// 启用自动重定向
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return nil
+		},
+	}
+
+	// 创建请求
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	// 添加浏览器模拟头信息
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	req.Header.Set("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+	req.Header.Set("Connection", "keep-alive")
+
+	// 发送请求
+	resp, err := client.Do(req)
 	if err != nil {
 		return 0, err
 	}
@@ -65,25 +87,28 @@ func GetRemoteFileSize(url string) (int64, error) {
 
 	// 获取Content-Length字段，即文件大小
 	size := resp.ContentLength
+
+	// 如果服务器没有提供 Content-Length，尝试读取响应体来确定大小
+	if size <= 0 {
+		global.Logger.Infof("Content-Length not provided for %s, using alternative method", url)
+		// 不实际读取整个响应体，因为我们已经有了连接，可以直接关闭
+		return 0, fmt.Errorf("Content-Length not provided by server")
+	}
+
 	return size, nil
 }
 
 // 下载图片
 func DownloadImage(ctx context.Context, url string, storage storage.RcloneStorage) (string, error) {
-	// 获取远程文件大小
-	fileSize, err := GetRemoteFileSize(url)
+	// 创建请求
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
 	}
-
-	// 判断文件大小是否在阈值内（设置为 10MB）
-	maxSize := int64(10 * 1024 * 1024)
-	if fileSize > maxSize {
-		return "", fmt.Errorf("文件太大，不下载。大小：%d字节", fileSize)
-	}
-
-	// 发送HTTP GET请求获取图片数据
-	response, err := http.Get(url)
+	
+	// 发送请求
+	client := &http.Client{Timeout: 10 * time.Second}
+	response, err := client.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -98,6 +123,10 @@ func DownloadImage(ctx context.Context, url string, storage storage.RcloneStorag
 		return "", fmt.Errorf("HTTP request failed, status code: %d", response.StatusCode)
 	}
 
+	// 限制最大下载大小为 10MB
+	limitedReader := http.MaxBytesReader(nil, response.Body, 10*1024*1024)
+
+	// 生成文件名
 	urlFileName := path.Base(url)
 	fileExt := path.Ext(url)
 	if fileExt == "" {
@@ -105,9 +134,12 @@ func DownloadImage(ctx context.Context, url string, storage storage.RcloneStorag
 	}
 	fileName := util.Md5(fmt.Sprintf("%s%s", urlFileName, time.Now().String())) + fileExt
 
-	// 使用 rclone 存储接口上传文件
-	filepath, err := storage.Upload(ctx, response.Body, fileName)
+	// 上传文件
+	filepath, err := storage.Upload(ctx, limitedReader, fileName)
 	if err != nil {
+		if strings.Contains(err.Error(), "request body too large") {
+			return "", fmt.Errorf("文件太大，不下载")
+		}
 		return "", fmt.Errorf("failed to upload file: %v", err)
 	}
 

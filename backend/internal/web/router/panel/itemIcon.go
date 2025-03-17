@@ -199,7 +199,7 @@ func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 		// 如果URL既不以http://开头也不以https://开头，则默认为http协议
 		fullUrl = "http://" + fullUrl
 	}
-	global.Logger.Debug("fullUrl:", fullUrl)
+
 	// 去除图标的get参数
 	{
 		parsedIcoURL, err := url.Parse(fullUrl)
