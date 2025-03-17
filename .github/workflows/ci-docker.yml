@@ -37,6 +37,16 @@ jobs:
           platforms: amd64,arm64
       - name: Set up buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache-temp
+          key: ${{ runner.os }}-buildx-temp-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-temp-
       - name: Build temp
         uses: docker/build-push-action@v4
         with:
@@ -45,6 +55,12 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ needs.prepare.outputs.repo_lower }}/temp:${{ needs.prepare.outputs.version }}
+          cache-from: type=local,src=/tmp/.buildx-cache-temp
+          cache-to: type=local,dest=/tmp/.buildx-cache-temp-new,mode=max
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache-temp
+          mv /tmp/.buildx-cache-temp-new /tmp/.buildx-cache-temp
 
   build-frontend:
     needs: [prepare, build-temp]
@@ -93,6 +109,16 @@ jobs:
           platforms: amd64,arm64
       - name: Set up buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-backend-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-backend-
       - name: Build backend
         uses: docker/build-push-action@v4
         with:
@@ -104,6 +130,12 @@ jobs:
             ghcr.io/${{ needs.prepare.outputs.repo_lower }}/backend:${{ needs.prepare.outputs.version }}
           build-args: |
             VERSION=${{ needs.prepare.outputs.version }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   build-monolith:
     needs: [prepare, build-temp, build-backend]
@@ -144,19 +176,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           user="${{ github.repository_owner }}"
-          package_name="${{ github.event.repository.name }}/temp"
-          encoded_package_name=$(printf '%s' "$package_name" | jq -sRr @uri)
+          repo="${{ github.event.repository.name }}"
 
           echo "Deleting temp image ..."
+          echo 'gh api \
+            --method DELETE \
+            -H "Accept: application/vnd.github+json" \
+            "/users/${user}/packages/container/${repo}%2Ftemp" || true'
 
           gh api \
             --method DELETE \
             -H "Accept: application/vnd.github+json" \
-            "/users/${user}/packages/container/${encoded_package_name}"
-
-          if [ $? -eq 0 ]; then
-            echo "Successfully deleted temp image"
-          else
-            echo "Failed to delete temp image"
-            exit 1
-          fi
+            "/users/${user}/packages/container/${repo}%2Ftemp" || true
+   
+          echo "Temp image deletion attempts completed. If all failed, the package may not exist or require different permissions."

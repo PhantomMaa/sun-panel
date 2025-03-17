@@ -3,6 +3,12 @@ FROM golang:1.24-alpine as builder
 ARG VERSION
 
 WORKDIR /build
+
+# 先复制 go.mod 和 go.sum 文件以利用缓存
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+
+# 复制其余源代码
 COPY backend .
 
 # gcc, musl-dev are required for go-sqlite3
@@ -13,14 +19,16 @@ RUN apk add --no-cache bash curl gcc git musl-dev && \
     go build -o sun-panel --ldflags="-X sun-panel/global.RUNCODE=release -X sun-panel/global.VERSION=${VERSION}" main.go
 
 # final image
-FROM alpine
+FROM alpine:3.19
 WORKDIR /app
 
 # Setup timezone. (Optional)
 ENV TZ=Asia/Shanghai
 
+# 合并 RUN 命令减少层数
 RUN apk add --no-cache bash curl tzdata && \
-    ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo "$TZ" > /etc/timezone
+    ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo "$TZ" > /etc/timezone && \
+    mkdir -p /app/lang
 
 COPY --from=builder /build/sun-panel /app/sun-panel
 COPY backend/lang /app/lang
