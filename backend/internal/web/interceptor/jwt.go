@@ -2,7 +2,7 @@ package interceptor
 
 import (
 	"errors"
-	"sun-panel/internal/global"
+	"sun-panel/internal/infra/config"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -23,12 +23,12 @@ var (
 // InitJWT 初始化JWT配置
 func InitJWT() error {
 	// 从配置文件读取JWT配置
-	secret := global.Config.GetValueString("jwt", "secret")
+	secret := config.AppConfig.JWT.Secret
 	if secret == "" {
 		secret = "sun-panel-default-jwt-secret-key" // 默认密钥
 	}
 
-	expire := global.Config.GetValueInt("jwt", "expire")
+	expire := config.AppConfig.JWT.Expire
 	if expire <= 0 {
 		expire = 72 // 默认72小时
 	}
@@ -68,7 +68,7 @@ func GenerateToken(userID uint) (string, error) {
 
 // ParseToken 解析JWT Token
 func ParseToken(tokenString string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (any, error) {
 		return secretKey, nil
 	})
 

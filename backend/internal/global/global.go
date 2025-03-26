@@ -19,7 +19,7 @@ var (
 
 var (
 	Logger  *zap.SugaredLogger
-	Config  *config.IniConfig
+	Config  *config.Config
 	Storage *storage.RcloneStorage
 )
 

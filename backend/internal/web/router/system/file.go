@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/global"
+	"sun-panel/internal/infra/config"
 	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
@@ -23,7 +24,7 @@ type FileRouter struct {
 
 func NewFileRouter() *FileRouter {
 	return &FileRouter{
-		urlPrefix: global.Config.GetValueString("base", "url_prefix"),
+		urlPrefix: config.AppConfig.Base.URLPrefix,
 	}
 }
 

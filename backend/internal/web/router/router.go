@@ -2,6 +2,7 @@ package router
 
 import (
 	"sun-panel/internal/global"
+	"sun-panel/internal/infra/config"
 	"sun-panel/internal/web/router/panel"
 	"sun-panel/internal/web/router/system"
 
@@ -37,7 +38,7 @@ func InitRouters(addr string) error {
 	}
 
 	// WEB文件服务
-	if global.Config.GetValueString("base", "enable_static_server") == "true" {
+	if config.AppConfig.Base.EnableStaticServer {
 		webPath := "./web"
 		router.Static("/assets", webPath+"/assets")
 		router.Static("/custom", webPath+"/custom")
@@ -45,10 +46,10 @@ func InitRouters(addr string) error {
 		router.StaticFile("/favicon.ico", webPath+"/favicon.ico")
 		router.StaticFile("/favicon.svg", webPath+"/favicon.svg")
 
-		if global.Config.GetValueString("rclone", "type") == "local" {
+		if config.AppConfig.Rclone.Type == "local" {
 			// 使用本次存储时，为本次存储设置静态文件服务
-			bucket := global.Config.GetValueString("rclone", "bucket")
-			urlPrefix := global.Config.GetValueString("base", "url_prefix")
+			bucket := config.AppConfig.Rclone.Bucket
+			urlPrefix := config.AppConfig.Base.URLPrefix
 			router.Static(urlPrefix, bucket)
 		}
 

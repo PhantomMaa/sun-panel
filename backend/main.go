@@ -70,7 +70,7 @@ func InitApp(configPath string) error {
 	}
 
 	// 初始化路由
-	httpPort := global.Config.GetValueString("base", "http_port")
+	httpPort := config.AppConfig.Base.HTTPPort
 	if err := router.InitRouters(":" + httpPort); err != nil {
 		panic(err)
 	}
@@ -80,20 +80,20 @@ func InitApp(configPath string) error {
 
 func DatabaseConnect() error {
 	var dbClientInfo database.DbClient
-	databaseDrive := global.Config.GetValueString("base", "database_drive")
+	databaseDrive := config.AppConfig.Base.DatabaseDrive
 	switch databaseDrive {
 	case database.MYSQL:
 		dbClientInfo = &database.MySQLConfig{
-			Username:    global.Config.GetValueString("mysql", "username"),
-			Password:    global.Config.GetValueString("mysql", "password"),
-			Host:        global.Config.GetValueString("mysql", "host"),
-			Port:        global.Config.GetValueString("mysql", "port"),
-			Database:    global.Config.GetValueString("mysql", "db_name"),
-			WaitTimeout: global.Config.GetValueInt("mysql", "wait_timeout"),
+			Username:    config.AppConfig.MySQL.Username,
+			Password:    config.AppConfig.MySQL.Password,
+			Host:        config.AppConfig.MySQL.Host,
+			Port:        config.AppConfig.MySQL.Port,
+			Database:    config.AppConfig.MySQL.DBName,
+			WaitTimeout: config.AppConfig.MySQL.WaitTimeout,
 		}
 	case database.SQLITE:
 		dbClientInfo = &database.SQLiteConfig{
-			Filename: global.Config.GetValueString("sqlite", "file_path"),
+			Filename: config.AppConfig.SQLite.FilePath,
 		}
 	default:
 		return fmt.Errorf("unsupported database drive: %s", databaseDrive)
@@ -119,7 +119,7 @@ func InitStorage(configPath string) (*storage.RcloneStorage, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	bucket := global.Config.GetValueString("rclone", "bucket")
+	bucket := config.AppConfig.Rclone.Bucket
 	rcloneStorage, err := storage.NewRcloneStorage(ctx, configPath, bucket)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize rclone storage: %w", err)

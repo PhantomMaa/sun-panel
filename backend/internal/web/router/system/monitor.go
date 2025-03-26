@@ -76,8 +76,7 @@ func (a *MonitorRouter) GetDiskMountpoints(c *gin.Context) {
 
 // GetEnableStatus returns the enableMonitor configuration from conf.ini
 func (a *MonitorRouter) GetEnableStatus(c *gin.Context) {
-	enableMonitor := global.Config.GetValueString("base", "enable_monitor")
 	response.SuccessData(c, gin.H{
-		"enabled": enableMonitor == "true",
+		"enabled": global.Config.Base.EnableMonitor,
 	})
 }

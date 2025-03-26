@@ -4,14 +4,14 @@ import (
 	"os"
 	"strings"
 	"sun-panel/internal/global"
-	"sun-panel/internal/infra/config"
 	"sun-panel/internal/util"
+	"gopkg.in/ini.v1"
 )
 
 var Obj *LangStructObj
 
 type LangStructObj struct {
-	LangContet *config.IniConfig
+	LangContent *ini.File
 }
 
 func LangInit(lang string) {
@@ -27,7 +27,12 @@ func LangInit(lang string) {
 
 func NewLang(langPath string) *LangStructObj {
 	langObj := LangStructObj{}
-	langObj.LangContet = config.NewIniConfig(langPath) // 读取配置
+	iniFile, err := ini.Load(langPath)
+	if err != nil {
+		global.Logger.Errorln("加载语言文件失败:", err)
+		os.Exit(1)
+	}
+	langObj.LangContent = iniFile
 	return &langObj
 }
 
@@ -37,9 +42,9 @@ func (l *LangStructObj) Get(key string) string {
 	}
 	keyArr := strings.Split(key, ".")
 	if len(keyArr) < 2 {
-		return l.LangContet.GetValueString(keyArr[0], "NOT EMPTY")
+		return l.LangContent.Section(keyArr[0]).Key("NOT EMPTY").String()
 	} else {
-		return l.LangContet.GetValueString(keyArr[0], keyArr[1])
+		return l.LangContent.Section(keyArr[0]).Key(keyArr[1]).String()
 	}
 }
 

@@ -26,7 +26,7 @@ type ItemIconRouter struct {
 var urlPrefix string
 
 func NewItemIconRouter() *ItemIconRouter {
-	urlPrefix = global.Config.GetValueString("base", "url_prefix")
+	urlPrefix = global.Config.Base.URLPrefix
 	return &ItemIconRouter{
 		storage: *global.Storage,
 	}
