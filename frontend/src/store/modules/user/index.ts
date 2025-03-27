@@ -10,11 +10,6 @@ export const useUserStore = defineStore('user-store', {
       this.recordState()
     },
 
-    // updateUserHeadImage(userInfo: User.Info) {
-    //   this.userInfo = { ...this.userInfo, ...userInfo }
-    //   this.recordState()
-    // },
-
     resetUserInfo() {
       this.userInfo = { ...defaultSetting().userInfo }
       this.recordState()

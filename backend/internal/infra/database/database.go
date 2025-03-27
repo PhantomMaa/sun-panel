@@ -68,6 +68,7 @@ func CreateDefaultUser() error {
 		mUser.Status = 1
 		mUser.Role = 1
 		mUser.Password = util.PasswordEncryption("12345678")
+		mUser.OauthProvider = ""
 		if errCreate := global.UserService.CreateUser(&mUser); errCreate != nil {
 			return errCreate
 		}

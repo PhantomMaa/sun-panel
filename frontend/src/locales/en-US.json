@@ -68,7 +68,6 @@
       "mask": "Mask",
       "maxWidth": "Max width",
       "netModeChangeButtonShow": "Show network mode switch button",
-      "publicVisitModeShow": "Allow public mode display",
       "resetWarnText": "Are you sure you want to reset these styles?",
       "searchBar": "Search bar component",
       "searchBarSearchItem": "Allow search bar to search items",

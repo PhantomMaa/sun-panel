@@ -21,6 +21,7 @@ func RouterArray() []IRouter {
 		system.NewUserRouter(),
 		system.NewModuleConfigRouter(),
 		system.NewMonitorRouter(),
+		system.NewOAuthRouter(),
 		panel.NewItemIconRouter(),
 		panel.NewItemIconGroupRouter(),
 		panel.NewUserConfigRouter(),

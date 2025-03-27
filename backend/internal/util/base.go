@@ -2,6 +2,8 @@ package util
 
 import (
 	"crypto/md5"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"os"
@@ -59,4 +61,15 @@ func ToJSONString(v any) string {
 		return "{}"
 	}
 	return string(b)
+}
+
+func RedirectURL(rootUrl, provider string) string {
+	return rootUrl + "/api/oauth/" + provider + "/callback"
+}
+
+// GenerateRandomString 生成指定长度的随机字符串
+func GenerateRandomString(length int) string {
+	b := make([]byte, length)
+	rand.Read(b)
+	return base64.URLEncoding.EncodeToString(b)[:length]
 }

@@ -58,7 +58,6 @@ declare namespace Panel {
         footerHtml?:string
         systemMonitorShow?:boolean
         systemMonitorShowTitle?:boolean
-        systemMonitorPublicVisitModeShow?:boolean
         netModeChangeButtonShow?:boolean
     }
 

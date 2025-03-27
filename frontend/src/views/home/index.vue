@@ -9,10 +9,8 @@ import { AppIcon, AppStarter, EditItem } from './components'
 import { deleteItem, getListByGroupId, saveSort } from '@/api/panel/itemIcon'
 
 import { setTitle, updateLocalUserInfo } from '@/utils/cmn'
-import { useAuthStore, usePanelState } from '@/store'
+import { usePanelState } from '@/store'
 import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/enums'
-import { VisitMode } from '@/enums/auth'
-import { router } from '@/router'
 import { t } from '@/locales'
 
 interface ItemGroup extends Panel.ItemIconGroup {
@@ -24,7 +22,6 @@ interface ItemGroup extends Panel.ItemIconGroup {
 const ms = useMessage()
 const dialog = useDialog()
 const panelState = usePanelState()
-const authStore = useAuthStore()
 
 const scrollContainerRef = ref<HTMLElement | undefined>(undefined)
 
@@ -243,16 +240,6 @@ function getDropdownMenuOptions() {
     })
   }
 
-  if (authStore.visitMode === VisitMode.VISIT_MODE_LOGIN) {
-    dropdownMenuOptions.push({
-      label: t('common.edit'),
-      key: 'edit',
-    }, {
-      label: t('common.delete'),
-      key: 'delete',
-    })
-  }
-
   return dropdownMenuOptions
 }
 
@@ -366,14 +353,8 @@ function handleAddItem(itemIconGroupId?: number) {
         <!-- 应用盒子 -->
         <div :style="{ marginLeft: `${panelState.panelConfig.marginX}px`, marginRight: `${panelState.panelConfig.marginX}px` }">
           <!-- 系统监控状态 -->
-          <div
-            v-if="panelState.panelConfig.systemMonitorShow
-              && ((panelState.panelConfig.systemMonitorPublicVisitModeShow && authStore.visitMode === VisitMode.VISIT_MODE_PUBLIC)
-                || authStore.visitMode === VisitMode.VISIT_MODE_LOGIN)"
-            class="flex mx-auto"
-          >
+          <div v-if="panelState.panelConfig.systemMonitorShow" class="flex mx-auto">
             <SystemMonitor
-              :allow-edit="authStore.visitMode === VisitMode.VISIT_MODE_LOGIN"
               :show-title="panelState.panelConfig.systemMonitorShowTitle"
             />
           </div>
@@ -392,7 +373,6 @@ function handleAddItem(itemIconGroupId?: number) {
                 {{ itemGroup.title }}
               </span>
               <div
-                v-if="authStore.visitMode === VisitMode.VISIT_MODE_LOGIN"
                 class="group-buttons ml-2 delay-100 transition-opacity flex"
                 :class="itemGroup.hoverStatus ? 'opacity-100' : 'opacity-0'"
               >
@@ -525,25 +505,18 @@ function handleAddItem(itemIconGroupId?: number) {
           </template>
         </NButton>
 
-        <NButton v-if="authStore.visitMode === VisitMode.VISIT_MODE_LOGIN" color="#2a2a2a6b" @click="settingModalShow = !settingModalShow">
+        <NButton color="#2a2a2a6b" @click="settingModalShow = !settingModalShow">
           <template #icon>
             <SvgIcon class="text-white font-xl" icon="majesticons-applications" />
-          </template>
-        </NButton>
-
-        <NButton v-if="authStore.visitMode === VisitMode.VISIT_MODE_PUBLIC" color="#2a2a2a6b" :title="$t('panelHome.goToLogin')" @click="router.push('/login')">
-          <template #icon>
-            <SvgIcon class="text-white font-xl" icon="material-symbols:account-circle" />
           </template>
         </NButton>
       </NButtonGroup>
 
       <AppStarter v-model:visible="settingModalShow" />
-      <!-- <Setting v-model:visible="settingModalShow" /> -->
     </div>
 
     <NBackTop
-      :listen-to="() => scrollContainerRef"
+      :listen-to="scrollContainerRef"
       :right="10"
       :bottom="10"
       style="background-color:transparent;border: none;box-shadow: none;"

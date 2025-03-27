@@ -1,7 +1,6 @@
 package panel
 
 import (
-	"github.com/gin-gonic/gin/binding"
 	"strings"
 	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/biz/repository"
@@ -10,6 +9,8 @@ import (
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
+
+	"github.com/gin-gonic/gin/binding"
 
 	"github.com/gin-gonic/gin"
 )
@@ -51,18 +52,19 @@ func (a UsersRouter) Create(c *gin.Context) {
 	}
 
 	// 验证账号是否存在
-	if _, err := global.UserRepo.CheckUsernameExist(param.Username); err != nil {
+	if _, err := global.UserRepo.CheckUsernameExist(param.Username, ""); err != nil {
 		response.ErrorByCode(c, constant.CodeAccountAlreadyExist)
 		return
 	}
 
 	mUser := repository.User{
-		Username:  strings.TrimSpace(param.Username),
-		Password:  util.PasswordEncryption(param.Password),
-		Name:      param.Name,
-		HeadImage: param.HeadImage,
-		Status:    1,
-		Role:      param.Role,
+		Username:      strings.TrimSpace(param.Username),
+		Password:      util.PasswordEncryption(param.Password),
+		Name:          param.Name,
+		HeadImage:     param.HeadImage,
+		Status:        1,
+		Role:          param.Role,
+		OauthProvider: "",
 	}
 	err := global.UserService.CreateUser(&mUser)
 	if err != nil {

@@ -1,7 +1,6 @@
 package system
 
 import (
-	"github.com/gin-gonic/gin/binding"
 	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/global"
@@ -9,6 +8,8 @@ import (
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
+
+	"github.com/gin-gonic/gin/binding"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,37 +24,21 @@ func (a *UserRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
 	r.Use(interceptor.JWTAuth)
 	{
-		r.GET("/user/getInfo", a.GetInfo)
 		r.POST("/user/updatePassword", a.UpdatePasssword)
 		r.POST("/user/updateInfo", a.UpdateInfo)
 		r.GET("/user/getAuthInfo", a.GetAuthInfo)
 	}
 }
 
-func (a *UserRouter) GetInfo(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
-	response.SuccessData(c, gin.H{
-		"userId":    userInfo.ID,
-		"id":        userInfo.ID,
-		"headImage": userInfo.HeadImage,
-		"name":      userInfo.Name,
-		"role":      userInfo.Role,
-	})
-}
-
 func (a *UserRouter) GetAuthInfo(c *gin.Context) {
 	userInfo, _ := base.GetCurrentUserInfo(c)
-	visitMode := base.GetCurrentVisitMode(c)
 	user := repository.User{}
 	user.ID = userInfo.ID
 	user.HeadImage = userInfo.HeadImage
 	user.Name = userInfo.Name
 	user.Role = userInfo.Role
 	user.Username = userInfo.Username
-	response.SuccessData(c, gin.H{
-		"user":      user,
-		"visitMode": visitMode,
-	})
+	response.SuccessData(c, user)
 }
 
 func (a *UserRouter) UpdateInfo(c *gin.Context) {

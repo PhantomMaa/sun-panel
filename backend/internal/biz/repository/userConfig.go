@@ -3,34 +3,34 @@ package repository
 import (
 	"encoding/json"
 	"errors"
-	"gorm.io/gorm"
 	"sun-panel/internal/util"
+
+	"gorm.io/gorm"
 )
 
 type PanelConfig struct {
-	BackgroundImageSrc               string    `json:"backgroundImageSrc,omitempty"`
-	BackgroundBlur                   *int      `json:"backgroundBlur,omitempty"`
-	BackgroundMaskNumber             *float64  `json:"backgroundMaskNumber,omitempty"`
-	IconStyle                        *int      `json:"iconStyle,omitempty"`
-	IconTextColor                    string    `json:"iconTextColor,omitempty"`
-	IconTextInfoHideDescription      *bool     `json:"iconTextInfoHideDescription,omitempty"`
-	IconTextIconHideTitle            *bool     `json:"iconTextIconHideTitle,omitempty"`
-	LogoText                         string    `json:"logoText,omitempty"`
-	LogoImageSrc                     string    `json:"logoImageSrc,omitempty"`
-	ClockShowSecond                  *bool     `json:"clockShowSecond,omitempty"`
-	ClockColor                       string    `json:"clockColor,omitempty"`
-	SearchBoxShow                    *bool     `json:"searchBoxShow,omitempty"`
-	SearchBoxSearchIcon              *bool     `json:"searchBoxSearchIcon,omitempty"`
-	MarginTop                        *int      `json:"marginTop,omitempty"`
-	MarginBottom                     *int      `json:"marginBottom,omitempty"`
-	MaxWidth                         *int      `json:"maxWidth,omitempty"`
-	MaxWidthUnit                     string    `json:"maxWidthUnit"`
-	MarginX                          *int      `json:"marginX,omitempty"`
-	FooterHtml                       string    `json:"footerHtml"`
-	SystemMonitorShow                *bool     `json:"systemMonitorShow,omitempty"`
-	SystemMonitorShowTitle           *bool     `json:"systemMonitorShowTitle,omitempty"`
-	SystemMonitorPublicVisitModeShow *bool     `json:"systemMonitorPublicVisitModeShow,omitempty"`
-	NetModeChangeButtonShow          *bool     `json:"netModeChangeButtonShow,omitempty"`
+	BackgroundImageSrc          string   `json:"backgroundImageSrc,omitempty"`
+	BackgroundBlur              *int     `json:"backgroundBlur,omitempty"`
+	BackgroundMaskNumber        *float64 `json:"backgroundMaskNumber,omitempty"`
+	IconStyle                   *int     `json:"iconStyle,omitempty"`
+	IconTextColor               string   `json:"iconTextColor,omitempty"`
+	IconTextInfoHideDescription *bool    `json:"iconTextInfoHideDescription,omitempty"`
+	IconTextIconHideTitle       *bool    `json:"iconTextIconHideTitle,omitempty"`
+	LogoText                    string   `json:"logoText,omitempty"`
+	LogoImageSrc                string   `json:"logoImageSrc,omitempty"`
+	ClockShowSecond             *bool    `json:"clockShowSecond,omitempty"`
+	ClockColor                  string   `json:"clockColor,omitempty"`
+	SearchBoxShow               *bool    `json:"searchBoxShow,omitempty"`
+	SearchBoxSearchIcon         *bool    `json:"searchBoxSearchIcon,omitempty"`
+	MarginTop                   *int     `json:"marginTop,omitempty"`
+	MarginBottom                *int     `json:"marginBottom,omitempty"`
+	MaxWidth                    *int     `json:"maxWidth,omitempty"`
+	MaxWidthUnit                string   `json:"maxWidthUnit"`
+	MarginX                     *int     `json:"marginX,omitempty"`
+	FooterHtml                  string   `json:"footerHtml"`
+	SystemMonitorShow           *bool    `json:"systemMonitorShow,omitempty"`
+	SystemMonitorShowTitle      *bool    `json:"systemMonitorShowTitle,omitempty"`
+	NetModeChangeButtonShow     *bool    `json:"netModeChangeButtonShow,omitempty"`
 }
 
 type UserConfig struct {

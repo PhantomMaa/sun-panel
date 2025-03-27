@@ -1,27 +1,72 @@
 <script setup lang="ts">
-import { NButton, NCard, NForm, NFormItem, NGradientText, NInput, NSelect, useMessage } from 'naive-ui'
-import { ref } from 'vue'
+import { NButton, NCard, NForm, NFormItem, NGradientText, NInput, NSelect, useMessage, NDivider } from 'naive-ui'
+import { ref, onMounted } from 'vue'
 import { login } from '../../api'
 import { useAppStore, useAuthStore } from '../../store'
-import { SvgIcon } from '../../components/common'
+import { SvgIcon, SvgIconOnline } from '../../components/common'
 import { router } from '../../router'
 import { t } from '../../locales'
 import { languageOptions } from '../../utils/defaultData'
 import type { Language } from '../../store/modules/app/helper'
+import service from '../../utils/request/axios'
+import { getAuthInfo } from '@/api/system/user'
 
-// const userStore = useUserStore()
 const authStore = useAuthStore()
 const appStore = useAppStore()
 const ms = useMessage()
 const loading = ref(false)
 const languageValue = ref<Language>(appStore.language)
-
-// const isShowCaptcha = ref<boolean>(false)
-// const isShowRegister = ref<boolean>(false)
+const oauthEnabled = ref(false)
+const oauthProviders = ref<string[]>([])
 
 const form = ref<Login.LoginReqest>({
   username: '',
   password: '',
+})
+
+onMounted(async () => {
+  try {
+    // 获取OAuth配置
+    const res = await service.get('oauth/config')
+    if (res.data.code === 0) {
+      oauthEnabled.value = res.data.data.enabled
+      oauthProviders.value = res.data.data.providers || []
+    }
+  } catch (error) {
+    console.error('Failed to fetch OAuth config:', error)
+  }
+
+  // 检查URL中是否有token参数（OAuth回调）
+  // 从hash部分获取token参数
+  const hashParts = window.location.hash.split('?')
+  if (hashParts.length > 1) {
+    const hashParams = new URLSearchParams(hashParts[1])
+    const token = hashParams.get('token')
+    
+    if (token) {
+      try {
+        // 直接保存token
+        authStore.setToken(token)
+        
+        try {
+          const { data } = await getAuthInfo()
+          if (data) {
+            authStore.setUserInfo(data)
+            // 显示欢迎消息
+            ms.success(`Hi ${data.name}, ${t('login.welcomeMessage')}`)
+            router.push({ path: '/' })
+          } else {
+            console.error('Failed to get user info:', data)
+          }
+        }
+        catch (error) {
+          console.error('Failed to update local user info:', error)
+        }
+      } catch (error) {
+        console.error('Error during OAuth login:', error)
+      }
+    }
+  }
 })
 
 const loginPost = async () => {
@@ -40,7 +85,6 @@ const loginPost = async () => {
     }
     else {
       loading.value = false
-      // captchaRef.value.refresh()
     }
   }
   catch (error) {
@@ -59,6 +103,17 @@ function handleChangeLanuage(value: Language) {
   languageValue.value = value
   appStore.setLanguage(value)
 }
+
+function handleOAuthLogin(provider: string) {
+  loading.value = true
+  
+  // 构建OAuth URL
+  const oauthUrl = `/api/oauth/${provider}`
+  
+  // 直接在当前窗口打开OAuth登录页面
+  window.location.href = oauthUrl
+}
+
 </script>
 
 <template>
@@ -95,26 +150,30 @@ function handleChangeLanuage(value: Language) {
           </NInput>
         </NFormItem>
 
-        <!-- <NFormItem v-if="isShowCaptcha">
-          <div class="w-[120px] h-[34px] mr-[20px] rounded border flex cursor-pointer">
-            <Captcha ref="captchaRef" src="/api/captcha/getImage" />
-          </div>
-          <NInput v-model:value="form.vcode" type="text" placeholder="请输入图像验证码" />
-        </NFormItem> -->
         <NFormItem style="margin-top: 10px">
           <NButton type="primary" block :loading="loading" @click="handleSubmit">
             {{ $t('login.loginButton') }}
           </NButton>
         </NFormItem>
 
-        <!-- <div class="flex justify-end">
-          <NButton v-if="isShowRegister" quaternary type="info" class="flex" @click="$router.push({ path: '/register' })">
-            注册
-          </NButton>
-          <NButton quaternary type="info" class="flex" @click="$router.push({ path: '/resetPassword' })">
-            忘记密码?
-          </NButton>
-        </div> -->
+        <!-- OAuth登录按钮 -->
+        <div v-if="oauthEnabled && oauthProviders.length > 0">
+          <NDivider>第三方登录</NDivider>
+          <div class="oauth-buttons">
+            <NButton v-if="oauthProviders.includes('github')" quaternary class="oauth-button" @click="handleOAuthLogin('github')">
+              <template #icon>
+                <SvgIconOnline icon="mdi:github" />
+              </template>
+              GitHub
+            </NButton>
+            <NButton v-if="oauthProviders.includes('google')" quaternary class="oauth-button" @click="handleOAuthLogin('google')">
+              <template #icon>
+                <SvgIconOnline icon="mdi:google" />
+              </template>
+              Google
+            </NButton>
+          </div>
+        </div>
 
         <div class="flex justify-center text-slate-300">
           Powered By <a href="https://github.com/hslr-s/sun-panel" target="_blank" class="ml-[5px] text-slate-500">Sun-Panel</a>
@@ -157,5 +216,16 @@ function handleChangeLanuage(value: Language) {
   .login-title{
     text-align: center;
     margin: 20px;
+  }
+
+  .oauth-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .oauth-button {
+    min-width: 100px;
   }
   </style>

@@ -1,22 +1,14 @@
 import { defineStore } from 'pinia'
 import { getStorage, removeToken as hRemoveToken, setStorage } from './helper'
-import { VisitMode } from '../../../enums/auth'
-
-// interface SessionResponse {
-//   auth: boolean
-// }
 
 export interface AuthState {
   token: string | null
   userInfo: User.Info | null
-  // session: SessionResponse | null
-  visitMode: VisitMode
 }
 
 const defaultState: AuthState = {
   token: null,
   userInfo: null,
-  visitMode: VisitMode.VISIT_MODE_LOGIN,
 }
 
 export const useAuthStore = defineStore('auth-store', {
@@ -30,11 +22,6 @@ export const useAuthStore = defineStore('auth-store', {
 
     setUserInfo(userInfo: User.Info) {
       this.userInfo = userInfo
-      this.saveStorage()
-    },
-
-    setVisitMode(visitMode: VisitMode) {
-      this.visitMode = visitMode
       this.saveStorage()
     },
 

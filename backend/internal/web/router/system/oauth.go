@@ -1,0 +1,125 @@
+package system
+
+import (
+	"strings"
+	"sun-panel/internal/global"
+	"sun-panel/internal/infra/config"
+	"sun-panel/internal/util"
+	"sun-panel/internal/web/interceptor"
+	"sun-panel/internal/web/model/response"
+
+	"github.com/gin-gonic/gin"
+)
+
+type OAuthRouter struct {
+}
+
+func NewOAuthRouter() *OAuthRouter {
+	return &OAuthRouter{}
+}
+
+func (r *OAuthRouter) InitRouter(router *gin.RouterGroup) {
+	// 公开接口
+	router.GET("/oauth/config", r.GetConfig)
+
+	// OAuth相关接口
+	if config.AppConfig.OAuth.Enable {
+		router.GET("/oauth/:provider", r.OAuthLogin)
+		router.GET("/oauth/:provider/callback", r.OAuthCallback)
+	}
+}
+
+// GetConfig 获取OAuth配置信息
+func (r *OAuthRouter) GetConfig(c *gin.Context) {
+	// 构建返回数据
+	data := map[string]any{
+		"enabled":   config.AppConfig.OAuth.Enable,
+		"providers": []string{},
+	}
+
+	// 检查哪些提供商已配置
+	providers := []string{}
+	if config.AppConfig.OAuth.GitHub.ClientID != "" {
+		providers = append(providers, "github")
+	}
+	if config.AppConfig.OAuth.Google.ClientID != "" {
+		providers = append(providers, "google")
+	}
+	data["providers"] = providers
+
+	response.SuccessData(c, data)
+}
+
+// OAuthLogin 处理OAuth登录请求
+func (r *OAuthRouter) OAuthLogin(c *gin.Context) {
+	provider := c.Param("provider")
+
+	// 检查是否支持该OAuth提供商
+	if !r.isProviderSupported(provider) {
+		response.Error(c, "不支持的OAuth提供商")
+		return
+	}
+
+	// 获取OAuth授权URL
+	authURL, err := global.UserService.GetOAuthLoginURL(provider, util.RedirectURL(config.AppConfig.Base.RootURL, provider))
+	if err != nil {
+		global.Logger.Error("获取OAuth授权URL失败:", err)
+		response.Error(c, "获取OAuth授权URL失败")
+		return
+	}
+
+	// 重定向到OAuth授权页面
+	c.Redirect(302, authURL)
+}
+
+// OAuthCallback 处理OAuth回调
+func (r *OAuthRouter) OAuthCallback(c *gin.Context) {
+	provider := c.Param("provider")
+	code := c.Query("code")
+
+	// 检查是否支持该OAuth提供商
+	if !r.isProviderSupported(provider) {
+		response.Error(c, "不支持的OAuth提供商")
+		return
+	}
+
+	// 处理OAuth回调
+	user, err := global.UserService.HandleOAuthCallback(provider, code, util.RedirectURL(config.AppConfig.Base.RootURL, provider))
+	if err != nil {
+		global.Logger.Error("处理OAuth回调失败:", err)
+		response.Error(c, "处理OAuth回调失败")
+		return
+	}
+
+	// 生成JWT Token
+	tokenString, err := interceptor.GenerateToken(user.ID)
+	if err != nil {
+		global.Logger.Error("生成token失败:", err)
+		response.Error(c, "生成token失败")
+		return
+	}
+
+	// 设置当前用户信息
+	c.Set("userInfo", *user)
+
+	// 为了安全起见，清除密码
+	user.Password = ""
+
+	// 设置token
+	user.Token = tokenString
+
+	redirectUrl := config.AppConfig.Base.RootURL + "/#/login?token=" + tokenString
+	c.Redirect(302, redirectUrl)
+}
+
+// 检查是否支持该OAuth提供商
+func (r *OAuthRouter) isProviderSupported(provider string) bool {
+	switch strings.ToLower(provider) {
+	case "github":
+		return config.AppConfig.OAuth.GitHub.ClientID != ""
+	case "google":
+		return config.AppConfig.OAuth.Google.ClientID != ""
+	default:
+		return false
+	}
+}

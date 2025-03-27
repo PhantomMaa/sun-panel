@@ -30,7 +30,6 @@ export function defaultStatePanelConfig(): Panel.panelConfig {
     footerHtml: defaultFooterHtml,
     systemMonitorShow: false,
     systemMonitorShowTitle: true,
-    systemMonitorPublicVisitModeShow: false,
     netModeChangeButtonShow: true,
   }
 }

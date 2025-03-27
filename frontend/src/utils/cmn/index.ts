@@ -1,7 +1,6 @@
 import moment from 'moment'
 import { useAuthStore, useUserStore } from '@/store'
 import { getAuthInfo } from '@/api/system/user'
-import type { VisitMode } from '@/enums/auth'
 
 const userStore = useUserStore()
 const authStore = useAuthStore()
@@ -31,18 +30,11 @@ export function getTitle(titile: string) {
 }
 
 export async function updateLocalUserInfo() {
-  interface Req {
-    user: User.Info
-    visitMode: VisitMode
-  }
-
   try {
-    const { data } = await getAuthInfo<Req>()
-    if (data && data.user) {
-      userStore.updateUserInfo({ headImage: data.user.headImage, name: data.user.name })
-      authStore.setUserInfo(data.user)
-      if (data.visitMode !== undefined)
-        authStore.setVisitMode(data.visitMode)
+    const { data } = await getAuthInfo()
+    if (data) {
+      userStore.updateUserInfo({ headImage: data.headImage, name: data.name })
+      authStore.setUserInfo(data)
     }
   }
   catch (error) {

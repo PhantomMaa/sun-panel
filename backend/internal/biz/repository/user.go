@@ -2,20 +2,22 @@ package repository
 
 import (
 	"errors"
+
 	"gorm.io/gorm"
 )
 
 type User struct {
 	BaseModel
-	Username  string `gorm:"type:varchar(255);uniqueIndex" json:"username"` // 账号
-	Password  string `gorm:"type:varchar(255)" json:"password"`             // 密码
-	Name      string `gorm:"type:varchar(20)" json:"name"`                  // 名称
-	HeadImage string `gorm:"type:varchar(255)" json:"headImage"`            // 头像地址
-	Status    int8   `gorm:"type:tinyint" json:"status"`                    // 状态 1.启用 2.停用 3.未激活
-	Role      int8   `gorm:"type:tinyint" json:"role"`                      // 角色 1.管理员 2.普通用户
-	Mail      string `gorm:"type:varchar(255)" json:"mail"`                 // 邮箱
-	Token     string `gorm:"-" json:"token"`                                // 仅用于API返回
-	UserId    uint   `gorm:"-"  json:"userId"`
+	Username      string `gorm:"type:varchar(255);uniqueIndex:idx_username_oauth_provider" json:"username"`     // 账号
+	Password      string `gorm:"type:varchar(255)" json:"password"`                                             // 密码
+	Name          string `gorm:"type:varchar(20)" json:"name"`                                                  // 名称
+	HeadImage     string `gorm:"type:varchar(255)" json:"headImage"`                                            // 头像地址
+	Status        int8   `gorm:"type:tinyint" json:"status"`                                                    // 状态 1.启用 2.停用 3.未激活
+	Role          int8   `gorm:"type:tinyint" json:"role"`                                                      // 角色 1.管理员 2.普通用户
+	Mail          string `gorm:"type:varchar(255)" json:"mail"`                                                 // 邮箱
+	Token         string `gorm:"-" json:"token"`                                                                // 仅用于API返回
+	OauthProvider string `gorm:"type:varchar(50);uniqueIndex:idx_username_oauth_provider" json:"oauthProvider"` // OAuth来源 (github, google)
+	OauthID       string `gorm:"type:varchar(255);index" json:"oauthId"`                                        // OAuth提供商中的用户ID
 }
 
 type UserRepo struct {
@@ -24,14 +26,14 @@ type UserRepo struct {
 type IUserRepo interface {
 	Get(id uint) (User, error)
 	Count() (uint, error)
-	GetByUsername(username string) (User, error)
-	GetByUsernameAndPassword(username, password string) (User, error)
+	GetByUsernameAndPassword(username, password, oauthProvider string) (User, error)
+	GetByOAuthID(source, oauthID string) (User, error)
 	GetList(pagedParam PagedParam) ([]User, uint, error)
 	Update(id uint, user *User) error
-	UpdateUserInfo(id uint, updateInfo map[string]interface{}) error
+	UpdateUserInfo(id uint, updateInfo map[string]any) error
 	Create(user *User) error
 	Deletes(ids []uint) error
-	CheckUsernameExist(username string) (User, error)
+	CheckUsernameExist(username, oauthProvider string) (User, error)
 }
 
 func NewUserRepo() IUserRepo {
@@ -50,16 +52,17 @@ func (r *UserRepo) Count() (uint, error) {
 	return uint(count), err
 }
 
-func (r *UserRepo) GetByUsernameAndPassword(username, password string) (User, error) {
+func (r *UserRepo) GetByUsernameAndPassword(username, password, oauthProvider string) (User, error) {
 	userInfo := User{}
-	err := Db.Where("username=?", username).Where("password=?", password).First(&userInfo).Error
+	err := Db.Where("username=?", username).Where("oauth_provider=?", oauthProvider).
+		Where("password=?", password).First(&userInfo).Error
 	return userInfo, err
 }
 
-func (r *UserRepo) GetByUsername(username string) (User, error) {
-	mUser := User{}
-	err := Db.Where("username=?", username).First(&mUser).Error
-	return mUser, err
+func (r *UserRepo) GetByOAuthID(source, oauthID string) (User, error) {
+	userInfo := User{}
+	err := Db.Where("oauth_source=?", source).Where("oauth_id=?", oauthID).First(&userInfo).Error
+	return userInfo, err
 }
 
 func (r *UserRepo) GetList(pagedParam PagedParam) ([]User, uint, error) {
@@ -80,8 +83,8 @@ func (r *UserRepo) Update(id uint, user *User) error {
 	return Db.Where("id=?", id).Updates(user).Error
 }
 
-func (r *UserRepo) UpdateUserInfo(userId uint, updateInfo map[string]interface{}) error {
-	data := map[string]interface{}{}
+func (r *UserRepo) UpdateUserInfo(userId uint, updateInfo map[string]any) error {
+	data := map[string]any{}
 	if v, ok := updateInfo["name"]; ok {
 		data["name"] = v
 	}
@@ -93,9 +96,6 @@ func (r *UserRepo) UpdateUserInfo(userId uint, updateInfo map[string]interface{}
 	}
 	if v, ok := updateInfo["role"]; ok {
 		data["role"] = v
-	}
-	if v, ok := updateInfo["gender"]; ok {
-		data["gender"] = v
 	}
 
 	if v, ok := updateInfo["mail"]; ok {
@@ -128,9 +128,9 @@ func (r *UserRepo) Create(user *User) error {
 	return err
 }
 
-func (r *UserRepo) CheckUsernameExist(username string) (User, error) {
+func (r *UserRepo) CheckUsernameExist(username, oauthProvider string) (User, error) {
 	hasUser := User{}
-	count := Db.Where("username=?", username).First(&hasUser).RowsAffected
+	count := Db.Where("username=?", username).Where("oauth_provider=?", oauthProvider).First(&hasUser).RowsAffected
 	if count != 0 {
 		return hasUser, errors.New("该用户名已被注册")
 	}

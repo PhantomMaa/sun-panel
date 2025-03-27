@@ -2,18 +2,21 @@ package system
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"strings"
 	"sun-panel/internal/biz/constant"
+	"sun-panel/internal/biz/service"
 	"sun-panel/internal/global"
 	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type LoginRouter struct {
+	userService service.IUserService
 }
 
 type LoginLoginVerify struct {
@@ -24,7 +27,9 @@ type LoginLoginVerify struct {
 }
 
 func NewLoginRouter() *LoginRouter {
-	return &LoginRouter{}
+	return &LoginRouter{
+		userService: service.NewUserService(global.UserRepo, global.ItemIconGroupRepo),
+	}
 }
 
 func (l *LoginRouter) InitRouter(router *gin.RouterGroup) {
@@ -52,7 +57,7 @@ func (l *LoginRouter) Login(c *gin.Context) {
 	}
 
 	param.Username = strings.TrimSpace(param.Username)
-	user, err := global.UserRepo.GetByUsernameAndPassword(param.Username, util.PasswordEncryption(param.Password))
+	user, err := global.UserRepo.GetByUsernameAndPassword(param.Username, util.PasswordEncryption(param.Password), "")
 	if err != nil {
 		// 未找到记录 账号或密码错误
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -72,7 +77,7 @@ func (l *LoginRouter) Login(c *gin.Context) {
 	}
 
 	// 生成JWT Token
-	tokenString, err := interceptor.GenerateToken(user.ID)
+	user.Token, err = interceptor.GenerateToken(user.ID)
 	if err != nil {
 		global.Logger.Error("JWT生成失败:", err)
 		response.Error(c, "系统错误")
@@ -80,10 +85,6 @@ func (l *LoginRouter) Login(c *gin.Context) {
 	}
 
 	user.Password = "" // 清除敏感信息
-	user.Token = tokenString
-
-	// 设置当前用户信息
-	c.Set("userInfo", user)
 	response.SuccessData(c, user)
 }
 

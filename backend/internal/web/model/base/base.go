@@ -2,24 +2,21 @@ package base
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
+	"sun-panel/internal/biz/repository"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	zhTranslations "github.com/go-playground/validator/v10/translations/zh"
-	"reflect"
-	"strings"
-	"sun-panel/internal/biz/repository"
 )
 
 type PageLimitVerify struct {
 	Page  int64
 	Limit int64
 }
-
-const (
-	GIN_GET_VISIT_MODE = "VISIT_MODE"
-)
 
 // 验证输入是否有效并返回错误
 func validateInputStruct(params interface{}) (errMsg string, err error) {
@@ -73,15 +70,6 @@ func GetCurrentUserInfo(c *gin.Context) (userInfo repository.User, exist bool) {
 	if value, exist := c.Get("userInfo"); exist {
 		if v, ok := value.(repository.User); ok {
 			return v, exist
-		}
-	}
-	return
-}
-
-func GetCurrentVisitMode(c *gin.Context) (visitMode int) {
-	if value, exist := c.Get(GIN_GET_VISIT_MODE); exist {
-		if v, ok := value.(int); ok {
-			return v
 		}
 	}
 	return

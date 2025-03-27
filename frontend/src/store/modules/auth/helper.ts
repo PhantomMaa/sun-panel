@@ -28,6 +28,5 @@ export function getStorage() {
 }
 
 export function removeToken() {
-  // ss.clear()
-  return ss.remove(LOCAL_NAME)
+  ss.remove(LOCAL_NAME)
 }

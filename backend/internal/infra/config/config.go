@@ -17,11 +17,13 @@ type Config struct {
 	MySQL  MySQLConfig  `ini:"mysql"`
 	Rclone RcloneConfig `ini:"rclone"`
 	JWT    JWTConfig    `ini:"jwt"`
+	OAuth  OAuthConfig  `ini:"oauth"`
 }
 
 // BaseConfig represents the base section configuration
 type BaseConfig struct {
 	HTTPPort           string `ini:"http_port"`
+	RootURL            string `ini:"root_url"`
 	DatabaseDrive      string `ini:"database_drive"`
 	EnableStaticServer bool   `ini:"enable_static_server"`
 	EnableMonitor      bool   `ini:"enable_monitor"`
@@ -55,6 +57,26 @@ type JWTConfig struct {
 	Expire int    `ini:"expire"`
 }
 
+// OAuthConfig represents the oauth section configuration
+type OAuthConfig struct {
+	Enable bool                `ini:"enable"`
+	GitHub OAuthProviderConfig `ini:"-"`
+	Google OAuthProviderConfig `ini:"-"`
+}
+
+// OAuthProviderConfig represents the configuration for an OAuth provider
+type OAuthProviderConfig struct {
+	ClientID                string `ini:"client_id"`
+	ClientSecret            string `ini:"client_secret"`
+	AuthURL                 string `ini:"auth_url"`
+	TokenURL                string `ini:"token_url"`
+	UserInfoURL             string `ini:"user_info_url"`
+	Scopes                  string `ini:"scopes"`
+	FieldMappingIdentifier  string `ini:"field_mapping_identifier"`
+	FieldMappingDisplayName string `ini:"field_mapping_display_name"`
+	FieldMappingEmail       string `ini:"field_mapping_email"`
+}
+
 // Init initializes the configuration
 func Init(configPath string) (*Config, error) {
 	exists, err := util.PathExists(configPath)
@@ -79,6 +101,23 @@ func Init(configPath string) (*Config, error) {
 	err = iniFile.MapTo(config)
 	if err != nil {
 		return nil, err
+	}
+
+	// 手动处理嵌套节点
+	githubSection := iniFile.Section("oauth.github")
+	if githubSection != nil {
+		err = githubSection.MapTo(&config.OAuth.GitHub)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	googleSection := iniFile.Section("oauth.google")
+	if googleSection != nil {
+		err = googleSection.MapTo(&config.OAuth.Google)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Set global config

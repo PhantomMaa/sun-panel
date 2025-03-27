@@ -10,8 +10,8 @@ declare namespace User{
 		status?:number
 		role?:number
 		mail?:string
-		// userId?:string // id代替
 		token?:string
-		isAdmin?:number
+		oauthProvider?:string
+		oauthId?:string
 	}
 }
