@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: {{ include "sun-panel.fullname" . }}-conf
 data:
-  conf.ini: |-
-{{ include "sun-panel.conf" . | indent 4 }}
+  conf.yaml: |-
+{{ toYaml .Values.appConfig | indent 4 }}

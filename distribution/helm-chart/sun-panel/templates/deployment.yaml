@@ -28,17 +28,17 @@ spec:
           {{- end }}
           volumeMounts:
             - name: volumn-{{ include "sun-panel.fullname" . }}-conf
-              mountPath: /app/conf.ini
-              subPath: conf.ini
+              mountPath: /app/conf.yaml
+              subPath: conf.yaml
       volumes:
         - name: volumn-{{ include "sun-panel.fullname" . }}-conf
           configMap:
             name: {{ include "sun-panel.fullname" . }}-conf
- 			{{- with .Values.affinity }}
-			affinity:
-				{{- toYaml . | nindent 8 }}
-			{{- end }}
-			{{- with .Values.tolerations }}
-			tolerations:
-				{{- toYaml . | nindent 8 }}
-			{{- end }}
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}

@@ -23,21 +23,91 @@ tolerations: {}
 
 affinity: {}
 
-mysql:
-  host: host_or_ip
-  port: 3306
-  username: root
-  password: password
-  db_name: sunpanel
+appConfig:
+  # Base configuration
+  base:
+    # Web run port. Default:3002
+    http_port: 3002
+    # Root URL
+    root_url: http://127.0.0.1:3002
+    # Database driver [mysql/sqlite(Default)]
+    database_drive: mysql
+    # Enable static file server. Default:true
+    enable_static_server: true
+    # Enable system monitor feature. Default:true
+    enable_monitor: false
+    # Used as prefix to generate file url. For example, it will lookup to "/uploads/xxxx.png"
+    url_prefix: /uploads/
 
-rclone:
-  provider: xxx # Minio, Alibaba, AWS, webdav, etc.
-  access_key_id: AK
-  secret_access_key: SK
-  endpoint: example.com
-  bucket: bucket
-  region:
+  # SQLite configuration (valid when database_drive=sqlite)
+  sqlite:
+    file_path: ./database/database.db
 
-jwt:
-  secret: replace_me
-  expire: 72  # hours
+  # MySQL configuration (valid when database_drive=mysql)
+  mysql:
+    host: 127.0.0.1
+    port: 3306
+    username: root
+    password: root
+    db_name: sun_panel
+    wait_timeout: 100
+
+  # Use rclone to store files. Both support local and remote storage
+  rclone:
+    # dir path of local or bucket of remote storage. this item config not belong to rclone
+    type: s3
+    bucket: uploads
+    conf: |-
+      # type = s3
+      # provider = AWS
+      # access_key_id = AK
+      # secret_access_key = SK
+      # endpoint = https://s3.ap-east-1.amazonaws.com
+      # region = ap-east-1
+
+      # type = s3
+      # provider = Minio
+      # access_key_id = AK
+      # secret_access_key = SK
+      # endpoint=http://minio.infra:9000
+
+      # type=s3
+      # provider = Alibaba
+      # access_key_id = AK
+      # secret_access_key = SK
+      # endpoint = oss-cn-hangzhou.aliyuncs.com
+
+  # JWT configuration
+  jwt:
+    # JWT secret key
+    secret: your_secret_key
+    # JWT token expiration time in hours, default: 72
+    expire: 72
+
+  # OAuth providers configuration
+  oauth:
+    # Enable OAuth login, default: false
+    enable: true
+    # List of OAuth providers
+    providers:
+      - name: github
+        client_id: your_client_id
+        client_secret: your_client_secret
+        auth_url: https://github.com/login/oauth/authorize
+        token_url: https://github.com/login/oauth/access_token
+        user_info_url: https://api.github.com/user
+        scopes: read:user
+        field_mapping_identifier: login
+        field_mapping_display_name: name
+        field_mapping_email: email
+      - name: google
+        client_id: your_client_id
+        client_secret: your_client_secret
+        auth_url: https://accounts.google.com/o/oauth2/v2/auth
+        token_url: https://oauth2.googleapis.com/token
+        user_info_url: https://www.googleapis.com/oauth2/v3/userinfo
+        scopes: profile email
+        field_mapping_identifier: sub
+        field_mapping_display_name: name
+        field_mapping_email: email
+
