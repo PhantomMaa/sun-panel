@@ -32,7 +32,7 @@ RUN apk add --no-cache bash curl tzdata && \
 
 COPY --from=builder /build/sun-panel /app/sun-panel
 COPY backend/lang /app/lang
-COPY backend/conf.ini /app/conf.ini
+COPY backend/conf.yaml /app/conf.yaml
 
 EXPOSE 3002
 RUN chmod +x ./sun-panel
