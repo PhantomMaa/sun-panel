@@ -39,3 +39,6 @@ backend/database
 backend/web
 backend/uploads
 backend/sun-panel
+
+# Secrets
+secrets.txt
