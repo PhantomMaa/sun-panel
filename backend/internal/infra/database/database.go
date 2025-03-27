@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/util"
 	"time"
@@ -68,7 +69,7 @@ func CreateDefaultUser() error {
 		mUser.Status = 1
 		mUser.Role = 1
 		mUser.Password = util.PasswordEncryption("12345678")
-		mUser.OauthProvider = ""
+		mUser.OauthProvider = constant.OAuthProviderBuildin
 		if errCreate := global.UserService.CreateUser(&mUser); errCreate != nil {
 			return errCreate
 		}

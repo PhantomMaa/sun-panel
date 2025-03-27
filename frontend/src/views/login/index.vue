@@ -164,30 +164,18 @@ function handleOAuthLogin(provider: string) {
           <NDivider>{{ $t('login.thirdPartyLogin') }}</NDivider>
           <div class="oauth-buttons flex flex-col gap-2">
             <NButton 
-              v-if="oauthProviders.includes('github')" 
+              v-for="provider in oauthProviders"
+              :key="provider"
               quaternary 
               class="oauth-button" 
-              :loading="oauthLoading && loadingProvider === 'github'"
-              :disabled="oauthLoading && loadingProvider !== 'github'"
-              @click="handleOAuthLogin('github')"
+              :loading="oauthLoading && loadingProvider === provider"
+              :disabled="oauthLoading && loadingProvider !== provider"
+              @click="handleOAuthLogin(provider)"
             >
               <template #icon>
-                <SvgIconOnline icon="mdi:github" />
+                <SvgIconOnline :icon="`mdi:${provider}`" />
               </template>
-              GitHub
-            </NButton>
-            <NButton 
-              v-if="oauthProviders.includes('google')" 
-              quaternary 
-              class="oauth-button" 
-              :loading="oauthLoading && loadingProvider === 'google'"
-              :disabled="oauthLoading && loadingProvider !== 'google'"
-              @click="handleOAuthLogin('google')"
-            >
-              <template #icon>
-                <SvgIconOnline icon="mdi:google" />
-              </template>
-              Google
+              {{ provider.charAt(0).toUpperCase() + provider.slice(1) }}
             </NButton>
           </div>
         </div>

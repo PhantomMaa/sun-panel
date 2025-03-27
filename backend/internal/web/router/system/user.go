@@ -1,8 +1,8 @@
 package system
 
 import (
-	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"

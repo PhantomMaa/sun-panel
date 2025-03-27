@@ -3,8 +3,8 @@ package system
 import (
 	"errors"
 	"strings"
-	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/biz/service"
+	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
@@ -57,7 +57,7 @@ func (l *LoginRouter) Login(c *gin.Context) {
 	}
 
 	param.Username = strings.TrimSpace(param.Username)
-	user, err := global.UserRepo.GetByUsernameAndPassword(param.Username, util.PasswordEncryption(param.Password), "")
+	user, err := global.UserRepo.GetByUsernameAndPassword(param.Username, util.PasswordEncryption(param.Password), constant.OAuthProviderBuildin)
 	if err != nil {
 		// 未找到记录 账号或密码错误
 		if errors.Is(err, gorm.ErrRecordNotFound) {

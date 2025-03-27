@@ -2,8 +2,8 @@ package panel
 
 import (
 	"strings"
-	"sun-panel/internal/biz/constant"
 	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
@@ -64,7 +64,7 @@ func (a UsersRouter) Create(c *gin.Context) {
 		HeadImage:     param.HeadImage,
 		Status:        1,
 		Role:          param.Role,
-		OauthProvider: "",
+		OauthProvider: constant.OAuthProviderBuildin,
 	}
 	err := global.UserService.CreateUser(&mUser)
 	if err != nil {

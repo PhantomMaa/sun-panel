@@ -2,7 +2,7 @@ package interceptor
 
 import (
 	"strings"
-	"sun-panel/internal/biz/constant"
+	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/web/model/response"
 

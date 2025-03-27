@@ -12,6 +12,7 @@
     },
     "passwordPlaceholder": "请输入密码",
     "pblicText": "公开",
+    "provider": "来源",
     "role": "角色",
     "userCountText": "共{count}位用户"
   },

@@ -12,6 +12,7 @@
     },
     "passwordPlaceholder": "Enter password",
     "pblicText": "Public",
+    "provider": "Provider",
     "role": "Role",
     "userCountText": "Total {count} users"
   },

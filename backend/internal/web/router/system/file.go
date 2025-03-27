@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"path"
 	"strings"
-	"sun-panel/internal/biz/constant"
+	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/config"
 	"sun-panel/internal/util"
