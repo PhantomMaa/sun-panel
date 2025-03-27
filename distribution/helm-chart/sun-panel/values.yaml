@@ -11,7 +11,7 @@ image:
 resources:
   limits:
     cpu: 1000m
-    memory: 512Mi
+    memory: 100Mi
   requests:
     cpu: 100m
     memory: 20Mi
@@ -49,7 +49,7 @@ appConfig:
     port: 3306
     username: root
     password: root
-    db_name: sun_panel
+    db_name: sunpanel
     wait_timeout: 100
 
   # Use rclone to store files. Both support local and remote storage
@@ -64,18 +64,21 @@ appConfig:
       # secret_access_key = SK
       # endpoint = https://s3.ap-east-1.amazonaws.com
       # region = ap-east-1
+      # bucket: bucket
 
       # type = s3
       # provider = Minio
       # access_key_id = AK
       # secret_access_key = SK
       # endpoint=http://minio.infra:9000
+      # bucket: bucket
 
       # type=s3
       # provider = Alibaba
       # access_key_id = AK
       # secret_access_key = SK
       # endpoint = oss-cn-hangzhou.aliyuncs.com
+      # bucket: bucket
 
   # JWT configuration
   jwt:
@@ -87,27 +90,16 @@ appConfig:
   # OAuth providers configuration
   oauth:
     # Enable OAuth login, default: false
-    enable: true
+    enable: false
     # List of OAuth providers
-    providers:
-      - name: github
-        client_id: your_client_id
-        client_secret: your_client_secret
-        auth_url: https://github.com/login/oauth/authorize
-        token_url: https://github.com/login/oauth/access_token
-        user_info_url: https://api.github.com/user
-        scopes: read:user
-        field_mapping_identifier: login
-        field_mapping_display_name: name
-        field_mapping_email: email
-      - name: google
-        client_id: your_client_id
-        client_secret: your_client_secret
-        auth_url: https://accounts.google.com/o/oauth2/v2/auth
-        token_url: https://oauth2.googleapis.com/token
-        user_info_url: https://www.googleapis.com/oauth2/v3/userinfo
-        scopes: profile email
-        field_mapping_identifier: sub
-        field_mapping_display_name: name
-        field_mapping_email: email
-
+    providers: []
+      # - name: github
+      #   client_id: your_client_id
+      #   client_secret: your_client_secret
+      #   auth_url: https://github.com/login/oauth/authorize
+      #   token_url: https://github.com/login/oauth/access_token
+      #   user_info_url: https://api.github.com/user
+      #   scopes: read:user
+      #   field_mapping_identifier: login
+      #   field_mapping_display_name: name
+      #   field_mapping_email: email

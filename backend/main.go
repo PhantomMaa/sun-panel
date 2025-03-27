@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"log"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/global"
@@ -16,6 +15,8 @@ import (
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/router"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {

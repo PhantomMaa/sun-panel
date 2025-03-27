@@ -16,7 +16,7 @@ RUN apk add --no-cache bash curl gcc git musl-dev && \
     go env -w GO111MODULE=on && \
     export PATH=$PATH:/go/bin && \
     export CGO_ENABLED=1 && \
-    go build -o sun-panel --ldflags="-X sun-panel/global.RUNCODE=release -X sun-panel/global.VERSION=${VERSION}" main.go
+    go build -o sun-panel --ldflags="-X sun-panel/internal/global.RUNCODE=release -X sun-panel/internal/global.VERSION=${VERSION}" main.go
 
 # final image
 FROM alpine:3.19

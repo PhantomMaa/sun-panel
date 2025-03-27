@@ -22,7 +22,7 @@ rclone:
   # dir path of local or bucket of remote storage. this item config not belong to rclone
   type: local
   bucket: uploads
-  conf: |-
+  rclone.conf: |-
     type = local
 
 # JWT configuration

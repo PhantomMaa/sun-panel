@@ -26,7 +26,7 @@ type RcloneStorage struct {
 // RcloneConfig represents the rclone section in the YAML config
 type RcloneConfig struct {
 	Bucket string `yaml:"bucket"`
-	Conf   string `yaml:"conf"`
+	Conf   string `yaml:"rclone.conf"`
 }
 
 // Config represents the root configuration structure
@@ -57,20 +57,20 @@ func loadConfig(configPath string) error {
 
 	// Parse the config directly
 	scanner := bufio.NewScanner(strings.NewReader(config.Rclone.Conf))
-	
+
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		
+
 		// Skip empty lines and comments
 		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
 			continue
 		}
-		
+
 		// Skip section headers
 		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
 			continue
 		}
-		
+
 		// Parse key=value pairs
 		if strings.Contains(line, "=") {
 			parts := strings.SplitN(line, "=", 2)
@@ -81,11 +81,11 @@ func loadConfig(configPath string) error {
 			}
 		}
 	}
-	
+
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("error scanning config: %w", err)
 	}
-	
+
 	return nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"os"
+	"slices"
 	"sort"
 	"time"
 )
@@ -36,9 +37,7 @@ func PathExists(path string) (bool, error) {
 }
 
 func InArray[T uint | int | int8 | int64 | float32 | float64 | string](arr []T, item T) bool {
-	sort.Slice(arr, func(i, j int) bool {
-		return arr[i] < arr[j]
-	})
+	slices.Sort(arr)
 
 	index := sort.Search(len(arr), func(i int) bool {
 		return arr[i] >= item

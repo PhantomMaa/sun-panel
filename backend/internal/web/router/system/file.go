@@ -162,15 +162,8 @@ func (a *FileRouter) Delete(c *gin.Context) {
 }
 
 func (a *FileRouter) GetS3File(c *gin.Context) {
-	global.Logger.Info("Entering GetS3File handler")
-	global.Logger.Infof("Full URL Path: %s", c.Request.URL.Path)
-	global.Logger.Infof("Full Request URL: %s", c.Request.URL.String())
-
 	filepath := c.Param("filepath") // 获取 /api/file/s3/ 后的所有部分
-	global.Logger.Infof("Extracted filepath: %s", filepath)
-
 	if filepath == "" {
-		global.Logger.Error("Empty filepath parameter")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "file path is required"})
 		return
 	}
