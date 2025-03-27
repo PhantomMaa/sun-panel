@@ -47,14 +47,16 @@ func (s *UserService) CreateUser(user *repository.User) error {
 
 // GetOAuthLoginURL generates the OAuth login URL for the specified provider
 func (s *UserService) GetOAuthLoginURL(provider string, redirectURI string) (string, error) {
-	var providerConfig config.OAuthProviderConfig
-
-	switch strings.ToLower(provider) {
-	case "github":
-		providerConfig = config.AppConfig.OAuth.GitHub
-	case "google":
-		providerConfig = config.AppConfig.OAuth.Google
-	default:
+	// Find the provider config
+	var providerConfig *config.OAuthProviderConfig
+	for _, p := range config.AppConfig.OAuth.Providers {
+		if strings.EqualFold(p.Name, provider) {
+			providerConfig = &p
+			break
+		}
+	}
+	
+	if providerConfig == nil {
 		return "", errors.New("unsupported OAuth provider")
 	}
 
@@ -77,25 +79,27 @@ func (s *UserService) GetOAuthLoginURL(provider string, redirectURI string) (str
 
 // HandleOAuthCallback processes the OAuth callback and returns or creates a user
 func (s *UserService) HandleOAuthCallback(provider, code, redirectURI string) (*repository.User, error) {
-	var providerConfig config.OAuthProviderConfig
-
-	switch strings.ToLower(provider) {
-	case "github":
-		providerConfig = config.AppConfig.OAuth.GitHub
-	case "google":
-		providerConfig = config.AppConfig.OAuth.Google
-	default:
+	// Find the provider config
+	var providerConfig *config.OAuthProviderConfig
+	for _, p := range config.AppConfig.OAuth.Providers {
+		if strings.EqualFold(p.Name, provider) {
+			providerConfig = &p
+			break
+		}
+	}
+	
+	if providerConfig == nil {
 		return nil, errors.New("unsupported OAuth provider")
 	}
 
 	// Exchange code for token
-	tokenData, err := s.exchangeCodeForToken(providerConfig, code, redirectURI)
+	tokenData, err := s.exchangeCodeForToken(*providerConfig, code, redirectURI)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get user info using the token
-	userInfo, err := s.fetchUserInfo(providerConfig, tokenData["access_token"])
+	userInfo, err := s.fetchUserInfo(*providerConfig, tokenData["access_token"])
 	if err != nil {
 		return nil, err
 	}

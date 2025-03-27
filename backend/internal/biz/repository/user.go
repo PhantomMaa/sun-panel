@@ -59,9 +59,9 @@ func (r *UserRepo) GetByUsernameAndPassword(username, password, oauthProvider st
 	return userInfo, err
 }
 
-func (r *UserRepo) GetByOAuthID(source, oauthID string) (User, error) {
+func (r *UserRepo) GetByOAuthID(oauthProvider, oauthID string) (User, error) {
 	userInfo := User{}
-	err := Db.Where("oauth_source=?", source).Where("oauth_id=?", oauthID).First(&userInfo).Error
+	err := Db.Where("oauth_provider=?", oauthProvider).Where("oauth_id=?", oauthID).First(&userInfo).Error
 	return userInfo, err
 }
 

@@ -18,6 +18,8 @@ const loading = ref(false)
 const languageValue = ref<Language>(appStore.language)
 const oauthEnabled = ref(false)
 const oauthProviders = ref<string[]>([])
+const oauthLoading = ref(false)
+const loadingProvider = ref<string>('')
 
 const form = ref<Login.LoginReqest>({
   username: '',
@@ -105,7 +107,8 @@ function handleChangeLanuage(value: Language) {
 }
 
 function handleOAuthLogin(provider: string) {
-  loading.value = true
+  oauthLoading.value = true
+  loadingProvider.value = provider
   
   // 构建OAuth URL
   const oauthUrl = `/api/oauth/${provider}`
@@ -158,25 +161,35 @@ function handleOAuthLogin(provider: string) {
 
         <!-- OAuth登录按钮 -->
         <div v-if="oauthEnabled && oauthProviders.length > 0">
-          <NDivider>第三方登录</NDivider>
-          <div class="oauth-buttons">
-            <NButton v-if="oauthProviders.includes('github')" quaternary class="oauth-button" @click="handleOAuthLogin('github')">
+          <NDivider>{{ $t('login.thirdPartyLogin') }}</NDivider>
+          <div class="oauth-buttons flex flex-col gap-2">
+            <NButton 
+              v-if="oauthProviders.includes('github')" 
+              quaternary 
+              class="oauth-button" 
+              :loading="oauthLoading && loadingProvider === 'github'"
+              :disabled="oauthLoading && loadingProvider !== 'github'"
+              @click="handleOAuthLogin('github')"
+            >
               <template #icon>
                 <SvgIconOnline icon="mdi:github" />
               </template>
               GitHub
             </NButton>
-            <NButton v-if="oauthProviders.includes('google')" quaternary class="oauth-button" @click="handleOAuthLogin('google')">
+            <NButton 
+              v-if="oauthProviders.includes('google')" 
+              quaternary 
+              class="oauth-button" 
+              :loading="oauthLoading && loadingProvider === 'google'"
+              :disabled="oauthLoading && loadingProvider !== 'google'"
+              @click="handleOAuthLogin('google')"
+            >
               <template #icon>
                 <SvgIconOnline icon="mdi:google" />
               </template>
               Google
             </NButton>
           </div>
-        </div>
-
-        <div class="flex justify-center text-slate-300">
-          Powered By <a href="https://github.com/hslr-s/sun-panel" target="_blank" class="ml-[5px] text-slate-500">Sun-Panel</a>
         </div>
       </NForm>
     </NCard>
@@ -220,12 +233,13 @@ function handleOAuthLogin(provider: string) {
 
   .oauth-buttons {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     gap: 10px;
     margin-top: 10px;
   }
 
   .oauth-button {
     min-width: 100px;
+    width: 100%;
   }
   </style>

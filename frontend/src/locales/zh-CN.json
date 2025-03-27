@@ -46,7 +46,7 @@
       "author": "作者：",
       "checkUpdate": "检查新版本",
       "discussions": "交流社区：",
-      "donate": "🧧打赏",
+      "donate": "打赏",
       "frontVersionText": "前端版本号",
       "issue": "建议反馈：",
       "viewUpdateLog": "点此查看更新说明"
@@ -242,7 +242,8 @@
     "loginButton": "登录",
     "passwordPlaceholder": "密码",
     "usernamePlaceholder": "账号",
-    "welcomeMessage": "欢迎回来！"
+    "welcomeMessage": "欢迎回来！",
+    "thirdPartyLogin": "第三方登录"
   },
   "panelHome": {
     "changeToLanModel": "切换为内网模式",

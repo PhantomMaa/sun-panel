@@ -240,6 +240,13 @@ function getDropdownMenuOptions() {
     })
   }
 
+  dropdownMenuOptions.push({
+    label: t('common.edit'),
+    key: 'edit',
+  }, {
+    label: t('common.delete'),
+    key: 'delete',
+  })
   return dropdownMenuOptions
 }
 

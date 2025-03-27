@@ -39,11 +39,8 @@ func (r *OAuthRouter) GetConfig(c *gin.Context) {
 
 	// 检查哪些提供商已配置
 	providers := []string{}
-	if config.AppConfig.OAuth.GitHub.ClientID != "" {
-		providers = append(providers, "github")
-	}
-	if config.AppConfig.OAuth.Google.ClientID != "" {
-		providers = append(providers, "google")
+	for _, provider := range config.AppConfig.OAuth.Providers {
+		providers = append(providers, provider.Name)
 	}
 	data["providers"] = providers
 
@@ -114,12 +111,10 @@ func (r *OAuthRouter) OAuthCallback(c *gin.Context) {
 
 // 检查是否支持该OAuth提供商
 func (r *OAuthRouter) isProviderSupported(provider string) bool {
-	switch strings.ToLower(provider) {
-	case "github":
-		return config.AppConfig.OAuth.GitHub.ClientID != ""
-	case "google":
-		return config.AppConfig.OAuth.Google.ClientID != ""
-	default:
-		return false
+	for _, p := range config.AppConfig.OAuth.Providers {
+		if strings.EqualFold(p.Name, provider) {
+			return true
+		}
 	}
+	return false
 }

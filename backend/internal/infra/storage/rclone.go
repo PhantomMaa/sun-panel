@@ -1,16 +1,19 @@
 package storage
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/rclone/rclone/fs"
 	rconfig "github.com/rclone/rclone/fs/config"
 	"github.com/rclone/rclone/fs/operations"
-	"gopkg.in/ini.v1"
+	"gopkg.in/yaml.v3"
 
 	_ "github.com/rclone/rclone/backend/local"
 	_ "github.com/rclone/rclone/backend/s3"
@@ -20,19 +23,69 @@ type RcloneStorage struct {
 	fs fs.Fs
 }
 
+// RcloneConfig represents the rclone section in the YAML config
+type RcloneConfig struct {
+	Bucket string `yaml:"bucket"`
+	Conf   string `yaml:"conf"`
+}
+
+// Config represents the root configuration structure
+type Config struct {
+	Rclone RcloneConfig `yaml:"rclone"`
+}
+
 func loadConfig(configPath string) error {
-	configFile, err := ini.Load(configPath)
+	// Read the YAML file
+	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return fmt.Errorf("ini.Load error : %w", err)
+		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	section := configFile.Section("rclone")
-
-	fmt.Printf("loading rclone config : %+v", section.KeysHash())
-
-	for _, key := range section.Keys() {
-		rconfig.FileSetValue("rclone", key.Name(), key.Value())
+	// Parse the YAML
+	var config Config
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		return fmt.Errorf("failed to parse YAML: %w", err)
 	}
+
+	fmt.Printf("loading rclone config from conf field\n")
+
+	// Parse the INI formatted config from the conf field
+	if config.Rclone.Conf == "" {
+		return fmt.Errorf("rclone.conf is empty")
+	}
+
+	// Parse the config directly
+	scanner := bufio.NewScanner(strings.NewReader(config.Rclone.Conf))
+	
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		
+		// Skip empty lines and comments
+		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") {
+			continue
+		}
+		
+		// Skip section headers
+		if strings.HasPrefix(line, "[") && strings.HasSuffix(line, "]") {
+			continue
+		}
+		
+		// Parse key=value pairs
+		if strings.Contains(line, "=") {
+			parts := strings.SplitN(line, "=", 2)
+			if len(parts) == 2 {
+				key := strings.TrimSpace(parts[0])
+				value := strings.TrimSpace(parts[1])
+				rconfig.FileSetValue("rclone", key, value)
+			}
+		}
+	}
+	
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("error scanning config: %w", err)
+	}
+	
 	return nil
 }
 

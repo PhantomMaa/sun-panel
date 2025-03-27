@@ -2,9 +2,10 @@ package config
 
 import (
 	"errors"
+	"os"
 	"sun-panel/internal/util"
 
-	"gopkg.in/ini.v1"
+	"gopkg.in/yaml.v3"
 )
 
 // AppConfig is the global application configuration
@@ -12,69 +13,69 @@ var AppConfig *Config
 
 // Config represents the application configuration structure
 type Config struct {
-	Base   BaseConfig   `ini:"base"`
-	SQLite SQLiteConfig `ini:"sqlite"`
-	MySQL  MySQLConfig  `ini:"mysql"`
-	Rclone RcloneConfig `ini:"rclone"`
-	JWT    JWTConfig    `ini:"jwt"`
-	OAuth  OAuthConfig  `ini:"oauth"`
+	Base   BaseConfig   `yaml:"base"`
+	SQLite SQLiteConfig `yaml:"sqlite"`
+	MySQL  MySQLConfig  `yaml:"mysql"`
+	Rclone RcloneConfig `yaml:"rclone"`
+	JWT    JWTConfig    `yaml:"jwt"`
+	OAuth  OAuthConfig  `yaml:"oauth"`
 }
 
 // BaseConfig represents the base section configuration
 type BaseConfig struct {
-	HTTPPort           string `ini:"http_port"`
-	RootURL            string `ini:"root_url"`
-	DatabaseDrive      string `ini:"database_drive"`
-	EnableStaticServer bool   `ini:"enable_static_server"`
-	EnableMonitor      bool   `ini:"enable_monitor"`
-	URLPrefix          string `ini:"url_prefix"`
+	HTTPPort           string `yaml:"http_port"`
+	RootURL            string `yaml:"root_url"`
+	DatabaseDrive      string `yaml:"database_drive"`
+	EnableStaticServer bool   `yaml:"enable_static_server"`
+	EnableMonitor      bool   `yaml:"enable_monitor"`
+	URLPrefix          string `yaml:"url_prefix"`
 }
 
 // SQLiteConfig represents the sqlite section configuration
 type SQLiteConfig struct {
-	FilePath string `ini:"file_path"`
+	FilePath string `yaml:"file_path"`
 }
 
 // MySQLConfig represents the mysql section configuration
 type MySQLConfig struct {
-	Host        string `ini:"host"`
-	Port        string `ini:"port"`
-	Username    string `ini:"username"`
-	Password    string `ini:"password"`
-	DBName      string `ini:"db_name"`
-	WaitTimeout int    `ini:"wait_timeout"`
+	Host        string `yaml:"host"`
+	Port        string `yaml:"port"`
+	Username    string `yaml:"username"`
+	Password    string `yaml:"password"`
+	DBName      string `yaml:"db_name"`
+	WaitTimeout int    `yaml:"wait_timeout"`
 }
 
 // RcloneConfig represents the rclone section configuration
 type RcloneConfig struct {
-	Type   string `ini:"type"`
-	Bucket string `ini:"bucket"`
+	Type   string `yaml:"type"`
+	Bucket string `yaml:"bucket"`
 }
 
 // JWTConfig represents the jwt section configuration
 type JWTConfig struct {
-	Secret string `ini:"secret"`
-	Expire int    `ini:"expire"`
+	Secret string `yaml:"secret"`
+	Expire int    `yaml:"expire"`
 }
 
 // OAuthConfig represents the oauth section configuration
 type OAuthConfig struct {
-	Enable bool                `ini:"enable"`
-	GitHub OAuthProviderConfig `ini:"-"`
-	Google OAuthProviderConfig `ini:"-"`
+	Enable    bool                  `yaml:"enable"`
+	Providers []OAuthProviderConfig `yaml:"providers"`
 }
 
 // OAuthProviderConfig represents the configuration for an OAuth provider
 type OAuthProviderConfig struct {
-	ClientID                string `ini:"client_id"`
-	ClientSecret            string `ini:"client_secret"`
-	AuthURL                 string `ini:"auth_url"`
-	TokenURL                string `ini:"token_url"`
-	UserInfoURL             string `ini:"user_info_url"`
-	Scopes                  string `ini:"scopes"`
-	FieldMappingIdentifier  string `ini:"field_mapping_identifier"`
-	FieldMappingDisplayName string `ini:"field_mapping_display_name"`
-	FieldMappingEmail       string `ini:"field_mapping_email"`
+	Name                   string `yaml:"name"`
+	ClientID               string `yaml:"client_id"`
+	ClientSecret           string `yaml:"client_secret"`
+	AuthURL                string `yaml:"auth_url"`
+	TokenURL               string `yaml:"token_url"`
+	UserInfoURL            string `yaml:"user_info_url"`
+	Scopes                 string `yaml:"scopes"`
+	FieldMappingIdentifier  string `yaml:"field_mapping_identifier"`
+	FieldMappingDisplayName string `yaml:"field_mapping_display_name"`
+	FieldMappingEmail       string `yaml:"field_mapping_email"`
 }
 
 // Init initializes the configuration
@@ -88,8 +89,8 @@ func Init(configPath string) (*Config, error) {
 		return nil, errors.New("配置文件不存在: " + configPath)
 	}
 
-	// Load INI file
-	iniFile, err := ini.Load(configPath)
+	// Read config file
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -97,27 +98,10 @@ func Init(configPath string) (*Config, error) {
 	// Create config object
 	config := new(Config)
 
-	// Map INI to struct
-	err = iniFile.MapTo(config)
+	// Parse YAML
+	err = yaml.Unmarshal(data, config)
 	if err != nil {
 		return nil, err
-	}
-
-	// 手动处理嵌套节点
-	githubSection := iniFile.Section("oauth.github")
-	if githubSection != nil {
-		err = githubSection.MapTo(&config.OAuth.GitHub)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	googleSection := iniFile.Section("oauth.google")
-	if googleSection != nil {
-		err = googleSection.MapTo(&config.OAuth.Google)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// Set global config

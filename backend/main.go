@@ -20,7 +20,7 @@ import (
 
 func main() {
 	// Parse command line arguments
-	configPath := flag.String("c", "conf.ini", "Path to configuration file")
+	configPath := flag.String("c", "conf.yaml", "Path to configuration file")
 	flag.Parse()
 
 	// Initialize the application with the specified config path

@@ -242,7 +242,8 @@
     "loginButton": "Login",
     "passwordPlaceholder": "Password",
     "usernamePlaceholder": "Username",
-    "welcomeMessage": "Welcome back!"
+    "welcomeMessage": "Welcome back!",
+    "thirdPartyLogin": "Third-party Login"
   },
   "panelHome": {
     "changeToLanModel": "Switch to LAN mode",
