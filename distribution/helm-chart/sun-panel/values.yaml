@@ -56,29 +56,26 @@ appConfig:
   rclone:
     # dir path of local or bucket of remote storage. this item config not belong to rclone
     type: s3
-    bucket: uploads
-    conf: |-
+    bucket: bucket_name
+    rclone.conf: |-
       # type = s3
       # provider = AWS
       # access_key_id = AK
       # secret_access_key = SK
       # endpoint = https://s3.ap-east-1.amazonaws.com
       # region = ap-east-1
-      # bucket: bucket
 
       # type = s3
       # provider = Minio
       # access_key_id = AK
       # secret_access_key = SK
       # endpoint=http://minio.infra:9000
-      # bucket: bucket
 
       # type=s3
       # provider = Alibaba
       # access_key_id = AK
       # secret_access_key = SK
       # endpoint = oss-cn-hangzhou.aliyuncs.com
-      # bucket: bucket
 
   # JWT configuration
   jwt:
