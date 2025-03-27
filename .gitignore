@@ -19,6 +19,7 @@ coverage
 
 # Editor directories and files
 .vscode/*
+!.vscode/launch.json
 !.vscode/settings.json
 !.vscode/extensions.json
 .idea
@@ -33,11 +34,8 @@ coverage
 .history
 service_node
 
-backend/assets/bindata.go
-backend/my_conf.ini
+backend/my_conf.yaml
 backend/database
 backend/web
 backend/uploads
-backend/plugins
-backend/database.db
 backend/sun-panel
