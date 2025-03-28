@@ -100,3 +100,13 @@ appConfig:
       #   field_mapping_identifier: login
       #   field_mapping_display_name: name
       #   field_mapping_email: email
+      # - name: google
+      #   client_id: your_google_client_id
+      #   client_secret: your_google_client_secret
+      #   auth_url: https://accounts.google.com/o/oauth2/v2/auth
+      #   token_url: https://oauth2.googleapis.com/token
+      #   user_info_url: https://www.googleapis.com/oauth2/v3/userinfo
+      #   scopes: profile email
+      #   field_mapping_identifier: sub
+      #   field_mapping_display_name: name
+      #   field_mapping_email: email
