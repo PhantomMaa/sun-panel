@@ -37,7 +37,7 @@ appConfig:
     # Enable system monitor feature. Default:true
     enable_monitor: false
     # Used as prefix to generate file url. For example, it will lookup to "/uploads/xxxx.png"
-    url_prefix: /uploads/
+    url_prefix: /api/file/s3/
 
   # SQLite configuration (valid when database_drive=sqlite)
   sqlite:

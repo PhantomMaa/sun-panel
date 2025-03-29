@@ -162,7 +162,7 @@ func (a *FileRouter) Delete(c *gin.Context) {
 }
 
 func (a *FileRouter) GetS3File(c *gin.Context) {
-	filepath := c.Param("filepath") // 获取 /api/file/s3/ 后的所有部分
+	filepath := c.Param("filepath")
 	if filepath == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "file path is required"})
 		return

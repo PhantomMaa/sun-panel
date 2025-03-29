@@ -41,11 +41,13 @@ func InitRouters(addr string) error {
 	// WEB文件服务
 	if config.AppConfig.Base.EnableStaticServer {
 		webPath := "./web"
-		router.Static("/assets", webPath+"/assets")
-		router.Static("/custom", webPath+"/custom")
+
+		// 使用StaticFS处理所有静态资源
+		router.StaticFS("/assets", gin.Dir(webPath+"/assets", false))
+		router.StaticFS("/custom", gin.Dir(webPath+"/custom", false))
+
+		// 处理根目录下的特定文件
 		router.StaticFile("/", webPath+"/index.html")
-		router.StaticFile("/favicon.ico", webPath+"/favicon.ico")
-		router.StaticFile("/favicon.svg", webPath+"/favicon.svg")
 
 		if config.AppConfig.Rclone.Type == "local" {
 			// 使用本次存储时，为本次存储设置静态文件服务
