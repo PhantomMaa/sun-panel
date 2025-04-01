@@ -279,10 +279,6 @@ async function handleStartImport() {
       </div>
     </div>
 
-    <div class="flex justify-center">
-      <a href="https://hslr-s.github.io/sun-panel-tool-page/#/" target="_blank">{{ $t('apps.exportImport.transmuteStandard') }}</a>
-    </div>
-
     <!-- 调试模式 -->
     <div v-if="debug">
       <NButton @click="importCheck">
