@@ -137,11 +137,11 @@ func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName s
 }
 
 // implements Storage.Delete for rclone
-func (r *RcloneStorage) Delete(ctx context.Context, filepath string) error {
-	zaplog.Logger.Infof("Deleting file: %s", filepath)
+func (r *RcloneStorage) Delete(ctx context.Context, fileName string) error {
+	zaplog.Logger.Infof("Deleting file: %s", fileName)
 
 	// Find the object
-	obj, err := r.fs.NewObject(ctx, filepath)
+	obj, err := r.fs.NewObject(ctx, fileName)
 	if err != nil {
 		return fmt.Errorf("failed to find object: %w", err)
 	}
@@ -152,7 +152,7 @@ func (r *RcloneStorage) Delete(ctx context.Context, filepath string) error {
 		return fmt.Errorf("failed to delete file: %w", err)
 	}
 
-	zaplog.Logger.Infof("Successfully deleted file: %s", filepath)
+	zaplog.Logger.Infof("Successfully deleted file: %s", fileName)
 	return nil
 }
 

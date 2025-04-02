@@ -10,6 +10,7 @@ import (
 type ItemIconIconInfo struct {
 	ItemType        int    `json:"itemType"`
 	Src             string `json:"src"`
+	FileName        string `json:"fileName"`
 	Text            string `json:"text"`
 	BackgroundColor string `json:"backgroundColor"`
 }
@@ -25,7 +26,7 @@ type ItemIcon struct {
 	OpenMethod      int              `gorm:"type:tinyint(1)" json:"openMethod"`
 	Sort            int              `gorm:"type:int(11)" json:"sort"`
 	ItemIconGroupId int              `json:"itemIconGroupId"`
-	UserId          uint             `json:"userId"`
+	UserId          uint             `gorm:"index" json:"userId"`
 	User            User             `json:"user"`
 }
 
@@ -91,10 +92,10 @@ func (itemIconRepo *ItemIconRepo) Delete(userId, id uint) error {
 		var icon map[string]any
 		if err := json.Unmarshal([]byte(item.IconJson), &icon); err == nil {
 			// Check if the icon has a src field indicating a file path
-			if src, ok := icon["src"].(string); ok {
+			if fileName, ok := icon["fileName"].(string); ok {
 				// Find and delete the file record
 				var file File
-				if err := tx.Where("src = ? AND user_id = ?", src, userId).First(&file).Error; err == nil {
+				if err := tx.Where("file_name = ? AND user_id = ?", fileName, userId).First(&file).Error; err == nil {
 					if err := tx.Delete(&file).Error; err != nil {
 						return err
 					}

@@ -114,11 +114,12 @@ const handleValidateButtonClick = (e: MouseEvent) => {
 async function getIconByUrl(url: string, loadingIndex: number) {
   getIconLoading.value[loadingIndex] = true
   try {
-    const { code, data } = await getSiteFavicon<{ iconUrl: string }>(url)
+    const { code, data } = await getSiteFavicon<{ iconUrl: string, fileName: string }>(url)
     if (code === 0) {
       model.value.icon = {
         itemType: 2,
         src: data.iconUrl,
+        fileName: data.fileName,
       }
     }
     else {

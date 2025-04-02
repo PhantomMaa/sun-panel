@@ -69,8 +69,8 @@ const handleUploadFinish = ({
 }) => {
   const res = JSON.parse((event?.target as XMLHttpRequest).response)
   if (res.code === 0) {
-    const imageUrl = res.data.imageUrl
-    itemIconInfo.value.src = imageUrl
+    itemIconInfo.value.src = res.data.imageUrl
+    itemIconInfo.value.fileName = res.data.fileName
     emit('update:itemIcon', itemIconInfo.value || null)
   }
   else {

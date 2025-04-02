@@ -149,9 +149,6 @@ onMounted(() => {
       <div>
         <div>
           <div class="mb-2">
-            <span class="text-slate-500">
-              {{ $t('apps.uploadsFileManager.fileName') }}
-            </span>
             <div class="text-xs">
               {{ infoModalState.fileInfo?.fileName }}
             </div>

@@ -24,6 +24,7 @@ declare namespace Panel {
     interface ItemIcon {
         itemType: number
         src ?: string
+        fileName?: string
         text ?: string
         // bgColor ?: string
         backgroundColor ?: string

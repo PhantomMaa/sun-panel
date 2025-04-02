@@ -96,17 +96,18 @@ func (a *FileRouter) UploadImg(c *gin.Context) {
 	}
 
 	// 向数据库添加记录
-	filePath := a.urlPrefix + fileName
-	_, err = global.FileRepo.AddFile(userInfo.ID, f.Filename, fileExt, filePath)
+	_, err = global.FileRepo.AddFile(userInfo.ID, fileExt, fileName)
 	if err != nil {
 		zaplog.Logger.Errorf("Failed to add file record to database: %v", err)
 		response.ErrorByCode(c, constant.CodeUploadFailed)
 		return
 	}
 
-	zaplog.Logger.Infof("Successfully uploaded file %s to %s", f.Filename, filePath)
+	filePath := a.urlPrefix + fileName
+	zaplog.Logger.Infof("Successfully uploaded file %s to %s", fileName, filePath)
 	response.SuccessData(c, gin.H{
 		"imageUrl": filePath,
+		"fileName": fileName,
 	})
 }
 
@@ -121,8 +122,7 @@ func (a *FileRouter) GetList(c *gin.Context) {
 	var data []map[string]any
 	for _, v := range list {
 		data = append(data, map[string]any{
-			"src":        v.Src,
-			"fileName":   v.FileName,
+			"src":        a.urlPrefix + v.FileName,
 			"id":         v.ID,
 			"createTime": v.CreatedAt,
 			"updateTime": v.UpdatedAt,
@@ -150,8 +150,8 @@ func (a *FileRouter) Delete(c *gin.Context) {
 	}
 
 	// 从存储中删除文件
-	if err := global.Storage.Delete(c.Request.Context(), file.Src); err != nil {
-		zaplog.Logger.Errorf("Failed to delete file %s: %v", file.Src, err)
+	if err := global.Storage.Delete(c.Request.Context(), file.FileName); err != nil {
+		zaplog.Logger.Errorf("Failed to delete file %s: %v", file.FileName, err)
 	}
 
 	// 从数据库中删除记录
@@ -171,10 +171,10 @@ func (a *FileRouter) GetS3File(c *gin.Context) {
 	}
 
 	// 从存储中读取文件
-	fileData, err := global.Storage.Get(c, filepath)
+	fileData, err := global.Storage.Get(c.Request.Context(), filepath)
 	if err != nil {
 		zaplog.Logger.Errorf("Failed to get file %s: %v", filepath, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get file"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "failed to get file"})
 		return
 	}
 

@@ -146,11 +146,9 @@ func (a *ItemIconRouter) Delete(c *gin.Context) {
 	var icon map[string]any
 	if err := json.Unmarshal([]byte(item.IconJson), &icon); err == nil {
 		// Check if the icon has a src field indicating a file path
-		if src, ok := icon["src"].(string); ok && strings.HasPrefix(src, urlPrefix) {
-			// Extract the file path from the URL
-			filepath := strings.TrimPrefix(src, urlPrefix)
-			if err := global.Storage.Delete(c.Request.Context(), filepath); err != nil {
-				zaplog.Logger.Warnf("Failed to delete file %s: %v", filepath, err)
+		if fileName, ok := icon["fileName"].(string); ok {
+			if err := global.Storage.Delete(c.Request.Context(), fileName); err != nil {
+				zaplog.Logger.Warnf("Failed to delete file %s: %v", fileName, err)
 			}
 		}
 	}
@@ -220,13 +218,13 @@ func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 	if ext == "" {
 		ext = ".ico"
 	}
-	filePath := urlPrefix + fileName
-	if _, err := global.FileRepo.AddFile(userInfo.ID, parsedURL.Host, ext, filePath); err != nil {
+	if _, err := global.FileRepo.AddFile(userInfo.ID, ext, fileName); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
 
-	resp.IconUrl = filePath
+	resp.FileName = fileName
+	resp.IconUrl = urlPrefix + fileName
 	response.SuccessData(c, resp)
 }
 

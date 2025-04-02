@@ -15,12 +15,6 @@ type BaseModel struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
-type BaseModelNoId struct {
-	CreatedAt time.Time      `json:"createTime"`
-	UpdatedAt time.Time      `json:"updateTime"`
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-}
-
 type PagedParam struct {
 	Limit int `form:"limit" json:"limit" gorm:"-"`
 	Page  int `form:"page" json:"page" gorm:"-"`
