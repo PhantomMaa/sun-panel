@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/global"
-	"sun-panel/internal/infra/storage"
+	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
 	"sun-panel/internal/util/favicon"
 	"sun-panel/internal/web/interceptor"
@@ -20,16 +20,13 @@ import (
 )
 
 type ItemIconRouter struct {
-	storage storage.RcloneStorage
 }
 
 var urlPrefix string
 
 func NewItemIconRouter() *ItemIconRouter {
 	urlPrefix = global.Config.Base.URLPrefix
-	return &ItemIconRouter{
-		storage: *global.Storage,
-	}
+	return &ItemIconRouter{}
 }
 
 func (a *ItemIconRouter) InitRouter(router *gin.RouterGroup) {
@@ -146,14 +143,14 @@ func (a *ItemIconRouter) Delete(c *gin.Context) {
 	}
 
 	// Delete the actual file using storage interface
-	var icon map[string]interface{}
+	var icon map[string]any
 	if err := json.Unmarshal([]byte(item.IconJson), &icon); err == nil {
 		// Check if the icon has a src field indicating a file path
 		if src, ok := icon["src"].(string); ok && strings.HasPrefix(src, urlPrefix) {
 			// Extract the file path from the URL
 			filepath := strings.TrimPrefix(src, urlPrefix)
-			if err := a.storage.Delete(c.Request.Context(), filepath); err != nil {
-				global.Logger.Warnf("Failed to delete file %s: %v", filepath, err)
+			if err := global.Storage.Delete(c.Request.Context(), filepath); err != nil {
+				zaplog.Logger.Warnf("Failed to delete file %s: %v", filepath, err)
 			}
 		}
 	}
@@ -209,10 +206,10 @@ func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 		}
 		fullUrl = parsedIcoURL.Scheme + "://" + parsedIcoURL.Host + parsedIcoURL.Path
 	}
-	global.Logger.Debug("fullUrl:", fullUrl)
+	zaplog.Logger.Debug("fullUrl:", fullUrl)
 
 	// 下载图标
-	filepath, err := favicon.DownloadImage(c.Request.Context(), fullUrl, a.storage)
+	fileName, err := favicon.DownloadImage(c.Request.Context(), fullUrl)
 	if err != nil {
 		response.Error(c, "acquisition failed: download "+err.Error())
 		return
@@ -223,12 +220,13 @@ func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 	if ext == "" {
 		ext = ".ico"
 	}
-	if _, err := global.FileRepo.AddFile(userInfo.ID, parsedURL.Host, ext, filepath); err != nil {
+	filePath := urlPrefix + fileName
+	if _, err := global.FileRepo.AddFile(userInfo.ID, parsedURL.Host, ext, filePath); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
 
-	resp.IconUrl = urlPrefix + filepath
+	resp.IconUrl = filePath
 	response.SuccessData(c, resp)
 }
 

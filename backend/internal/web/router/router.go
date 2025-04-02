@@ -1,8 +1,8 @@
 package router
 
 import (
-	"sun-panel/internal/global"
 	"sun-panel/internal/infra/config"
+	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/web/router/panel"
 	"sun-panel/internal/web/router/system"
 
@@ -56,11 +56,11 @@ func InitRouters(addr string) error {
 			router.Static(urlPrefix, bucket)
 		}
 
-		global.Logger.Info("Static file server is enabled")
+		zaplog.Logger.Info("Static file server is enabled")
 	} else {
-		global.Logger.Info("Static file server is disabled")
+		zaplog.Logger.Info("Static file server is disabled")
 	}
 
-	global.Logger.Info("Sun-Panel is Started.  Listening and serving HTTP on ", addr)
+	zaplog.Logger.Info("Sun-Panel is Started.  Listening and serving HTTP on ", addr)
 	return router.Run(addr)
 }

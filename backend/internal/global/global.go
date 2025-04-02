@@ -1,7 +1,6 @@
 package global
 
 import (
-	"go.uber.org/zap"
 	"sun-panel/internal/biz/cache"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/biz/service"
@@ -18,7 +17,6 @@ var (
 )
 
 var (
-	Logger  *zap.SugaredLogger
 	Config  *config.Config
 	Storage *storage.RcloneStorage
 )

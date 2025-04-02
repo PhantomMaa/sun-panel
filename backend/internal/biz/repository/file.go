@@ -29,7 +29,6 @@ func (r *FileRepo) AddFile(userId uint, fileName, ext, src string) (File, error)
 		Ext:      ext,
 	}
 	err := Db.Create(&file).Error
-
 	return file, err
 }
 

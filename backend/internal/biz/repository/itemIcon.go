@@ -2,8 +2,9 @@ package repository
 
 import (
 	"encoding/json"
-	"gorm.io/gorm"
 	"sun-panel/internal/web/model/param/commonApi"
+
+	"gorm.io/gorm"
 )
 
 type ItemIconIconInfo struct {
@@ -87,7 +88,7 @@ func (itemIconRepo *ItemIconRepo) Delete(userId, id uint) error {
 		}
 
 		// Delete associated file
-		var icon map[string]interface{}
+		var icon map[string]any
 		if err := json.Unmarshal([]byte(item.IconJson), &icon); err == nil {
 			// Check if the icon has a src field indicating a file path
 			if src, ok := icon["src"].(string); ok {

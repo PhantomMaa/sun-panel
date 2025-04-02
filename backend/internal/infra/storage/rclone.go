@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"strings"
+	"sun-panel/internal/infra/zaplog"
 	"time"
 
 	"github.com/rclone/rclone/fs"
@@ -110,8 +110,7 @@ func NewRcloneStorage(ctx context.Context, configPath, bucket string) (*RcloneSt
 }
 
 // implements Storage.Upload for rclone
-func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName string) (string, error) {
-	//global.Logger.Infof("Uploading file via rclone, file : %s", fileName)
+func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName string) error {
 	// Check if bucket exists, if not, create it
 	_, err := r.fs.List(ctx, "")
 	if err != nil {
@@ -120,7 +119,7 @@ func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName s
 		// Try to create the bucket/directory
 		err = operations.Mkdir(ctx, r.fs, "")
 		if err != nil {
-			return "", fmt.Errorf("failed to create bucket: %w", err)
+			return fmt.Errorf("failed to create bucket: %w", err)
 		}
 
 		fmt.Println("Successfully created bucket")
@@ -130,20 +129,18 @@ func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName s
 	readCloser := io.NopCloser(reader)
 
 	// Create a new object in the bucket
-	obj, err := operations.RcatSize(ctx, r.fs, fileName, readCloser, -1, time.Now(), fs.Metadata{})
+	_, err = operations.RcatSize(ctx, r.fs, fileName, readCloser, -1, time.Now(), fs.Metadata{})
 	if err != nil {
-		return "", fmt.Errorf("failed to upload file: %w", err)
+		return fmt.Errorf("failed to upload file: %w", err)
 	}
 
-	// Generate URL
-	url := path.Join(obj.Remote())
-	fmt.Printf("Successfully uploaded file: %s", url)
-	return url, nil
+	zaplog.Logger.Infof("Successfully uploaded file: %s", fileName)
+	return nil
 }
 
 // implements Storage.Delete for rclone
 func (r *RcloneStorage) Delete(ctx context.Context, filepath string) error {
-	fmt.Printf("Deleting file: %s", filepath)
+	zaplog.Logger.Infof("Deleting file: %s", filepath)
 
 	// Find the object
 	obj, err := r.fs.NewObject(ctx, filepath)
@@ -157,7 +154,7 @@ func (r *RcloneStorage) Delete(ctx context.Context, filepath string) error {
 		return fmt.Errorf("failed to delete file: %w", err)
 	}
 
-	fmt.Printf("Successfully deleted file: %s", filepath)
+	zaplog.Logger.Infof("Successfully deleted file: %s", filepath)
 	return nil
 }
 

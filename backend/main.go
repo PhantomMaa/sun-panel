@@ -37,12 +37,10 @@ func InitApp(configPath string) error {
 	gin.SetMode(global.RUNCODE) // GIN 运行模式
 
 	// 日志
-	logger, err := zaplog.InitLog(global.RUNCODE, "running.zaplog")
+	err := zaplog.InitLog(global.RUNCODE, "running.zaplog")
 	if err != nil {
 		return fmt.Errorf("zaplog initialization error, %w", err)
 	}
-
-	global.Logger = logger
 
 	// 配置初始化
 	global.Config, err = config.Init(configPath)
@@ -126,7 +124,7 @@ func InitStorage(configPath string) (*storage.RcloneStorage, error) {
 		return nil, fmt.Errorf("failed to initialize rclone storage: %w", err)
 	}
 
-	global.Logger.Info("Storage system initialized successfully")
+	zaplog.Logger.Info("Storage system initialized successfully")
 	return rcloneStorage, nil
 }
 

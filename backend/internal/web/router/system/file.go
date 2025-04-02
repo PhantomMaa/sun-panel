@@ -8,6 +8,7 @@ import (
 	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/config"
+	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
@@ -75,36 +76,37 @@ func (a *FileRouter) UploadImg(c *gin.Context) {
 	// 打开文件以获取Reader
 	src, err := f.Open()
 	if err != nil {
-		global.Logger.Errorf("Failed to open uploaded file: %v", err)
+		zaplog.Logger.Errorf("Failed to open uploaded file: %v", err)
 		response.ErrorByCode(c, constant.CodeUploadFailed)
 		return
 	}
 
 	defer func() {
 		if err := src.Close(); err != nil {
-			global.Logger.Errorf("Failed to close file. error : %v", err)
+			zaplog.Logger.Errorf("Failed to close file. error : %v", err)
 		}
 	}()
 
 	// 使用存储接口上传文件
-	filepath, err := global.Storage.Upload(c.Request.Context(), src, fileName)
+	err = global.Storage.Upload(c.Request.Context(), src, fileName)
 	if err != nil {
-		global.Logger.Errorf("Failed to upload file: %v", err)
+		zaplog.Logger.Errorf("Failed to upload file: %v", err)
 		response.ErrorByCode(c, constant.CodeUploadFailed)
 		return
 	}
 
 	// 向数据库添加记录
-	_, err = global.FileRepo.AddFile(userInfo.ID, f.Filename, fileExt, filepath)
+	filePath := a.urlPrefix + fileName
+	_, err = global.FileRepo.AddFile(userInfo.ID, f.Filename, fileExt, filePath)
 	if err != nil {
-		global.Logger.Errorf("Failed to add file record to database: %v", err)
+		zaplog.Logger.Errorf("Failed to add file record to database: %v", err)
 		response.ErrorByCode(c, constant.CodeUploadFailed)
 		return
 	}
 
-	global.Logger.Infof("Successfully uploaded file %s to %s", f.Filename, filepath)
+	zaplog.Logger.Infof("Successfully uploaded file %s to %s", f.Filename, filePath)
 	response.SuccessData(c, gin.H{
-		"imageUrl": a.urlPrefix + filepath,
+		"imageUrl": filePath,
 	})
 }
 
@@ -116,10 +118,10 @@ func (a *FileRouter) GetList(c *gin.Context) {
 		return
 	}
 
-	var data []map[string]interface{}
+	var data []map[string]any
 	for _, v := range list {
-		data = append(data, map[string]interface{}{
-			"src":        a.urlPrefix + v.Src,
+		data = append(data, map[string]any{
+			"src":        v.Src,
 			"fileName":   v.FileName,
 			"id":         v.ID,
 			"createTime": v.CreatedAt,
@@ -149,7 +151,7 @@ func (a *FileRouter) Delete(c *gin.Context) {
 
 	// 从存储中删除文件
 	if err := global.Storage.Delete(c.Request.Context(), file.Src); err != nil {
-		global.Logger.Errorf("Failed to delete file %s: %v", file.Src, err)
+		zaplog.Logger.Errorf("Failed to delete file %s: %v", file.Src, err)
 	}
 
 	// 从数据库中删除记录
@@ -171,7 +173,7 @@ func (a *FileRouter) GetS3File(c *gin.Context) {
 	// 从存储中读取文件
 	fileData, err := global.Storage.Get(c, filepath)
 	if err != nil {
-		global.Logger.Errorf("Failed to get file %s: %v", filepath, err)
+		zaplog.Logger.Errorf("Failed to get file %s: %v", filepath, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get file"})
 		return
 	}
@@ -194,7 +196,7 @@ func (a *FileRouter) GetS3File(c *gin.Context) {
 	c.Header("Content-Type", contentType)
 	c.Header("Content-Disposition", "inline; filename="+path.Base(filepath))
 
-	global.Logger.Infof("Successfully serving file: %s with content type: %s", filepath, contentType)
+	zaplog.Logger.Infof("Successfully serving file: %s with content type: %s", filepath, contentType)
 	// 返回文件内容
 	c.Data(http.StatusOK, contentType, fileData)
 }

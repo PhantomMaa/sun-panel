@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sun-panel/internal/global"
-	"sun-panel/internal/infra/storage"
+	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
 	"time"
 
@@ -76,7 +76,7 @@ func GetRemoteFileSize(url string) (int64, error) {
 	}
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			global.Logger.Errorf("failed to close resp.Body. error : %v", err)
+			zaplog.Logger.Errorf("failed to close resp.Body. error : %v", err)
 		}
 	}()
 
@@ -90,7 +90,7 @@ func GetRemoteFileSize(url string) (int64, error) {
 
 	// 如果服务器没有提供 Content-Length，尝试读取响应体来确定大小
 	if size <= 0 {
-		global.Logger.Infof("Content-Length not provided for %s, using alternative method", url)
+		zaplog.Logger.Infof("Content-Length not provided for %s, using alternative method", url)
 		// 不实际读取整个响应体，因为我们已经有了连接，可以直接关闭
 		return 0, fmt.Errorf("Content-Length not provided by server")
 	}
@@ -99,13 +99,13 @@ func GetRemoteFileSize(url string) (int64, error) {
 }
 
 // 下载图片
-func DownloadImage(ctx context.Context, url string, storage storage.RcloneStorage) (string, error) {
+func DownloadImage(ctx context.Context, url string) (string, error) {
 	// 创建请求
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
 	}
-	
+
 	// 发送请求
 	client := &http.Client{Timeout: 10 * time.Second}
 	response, err := client.Do(req)
@@ -114,7 +114,7 @@ func DownloadImage(ctx context.Context, url string, storage storage.RcloneStorag
 	}
 	defer func() {
 		if err := response.Body.Close(); err != nil {
-			global.Logger.Errorf("failed to close resp.Body. error : %v", err)
+			zaplog.Logger.Errorf("failed to close resp.Body. error : %v", err)
 		}
 	}()
 
@@ -135,7 +135,7 @@ func DownloadImage(ctx context.Context, url string, storage storage.RcloneStorag
 	fileName := util.Md5(fmt.Sprintf("%s%s", urlFileName, time.Now().String())) + fileExt
 
 	// 上传文件
-	filepath, err := storage.Upload(ctx, limitedReader, fileName)
+	err = global.Storage.Upload(ctx, limitedReader, fileName)
 	if err != nil {
 		if strings.Contains(err.Error(), "request body too large") {
 			return "", fmt.Errorf("文件太大，不下载")
@@ -143,7 +143,7 @@ func DownloadImage(ctx context.Context, url string, storage storage.RcloneStorag
 		return "", fmt.Errorf("failed to upload file: %v", err)
 	}
 
-	return filepath, nil
+	return fileName, nil
 }
 
 func getFaviconURL(url string) ([]string, error) {
@@ -165,7 +165,7 @@ func getFaviconURL(url string) ([]string, error) {
 
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			global.Logger.Errorf("failed to close resp.Body. error : %v", err)
+			zaplog.Logger.Errorf("failed to close resp.Body. error : %v", err)
 		}
 	}()
 

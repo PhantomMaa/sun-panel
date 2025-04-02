@@ -3,8 +3,9 @@ package i18n
 import (
 	"os"
 	"strings"
-	"sun-panel/internal/global"
+	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
+
 	"gopkg.in/ini.v1"
 )
 
@@ -18,7 +19,7 @@ func LangInit(lang string) {
 	filename := "lang/" + lang + ".ini"
 	exists, err := util.PathExists(filename)
 	if err != nil || !exists {
-		global.Logger.Errorln("语言文件不存在:", filename)
+		zaplog.Logger.Errorln("语言文件不存在:", filename)
 		os.Exit(1)
 	}
 
@@ -29,7 +30,7 @@ func NewLang(langPath string) *LangStructObj {
 	langObj := LangStructObj{}
 	iniFile, err := ini.Load(langPath)
 	if err != nil {
-		global.Logger.Errorln("加载语言文件失败:", err)
+		zaplog.Logger.Errorln("加载语言文件失败:", err)
 		os.Exit(1)
 	}
 	langObj.LangContent = iniFile

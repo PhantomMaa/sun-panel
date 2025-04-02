@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/config"
+	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/response"
@@ -60,7 +61,7 @@ func (r *OAuthRouter) OAuthLogin(c *gin.Context) {
 	// 获取OAuth授权URL
 	authURL, err := global.UserService.GetOAuthLoginURL(provider, util.RedirectURL(config.AppConfig.Base.RootURL, provider))
 	if err != nil {
-		global.Logger.Error("获取OAuth授权URL失败:", err)
+		zaplog.Logger.Error("获取OAuth授权URL失败:", err)
 		response.Error(c, "获取OAuth授权URL失败")
 		return
 	}
@@ -83,7 +84,7 @@ func (r *OAuthRouter) OAuthCallback(c *gin.Context) {
 	// 处理OAuth回调
 	user, err := global.UserService.HandleOAuthCallback(provider, code, util.RedirectURL(config.AppConfig.Base.RootURL, provider))
 	if err != nil {
-		global.Logger.Error("处理OAuth回调失败:", err)
+		zaplog.Logger.Error("处理OAuth回调失败:", err)
 		response.Error(c, "处理OAuth回调失败")
 		return
 	}
@@ -91,7 +92,7 @@ func (r *OAuthRouter) OAuthCallback(c *gin.Context) {
 	// 生成JWT Token
 	tokenString, err := interceptor.GenerateToken(user.ID)
 	if err != nil {
-		global.Logger.Error("生成token失败:", err)
+		zaplog.Logger.Error("生成token失败:", err)
 		response.Error(c, "生成token失败")
 		return
 	}

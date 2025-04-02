@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
+	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,7 @@ func JWTAuth(c *gin.Context) {
 	// 解析Token
 	claims, err := ParseToken(authHeader)
 	if err != nil {
-		global.Logger.Infof("invalid token. %v", err)
+		zaplog.Logger.Infof("invalid token. %v", err)
 		response.ErrorByCode(c, constant.CodeNotLogin)
 		c.Abort()
 		return
@@ -36,7 +37,7 @@ func JWTAuth(c *gin.Context) {
 	// 获取用户信息
 	userInfo, err := global.UserRepo.Get(claims.UserID)
 	if err != nil {
-		global.Logger.Infof("user not exist. %v", err)
+		zaplog.Logger.Infof("user not exist. %v", err)
 		response.ErrorByCode(c, constant.CodeNotLogin)
 		c.Abort()
 		return
