@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { NAlert, NButton, NButtonGroup, NCard, NEllipsis, NGrid, NGridItem, NImage, NImageGroup, NSpin, useDialog, useMessage } from 'naive-ui'
 import { onMounted, ref } from 'vue'
-import { set as savePanelConfig } from '../../../api/panel/userConfig'
 import { RoundCardModal, SvgIcon } from '../../common'
 import { deleteFile, getList } from '@/api/system/file'
 import { copyToClipboard, timeFormat } from '@/utils/cmn'
 import { t } from '@/locales'
-import { usePanelState } from '@/store'
 
 interface InfoModalState {
   title: string
@@ -16,7 +14,6 @@ interface InfoModalState {
 const imageList = ref<File.Info[]>([])
 const ms = useMessage()
 const dialog = useDialog()
-const panelStore = usePanelState()
 const loading = ref(false)
 const infoModalState = ref<InfoModalState>({
   show: false,
@@ -79,11 +76,6 @@ function handleInfoClick(fileInfo: File.Info) {
   infoModalState.value.show = true
 }
 
-function handleSetWallpaper(imgSrc: string) {
-  panelStore.panelConfig.backgroundImageSrc = imgSrc
-  savePanelConfig({ panel: panelStore.panelConfig })
-}
-
 onMounted(() => {
   getFileList()
 })
@@ -124,11 +116,6 @@ onMounted(() => {
                     <NButton size="tiny" tertiary style="cursor: pointer;" :title="timeFormat(item.createTime)" @click="handleInfoClick(item)">
                       <template #icon>
                         <SvgIcon icon="mdi-information-box-outline" />
-                      </template>
-                    </NButton>
-                    <NButton size="tiny" tertiary style="cursor: pointer;" :title="$t('apps.uploadsFileManager.setWallpaper')" @click="handleSetWallpaper(item.src)">
-                      <template #icon>
-                        <SvgIcon icon="lucide:wallpaper" />
                       </template>
                     </NButton>
                     <NButton size="tiny" tertiary type="error" style="cursor: pointer;" :title="$t('common.delete')" @click="handleDelete(item.id as number)">
