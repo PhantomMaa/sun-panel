@@ -48,8 +48,6 @@ func loadConfig(configPath string) error {
 		return fmt.Errorf("failed to parse YAML: %w", err)
 	}
 
-	fmt.Printf("loading rclone config from conf field\n")
-
 	// Parse the INI formatted config from the conf field
 	if config.Rclone.Conf == "" {
 		return fmt.Errorf("rclone.conf is empty")
@@ -114,7 +112,7 @@ func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName s
 	// Check if bucket exists, if not, create it
 	_, err := r.fs.List(ctx, "")
 	if err != nil {
-		fmt.Printf("Bucket does not exist or cannot be accessed: %v, attempting to create it\n", err)
+		zaplog.Logger.Infof("Bucket does not exist or cannot be accessed: %v, attempting to create it", err)
 
 		// Try to create the bucket/directory
 		err = operations.Mkdir(ctx, r.fs, "")
@@ -122,7 +120,7 @@ func (r *RcloneStorage) Upload(ctx context.Context, reader io.Reader, fileName s
 			return fmt.Errorf("failed to create bucket: %w", err)
 		}
 
-		fmt.Println("Successfully created bucket")
+		zaplog.Logger.Infof("Successfully created bucket")
 	}
 
 	// 将 io.Reader 转换为 io.ReadCloser
@@ -182,6 +180,6 @@ func (r *RcloneStorage) Get(ctx context.Context, filepath string) ([]byte, error
 		return nil, fmt.Errorf("failed to read object: %w", err)
 	}
 
-	fmt.Printf("Successfully read file: %s", filepath)
+	zaplog.Logger.Infof("Successfully read file: %s", filepath)
 	return data, nil
 }
