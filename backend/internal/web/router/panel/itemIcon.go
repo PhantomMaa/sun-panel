@@ -3,7 +3,6 @@ package panel
 import (
 	"encoding/json"
 	"net/url"
-	"path"
 	"strings"
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/global"
@@ -214,11 +213,7 @@ func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
 	}
 
 	// 保存到数据库
-	ext := path.Ext(fullUrl)
-	if ext == "" {
-		ext = ".ico"
-	}
-	if _, err := global.FileRepo.AddFile(userInfo.ID, ext, fileName); err != nil {
+	if _, err := global.FileRepo.AddFile(userInfo.ID, fileName); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}

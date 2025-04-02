@@ -96,7 +96,7 @@ func (a *FileRouter) UploadImg(c *gin.Context) {
 	}
 
 	// 向数据库添加记录
-	_, err = global.FileRepo.AddFile(userInfo.ID, fileExt, fileName)
+	_, err = global.FileRepo.AddFile(userInfo.ID, fileName)
 	if err != nil {
 		zaplog.Logger.Errorf("Failed to add file record to database: %v", err)
 		response.ErrorByCode(c, constant.CodeUploadFailed)

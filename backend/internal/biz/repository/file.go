@@ -3,8 +3,7 @@ package repository
 type File struct {
 	BaseModel
 	UserId   uint   `gorm:"index" json:"userId"`
-	FileName string `json:"file_name"`
-	Ext      string `gorm:"varchar(255)" json:"ext"` // 扩展名
+	FileName string `gorm:"type:varchar(50)" json:"fileName"`
 }
 
 type FileRepo struct{}
@@ -19,11 +18,10 @@ func NewFileRepo() *FileRepo {
 	return &FileRepo{}
 }
 
-func (r *FileRepo) AddFile(userId uint, ext, fileName string) (File, error) {
+func (r *FileRepo) AddFile(userId uint, fileName string) (File, error) {
 	file := File{
 		UserId:   userId,
 		FileName: fileName,
-		Ext:      ext,
 	}
 	err := Db.Create(&file).Error
 	return file, err

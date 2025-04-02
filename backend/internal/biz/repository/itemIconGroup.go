@@ -23,7 +23,7 @@ func NewItemIconGroupRepo() IItemIconGroupRepo {
 
 type ItemIconGroup struct {
 	BaseModel
-	Icon        string `json:"icon"`
+	Icon        string `gorm:"type:varchar(50)" json:"icon"`
 	Title       string `gorm:"type:varchar(50)" json:"title"`
 	Description string `gorm:"type:varchar(1000)" json:"description"`
 	Sort        int    `gorm:"type:int(11)" json:"sort"`
