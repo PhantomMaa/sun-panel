@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -8,6 +9,10 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
+
+	"golang.org/x/oauth2"
+
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/infra/config"
 	"sun-panel/internal/infra/zaplog"
@@ -57,7 +62,7 @@ func (s *UserService) GetOAuthLoginURL(provider string, redirectURI string) (str
 			break
 		}
 	}
-	
+
 	if providerConfig == nil {
 		return "", errors.New("unsupported OAuth provider")
 	}
@@ -89,7 +94,7 @@ func (s *UserService) HandleOAuthCallback(provider, code, redirectURI string) (*
 			break
 		}
 	}
-	
+
 	if providerConfig == nil {
 		return nil, errors.New("unsupported OAuth provider")
 	}
@@ -98,17 +103,17 @@ func (s *UserService) HandleOAuthCallback(provider, code, redirectURI string) (*
 	zaplog.Logger.Info("OAuth callback with redirectURI: " + redirectURI)
 
 	// Exchange code for token
-	tokenData, err := s.exchangeCodeForToken(*providerConfig, code, redirectURI)
+	accessToken, err := s.exchangeCodeForToken(*providerConfig, code, redirectURI)
 	if err != nil {
 		zaplog.Logger.Error("Failed to exchange code for token: " + err.Error())
 		return nil, err
 	}
 
 	// 记录 token 信息（注意不要记录完整的 token，仅记录是否存在）
-	zaplog.Logger.Info("Token exchange successful, access_token exists: " + strconv.FormatBool(tokenData["access_token"] != ""))
+	zaplog.Logger.Info("Token exchange successful, access_token exists: " + strconv.FormatBool(accessToken != ""))
 
 	// Get user info using the token
-	userInfo, err := s.fetchUserInfo(*providerConfig, tokenData["access_token"])
+	userInfo, err := s.fetchUserInfo(*providerConfig, accessToken)
 	if err != nil {
 		zaplog.Logger.Error("Failed to fetch user info: " + err.Error())
 		return nil, err
@@ -151,69 +156,53 @@ func (s *UserService) HandleOAuthCallback(provider, code, redirectURI string) (*
 }
 
 // exchangeCodeForToken exchanges the authorization code for an access token
-func (s *UserService) exchangeCodeForToken(config config.OAuthProviderConfig, code, redirectURI string) (map[string]string, error) {
-	data := url.Values{}
-	data.Set("client_id", config.ClientID)
-	data.Set("client_secret", config.ClientSecret)
-	data.Set("code", code)
-	data.Set("redirect_uri", redirectURI)
-	data.Set("grant_type", "authorization_code")
-
+func (s *UserService) exchangeCodeForToken(config config.OAuthProviderConfig, code, redirectURI string) (string, error) {
 	// 记录请求参数（不包含敏感信息）
 	zaplog.Logger.Info("Exchanging code for token with provider: " + config.Name)
 	zaplog.Logger.Info("Token URL: " + config.TokenURL)
 	zaplog.Logger.Info("Redirect URI: " + redirectURI)
 
-	req, err := http.NewRequest("POST", config.TokenURL, strings.NewReader(data.Encode()))
+	// 创建 OAuth2 配置
+	conf := &oauth2.Config{
+		ClientID:     config.ClientID,
+		ClientSecret: config.ClientSecret,
+		RedirectURL:  redirectURI,
+		Endpoint: oauth2.Endpoint{
+			TokenURL:  config.TokenURL,
+			AuthURL:   config.AuthURL,
+			AuthStyle: oauth2.AuthStyleInParams,
+		},
+	}
+
+	// 使用超时上下文
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// 交换 code 获取 token
+	token, err := conf.Exchange(ctx, code)
 	if err != nil {
-		zaplog.Logger.Error("Failed to create token request: " + err.Error())
-		return nil, err
+		zaplog.Logger.Error("Failed to exchange token: " + err.Error())
+		return "", errors.New("failed to exchange code for token: " + err.Error())
 	}
 
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Accept", "application/json")
+	// 获取 access_token
+	var accessToken string
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		zaplog.Logger.Error("Failed to send token request: " + err.Error())
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		zaplog.Logger.Error("Failed to read token response: " + err.Error())
-		return nil, err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		zaplog.Logger.Error("Token exchange failed with status code: " + strconv.Itoa(resp.StatusCode))
-		zaplog.Logger.Error("Response body: " + string(body))
-		return nil, errors.New("failed to exchange code for token: " + string(body))
-	}
-
-	var tokenData map[string]string
-	if err := json.Unmarshal(body, &tokenData); err != nil {
-		zaplog.Logger.Error("Failed to parse token response as JSON: " + err.Error())
-		
-		// Some providers might return non-JSON format
-		values, err := url.ParseQuery(string(body))
-		if err != nil {
-			zaplog.Logger.Error("Failed to parse token response as URL query: " + err.Error())
-			return nil, err
-		}
-
-		tokenData = make(map[string]string)
-		for k, v := range values {
-			if len(v) > 0 {
-				tokenData[k] = v[0]
-			}
+	// 首先检查 token.AccessToken
+	if token.AccessToken != "" {
+		accessToken = token.AccessToken
+	} else {
+		// 尝试从 Extra 中获取
+		if tokenStr, ok := token.Extra("access_token").(string); ok && tokenStr != "" {
+			accessToken = tokenStr
+		} else {
+			zaplog.Logger.Error("No access_token found in token response")
+			return "", errors.New("no access_token in response")
 		}
 	}
 
 	zaplog.Logger.Info("Token exchange successful")
-	return tokenData, nil
+	return accessToken, nil
 }
 
 // fetchUserInfo fetches user information from the OAuth provider
@@ -222,36 +211,56 @@ func (s *UserService) fetchUserInfo(config config.OAuthProviderConfig, accessTok
 	zaplog.Logger.Info("Fetching user info from provider: " + config.Name)
 	zaplog.Logger.Info("User info URL: " + config.UserInfoURL)
 
-	req, err := http.NewRequest("GET", config.UserInfoURL, nil)
-	if err != nil {
-		zaplog.Logger.Error("Failed to create user info request: " + err.Error())
-		return nil, err
+	// 创建 OAuth2 token
+	token := &oauth2.Token{
+		AccessToken: accessToken,
+		TokenType:   "Bearer",
 	}
 
-	req.Header.Add("Authorization", "Bearer "+accessToken)
-	req.Header.Add("Accept", "application/json")
+	// 创建 OAuth2 配置
+	conf := &oauth2.Config{
+		ClientID:     config.ClientID,
+		ClientSecret: config.ClientSecret,
+		Endpoint: oauth2.Endpoint{
+			TokenURL: config.TokenURL,
+			AuthURL:  config.AuthURL,
+		},
+	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// 使用超时上下文
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// 创建带有 token 的客户端
+	client := conf.Client(ctx, token)
+
+	// 发送请求获取用户信息
+	resp, err := client.Get(config.UserInfoURL)
 	if err != nil {
 		zaplog.Logger.Error("Failed to send user info request: " + err.Error())
 		return nil, err
 	}
 	defer resp.Body.Close()
 
+	// 读取响应
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		zaplog.Logger.Error("Failed to read user info response: " + err.Error())
 		return nil, err
 	}
 
+	// 记录响应状态
+	zaplog.Logger.Info("User info response status: " + resp.Status)
+
+	// 检查响应状态
 	if resp.StatusCode != http.StatusOK {
 		zaplog.Logger.Error("User info request failed with status code: " + strconv.Itoa(resp.StatusCode))
 		zaplog.Logger.Error("Response body: " + string(body))
 		return nil, errors.New("failed to fetch user info: " + string(body))
 	}
 
-	var userInfo map[string]any
+	// 解析 JSON 响应
+	var userInfo map[string]interface{}
 	if err := json.Unmarshal(body, &userInfo); err != nil {
 		zaplog.Logger.Error("Failed to parse user info response as JSON: " + err.Error())
 		return nil, err
@@ -259,20 +268,29 @@ func (s *UserService) fetchUserInfo(config config.OAuthProviderConfig, accessTok
 
 	// 记录成功获取用户信息（不记录具体内容，保护隐私）
 	zaplog.Logger.Info("Successfully fetched user info")
-	
+
 	// 记录字段映射信息，帮助调试
 	zaplog.Logger.Info("Field mapping - identifier: " + config.FieldMappingIdentifier)
 	zaplog.Logger.Info("Field mapping - display name: " + config.FieldMappingDisplayName)
 	zaplog.Logger.Info("Field mapping - email: " + config.FieldMappingEmail)
-	
+
 	// 检查必要字段是否存在
 	_, hasIdentifier := userInfo[config.FieldMappingIdentifier]
 	_, hasDisplayName := userInfo[config.FieldMappingDisplayName]
 	_, hasEmail := userInfo[config.FieldMappingEmail]
-	
+
 	zaplog.Logger.Info("Field exists - identifier: " + strconv.FormatBool(hasIdentifier))
 	zaplog.Logger.Info("Field exists - display name: " + strconv.FormatBool(hasDisplayName))
 	zaplog.Logger.Info("Field exists - email: " + strconv.FormatBool(hasEmail))
+
+	// 如果缺少标识符字段，记录所有可用字段名（不包含值）
+	if !hasIdentifier {
+		var fieldNames []string
+		for k := range userInfo {
+			fieldNames = append(fieldNames, k)
+		}
+		zaplog.Logger.Info("Available fields in user info: " + strings.Join(fieldNames, ", "))
+	}
 
 	return userInfo, nil
 }
