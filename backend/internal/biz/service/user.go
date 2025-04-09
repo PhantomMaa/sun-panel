@@ -99,18 +99,12 @@ func (s *UserService) HandleOAuthCallback(provider, code, redirectURI string) (*
 		return nil, errors.New("unsupported OAuth provider")
 	}
 
-	// 记录重定向 URI，用于调试
-	zaplog.Logger.Info("OAuth callback with redirectURI: " + redirectURI)
-
 	// Exchange code for token
 	accessToken, err := s.exchangeCodeForToken(*providerConfig, code, redirectURI)
 	if err != nil {
 		zaplog.Logger.Error("Failed to exchange code for token: " + err.Error())
 		return nil, err
 	}
-
-	// 记录 token 信息（注意不要记录完整的 token，仅记录是否存在）
-	zaplog.Logger.Info("Token exchange successful, access_token exists: " + strconv.FormatBool(accessToken != ""))
 
 	// Get user info using the token
 	userInfo, err := s.fetchUserInfo(*providerConfig, accessToken)
@@ -157,11 +151,6 @@ func (s *UserService) HandleOAuthCallback(provider, code, redirectURI string) (*
 
 // exchangeCodeForToken exchanges the authorization code for an access token
 func (s *UserService) exchangeCodeForToken(config config.OAuthProviderConfig, code, redirectURI string) (string, error) {
-	// 记录请求参数（不包含敏感信息）
-	zaplog.Logger.Info("Exchanging code for token with provider: " + config.Name)
-	zaplog.Logger.Info("Token URL: " + config.TokenURL)
-	zaplog.Logger.Info("Redirect URI: " + redirectURI)
-
 	// 创建 OAuth2 配置
 	conf := &oauth2.Config{
 		ClientID:     config.ClientID,
@@ -207,10 +196,6 @@ func (s *UserService) exchangeCodeForToken(config config.OAuthProviderConfig, co
 
 // fetchUserInfo fetches user information from the OAuth provider
 func (s *UserService) fetchUserInfo(config config.OAuthProviderConfig, accessToken string) (map[string]interface{}, error) {
-	// 记录请求参数（不包含敏感信息）
-	zaplog.Logger.Info("Fetching user info from provider: " + config.Name)
-	zaplog.Logger.Info("User info URL: " + config.UserInfoURL)
-
 	// 创建 OAuth2 token
 	token := &oauth2.Token{
 		AccessToken: accessToken,
@@ -249,9 +234,6 @@ func (s *UserService) fetchUserInfo(config config.OAuthProviderConfig, accessTok
 		return nil, err
 	}
 
-	// 记录响应状态
-	zaplog.Logger.Info("User info response status: " + resp.Status)
-
 	// 检查响应状态
 	if resp.StatusCode != http.StatusOK {
 		zaplog.Logger.Error("User info request failed with status code: " + strconv.Itoa(resp.StatusCode))
@@ -260,36 +242,10 @@ func (s *UserService) fetchUserInfo(config config.OAuthProviderConfig, accessTok
 	}
 
 	// 解析 JSON 响应
-	var userInfo map[string]interface{}
+	var userInfo map[string]any
 	if err := json.Unmarshal(body, &userInfo); err != nil {
 		zaplog.Logger.Error("Failed to parse user info response as JSON: " + err.Error())
 		return nil, err
-	}
-
-	// 记录成功获取用户信息（不记录具体内容，保护隐私）
-	zaplog.Logger.Info("Successfully fetched user info")
-
-	// 记录字段映射信息，帮助调试
-	zaplog.Logger.Info("Field mapping - identifier: " + config.FieldMappingIdentifier)
-	zaplog.Logger.Info("Field mapping - display name: " + config.FieldMappingDisplayName)
-	zaplog.Logger.Info("Field mapping - email: " + config.FieldMappingEmail)
-
-	// 检查必要字段是否存在
-	_, hasIdentifier := userInfo[config.FieldMappingIdentifier]
-	_, hasDisplayName := userInfo[config.FieldMappingDisplayName]
-	_, hasEmail := userInfo[config.FieldMappingEmail]
-
-	zaplog.Logger.Info("Field exists - identifier: " + strconv.FormatBool(hasIdentifier))
-	zaplog.Logger.Info("Field exists - display name: " + strconv.FormatBool(hasDisplayName))
-	zaplog.Logger.Info("Field exists - email: " + strconv.FormatBool(hasEmail))
-
-	// 如果缺少标识符字段，记录所有可用字段名（不包含值）
-	if !hasIdentifier {
-		var fieldNames []string
-		for k := range userInfo {
-			fieldNames = append(fieldNames, k)
-		}
-		zaplog.Logger.Info("Available fields in user info: " + strings.Join(fieldNames, ", "))
 	}
 
 	return userInfo, nil
