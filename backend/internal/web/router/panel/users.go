@@ -5,14 +5,14 @@ import (
 	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
+	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
 
-	"github.com/gin-gonic/gin/binding"
-
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 type UsersRouter struct {
@@ -29,7 +29,7 @@ func (a UsersRouter) InitRouter(router *gin.RouterGroup) {
 		rAdmin.POST("panel/users/create", a.Create)
 		rAdmin.GET("panel/users/getList", a.GetList)
 		rAdmin.POST("panel/users/update", a.Update)
-		rAdmin.POST("panel/users/deletes", a.Deletes)
+		rAdmin.POST("panel/users/delete", a.Delete)
 	}
 }
 
@@ -75,9 +75,9 @@ func (a UsersRouter) Create(c *gin.Context) {
 	response.SuccessData(c, gin.H{"userId": mUser.ID})
 }
 
-func (a UsersRouter) Deletes(c *gin.Context) {
+func (a UsersRouter) Delete(c *gin.Context) {
 	type Param struct {
-		UserIds []uint
+		UserId uint
 	}
 	param := Param{}
 	if err := c.ShouldBindBodyWith(&param, binding.JSON); err != nil {
@@ -86,9 +86,19 @@ func (a UsersRouter) Deletes(c *gin.Context) {
 		return
 	}
 
-	if err := global.UserRepo.Deletes(param.UserIds); err != nil {
+	// 执行用户删除操作，同时获取需要从存储中删除的文件名列表
+	fileNames, err := global.UserRepo.Delete(param.UserId)
+	if err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
+	}
+	
+	// 从对象存储中删除文件
+	for _, fileName := range fileNames {
+		if err := global.Storage.Delete(c.Request.Context(), fileName); err != nil {
+			// 记录错误但继续处理其他文件
+			zaplog.Logger.Errorf("Failed to delete file %s from storage: %v", fileName, err)
+		}
 	}
 
 	response.Success(c)

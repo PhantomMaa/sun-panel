@@ -32,7 +32,7 @@ type IUserRepo interface {
 	Update(id uint, user *User) error
 	UpdateUserInfo(id uint, updateInfo map[string]any) error
 	Create(user *User) error
-	Deletes(ids []uint) error
+	Delete(userId uint) ([]string, error)
 	CheckUsernameExist(username, oauthProvider string) (User, error)
 }
 
@@ -128,6 +128,51 @@ func (r *UserRepo) Create(user *User) error {
 	return err
 }
 
+func (r *UserRepo) Delete(userId uint) ([]string, error) {
+	var fileNames []string
+	err := Db.Transaction(func(tx *gorm.DB) error {
+		// Get all files of the user before deletion
+		var files []File
+		if err := tx.Where("user_id = ?", userId).Find(&files).Error; err != nil {
+			return err
+		}
+
+		// Store file names for later deletion from storage
+		fileNames = make([]string, 0, len(files))
+		for _, file := range files {
+			fileNames = append(fileNames, file.FileName)
+		}
+
+		// 删除图标
+		if err := tx.Delete(&ItemIcon{}, "user_id=?", userId).Error; err != nil {
+			return err
+		}
+
+		// 删除分组
+		if err := tx.Delete(&ItemIconGroup{}, "user_id = ?", userId).Error; err != nil {
+			return err
+		}
+
+		// 删除模块配置
+		if err := tx.Delete(&ModuleConfig{}, "user_id=?", userId).Error; err != nil {
+			return err
+		}
+
+		// 删除文件记录，并没有删除资源文件
+		if err := tx.Delete(&File{}, "user_id=?", userId).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Delete(&User{}, userId).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+	
+	return fileNames, err
+}
+
 func (r *UserRepo) CheckUsernameExist(username, oauthProvider string) (User, error) {
 	hasUser := User{}
 	count := Db.Where("username=?", username).Where("oauth_provider=?", oauthProvider).First(&hasUser).RowsAffected
@@ -136,36 +181,4 @@ func (r *UserRepo) CheckUsernameExist(username, oauthProvider string) (User, err
 	}
 
 	return hasUser, nil
-}
-
-func (r *UserRepo) Deletes(userIds []uint) error {
-	return Db.Transaction(func(tx *gorm.DB) error {
-		for _, v := range userIds {
-			// 删除图标
-			if err := tx.Delete(&ItemIcon{}, "user_id=?", v).Error; err != nil {
-				return err
-			}
-
-			// 删除分组
-			if err := tx.Delete(&ItemIconGroup{}, "user_id = ?", v).Error; err != nil {
-				return err
-			}
-
-			// 删除模块配置
-			if err := tx.Delete(&ModuleConfig{}, "user_id=?", v).Error; err != nil {
-				return err
-			}
-
-			// 删除文件记录，并没有删除资源文件
-			if err := tx.Delete(&File{}, "user_id=?", v).Error; err != nil {
-				return err
-			}
-		}
-
-		if err := tx.Delete(&User{}, userIds).Error; err != nil {
-			return err
-		}
-
-		return nil
-	})
 }

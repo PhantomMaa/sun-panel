@@ -9,10 +9,9 @@ import (
 )
 
 type BaseModel struct {
-	ID        uint           `gorm:"primarykey" json:"id"`
-	CreatedAt time.Time      `json:"createTime"`
-	UpdatedAt time.Time      `json:"updateTime"`
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID        uint      `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `json:"createTime"`
+	UpdatedAt time.Time `json:"updateTime"`
 }
 
 type PagedParam struct {

@@ -2,7 +2,7 @@
 import { h, onMounted, reactive, ref } from 'vue'
 import { NAlert, NButton, NDataTable, NDropdown, NTag, useDialog, useMessage } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
-import { deletes as usersDeletes, getList as usersGetList } from '../../../api/panel/users'
+import { deleteUser as usersDeleteUser, getList as usersGetList } from '../../../api/panel/users'
 import { SvgIcon } from '../../common'
 import EditUser from './EditUser/index.vue'
 import { useAuthStore } from '@/store'
@@ -92,7 +92,7 @@ const createColumns = ({
                   positiveText: t('common.confirm'),
                   negativeText: t('common.cancel'),
                   onPositiveClick: () => {
-                    deletes([row.id as number])
+                    deleteUser(row.id as number)
                   },
                 })
                 break
@@ -170,8 +170,8 @@ async function getList(page: number | null) {
   tableIsLoading.value = false
 }
 
-async function deletes(ids: number[]) {
-  const { code } = await usersDeletes(ids)
+async function deleteUser(id: number) {
+  const { code } = await usersDeleteUser(id)
   if (code === 0) {
     message.success(t('common.deleteSuccess'))
     await getList(null)

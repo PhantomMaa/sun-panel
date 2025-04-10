@@ -20,9 +20,9 @@ export function getList<T>(param: AdminUserManage.GetListRequest) {
   })
 }
 
-export function deletes<T>(userIds: number[]) {
+export function deleteUser<T>(userId: number) {
   return post<T>({
-    url: '/panel/users/deletes',
-    data: { userIds },
+    url: '/panel/users/delete',
+    data: { userId },
   })
 }
