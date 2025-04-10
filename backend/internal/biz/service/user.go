@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -22,6 +24,7 @@ import (
 type UserService struct {
 	itemGroupRepo repository.IItemIconGroupRepo
 	userRepo      repository.IUserRepo
+	proxyClient   *http.Client
 }
 
 type IUserService interface {
@@ -31,7 +34,59 @@ type IUserService interface {
 }
 
 func NewUserService(userRepo repository.IUserRepo, itemGroupRepo repository.IItemIconGroupRepo) *UserService {
-	return &UserService{userRepo: userRepo, itemGroupRepo: itemGroupRepo}
+	service := &UserService{userRepo: userRepo, itemGroupRepo: itemGroupRepo}
+
+	// 初始化代理客户端
+	service.initProxyClient()
+	return service
+}
+
+// initProxyClient 初始化代理客户端
+func (s *UserService) initProxyClient() {
+	var transport *http.Transport
+	// 检查是否启用了节点代理功能，并且能获取到 NODE_IP 环境变量
+	nodeIP := os.Getenv("NODE_IP")
+	// 添加对 AppConfig 的空指针检查
+	if config.AppConfig.Base.EnableNodeProxy && nodeIP != "" {
+		// 如果设置了 NODE_IP，为特定域名创建代理
+		proxyFunc := func(req *http.Request) (*url.URL, error) {
+			// 检查请求的主机名
+			host := req.URL.Host
+			// 只为 Google OAuth 相关域名使用代理
+			if strings.Contains(host, "googleapis.com") ||
+				strings.Contains(host, "google.com") {
+				zaplog.Logger.Info("Using proxy for host: " + host + " via node: " + nodeIP)
+				proxyURL := fmt.Sprintf("http://%s:7890", nodeIP)
+				return url.Parse(proxyURL)
+			}
+			// 其他请求不使用代理
+			return nil, nil
+		}
+
+		// 创建透明代理
+		transport = &http.Transport{
+			Proxy: proxyFunc,
+		}
+
+		zaplog.Logger.Info("Node proxy enabled, using node: " + nodeIP)
+	} else {
+		zaplog.Logger.Info("Node proxy not enabled")
+	}
+
+	s.proxyClient = &http.Client{
+		Timeout:   30 * time.Second, // 使用较长的超时时间，因为这是共享的客户端
+		Transport: transport,
+	}
+}
+
+// createProxyContext 创建一个带有代理客户端的上下文
+func (s *UserService) createProxyContext(timeout time.Duration) (context.Context, context.CancelFunc) {
+	// 创建上下文
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+
+	// 在 OAuth2 上下文中使用代理客户端
+	ctx = context.WithValue(ctx, oauth2.HTTPClient, s.proxyClient)
+	return ctx, cancel
 }
 
 func (s *UserService) CreateUser(user *repository.User) error {
@@ -163,15 +218,15 @@ func (s *UserService) exchangeCodeForToken(config config.OAuthProviderConfig, co
 		},
 	}
 
-	// 使用超时上下文
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// 创建带有代理的上下文
+	ctx, cancel := s.createProxyContext(10 * time.Second)
 	defer cancel()
 
 	// 交换 code 获取 token
 	token, err := conf.Exchange(ctx, code)
 	if err != nil {
 		zaplog.Logger.Error("Failed to exchange token: " + err.Error())
-		return "", errors.New("failed to exchange code for token: " + err.Error())
+		return "", errors.New("failed to exchange code for token")
 	}
 
 	// 获取 access_token
@@ -212,8 +267,8 @@ func (s *UserService) fetchUserInfo(config config.OAuthProviderConfig, accessTok
 		},
 	}
 
-	// 使用超时上下文
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// 创建带有代理的上下文
+	ctx, cancel := s.createProxyContext(10 * time.Second)
 	defer cancel()
 
 	// 创建带有 token 的客户端

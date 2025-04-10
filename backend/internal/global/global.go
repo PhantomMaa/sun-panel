@@ -34,7 +34,7 @@ var (
 
 // services
 var (
-	UserService = service.NewUserService(UserRepo, ItemIconGroupRepo)
+	UserService *service.UserService
 )
 
 // caches

@@ -28,6 +28,7 @@ type BaseConfig struct {
 	DatabaseDrive      string `yaml:"database_drive"`
 	EnableStaticServer bool   `yaml:"enable_static_server"`
 	EnableMonitor      bool   `yaml:"enable_monitor"`
+	EnableNodeProxy    bool   `yaml:"enable_node_proxy"`
 	URLPrefix          string `yaml:"url_prefix"`
 }
 
@@ -66,13 +67,13 @@ type OAuthConfig struct {
 
 // OAuthProviderConfig represents the configuration for an OAuth provider
 type OAuthProviderConfig struct {
-	Name                   string `yaml:"name"`
-	ClientID               string `yaml:"client_id"`
-	ClientSecret           string `yaml:"client_secret"`
-	AuthURL                string `yaml:"auth_url"`
-	TokenURL               string `yaml:"token_url"`
-	UserInfoURL            string `yaml:"user_info_url"`
-	Scopes                 string `yaml:"scopes"`
+	Name                    string `yaml:"name"`
+	ClientID                string `yaml:"client_id"`
+	ClientSecret            string `yaml:"client_secret"`
+	AuthURL                 string `yaml:"auth_url"`
+	TokenURL                string `yaml:"token_url"`
+	UserInfoURL             string `yaml:"user_info_url"`
+	Scopes                  string `yaml:"scopes"`
 	FieldMappingIdentifier  string `yaml:"field_mapping_identifier"`
 	FieldMappingDisplayName string `yaml:"field_mapping_display_name"`
 	FieldMappingEmail       string `yaml:"field_mapping_email"`

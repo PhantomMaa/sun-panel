@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/biz/service"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/config"
 	"sun-panel/internal/infra/database"
@@ -67,6 +68,9 @@ func InitApp(configPath string) error {
 	if err := interceptor.InitJWT(); err != nil {
 		return fmt.Errorf("JWT initialization error: %w", err)
 	}
+
+	// 初始化 UserService
+	global.UserService = service.NewUserService(global.UserRepo, global.ItemIconGroupRepo)
 
 	// 初始化路由
 	httpPort := config.AppConfig.Base.HTTPPort

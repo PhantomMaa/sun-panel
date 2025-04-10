@@ -3,7 +3,6 @@ package system
 import (
 	"errors"
 	"strings"
-	"sun-panel/internal/biz/service"
 	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/zaplog"
@@ -17,7 +16,6 @@ import (
 )
 
 type LoginRouter struct {
-	userService service.IUserService
 }
 
 type LoginLoginVerify struct {
@@ -28,9 +26,7 @@ type LoginLoginVerify struct {
 }
 
 func NewLoginRouter() *LoginRouter {
-	return &LoginRouter{
-		userService: service.NewUserService(global.UserRepo, global.ItemIconGroupRepo),
-	}
+	return &LoginRouter{}
 }
 
 func (l *LoginRouter) InitRouter(router *gin.RouterGroup) {
