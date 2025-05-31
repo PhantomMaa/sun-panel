@@ -185,9 +185,6 @@ onMounted(() => {
 
 <template>
   <div class="overflow-auto pt-2">
-    <NAlert type="info" :bordered="false">
-      {{ $t('adminSettingUsers.alertText') }}
-    </NAlert>
     <div class="my-[10px]">
       <NButton type="primary" size="small" ghost @click="handleAdd">
         {{ $t('common.add') }}

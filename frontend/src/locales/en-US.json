@@ -1,7 +1,6 @@
 {
   "adminSettingUsers": {
     "EditpasswordPlaceholder": "Enter new password, leave blank to keep the current password",
-    "alertText": "Data between accounts is not shared",
     "appName": "Account management",
     "currentUseUsername": "Current username",
     "deletePromptContent": "Are you sure you want to delete {name} ({username})?",
