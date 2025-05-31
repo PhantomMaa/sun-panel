@@ -19,6 +19,8 @@ resources:
 service:
   port: 3030
 
+nodeSelector: {}
+
 tolerations: {}
 
 affinity: {}

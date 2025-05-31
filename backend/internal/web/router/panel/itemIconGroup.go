@@ -46,6 +46,7 @@ func (a *ItemIconGroupRouter) Edit(c *gin.Context) {
 		return
 	}
 
+	itemIconGroup.UserId = userInfo.ID
 	if err := global.ItemIconGroupRepo.Save(itemIconGroup); err != nil {
 		response.ErrorDatabase(c, err.Error())
 		return
