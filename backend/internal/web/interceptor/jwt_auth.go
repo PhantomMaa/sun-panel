@@ -5,6 +5,7 @@ import (
 	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/zaplog"
+	"sun-panel/internal/util/jwt"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,7 @@ func JWTAuth(c *gin.Context) {
 	}
 
 	// 解析Token
-	claims, err := ParseToken(authHeader)
+	claims, err := jwt.ParseToken(authHeader)
 	if err != nil {
 		zaplog.Logger.Infof("invalid token. %v", err)
 		response.ErrorByCode(c, constant.CodeNotLogin)

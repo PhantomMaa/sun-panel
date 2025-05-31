@@ -7,6 +7,7 @@ import (
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
+	"sun-panel/internal/util/jwt"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
@@ -74,7 +75,7 @@ func (l *LoginRouter) Login(c *gin.Context) {
 	}
 
 	// 生成JWT Token
-	user.Token, err = interceptor.GenerateToken(user.ID)
+	user.Token, err = jwt.GenerateToken(user.ID)
 	if err != nil {
 		zaplog.Logger.Error("JWT生成失败:", err)
 		response.Error(c, "系统错误")

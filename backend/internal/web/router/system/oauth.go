@@ -6,7 +6,7 @@ import (
 	"sun-panel/internal/infra/config"
 	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
-	"sun-panel/internal/web/interceptor"
+	"sun-panel/internal/util/jwt"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin"
@@ -90,7 +90,7 @@ func (r *OAuthRouter) OAuthCallback(c *gin.Context) {
 	}
 
 	// 生成JWT Token
-	tokenString, err := interceptor.GenerateToken(user.ID)
+	tokenString, err := jwt.GenerateToken(user.ID)
 	if err != nil {
 		zaplog.Logger.Error("生成token失败:", err)
 		response.Error(c, "生成token失败")

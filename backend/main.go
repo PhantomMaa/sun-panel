@@ -13,7 +13,7 @@ import (
 	"sun-panel/internal/infra/storage"
 	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util/i18n"
-	"sun-panel/internal/web/interceptor"
+	"sun-panel/internal/util/jwt"
 	"sun-panel/internal/web/router"
 	"time"
 
@@ -68,7 +68,7 @@ func InitApp(configPath string) error {
 	}
 
 	// 初始化JWT
-	if err := interceptor.InitJWT(); err != nil {
+	if err := jwt.InitJWT(); err != nil {
 		return fmt.Errorf("JWT initialization error: %w", err)
 	}
 

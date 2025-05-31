@@ -92,7 +92,7 @@ func (a UsersRouter) Delete(c *gin.Context) {
 		response.ErrorDatabase(c, err.Error())
 		return
 	}
-	
+
 	// 从对象存储中删除文件
 	for _, fileName := range fileNames {
 		if err := global.Storage.Delete(c.Request.Context(), fileName); err != nil {
@@ -128,12 +128,9 @@ func (a UsersRouter) Update(c *gin.Context) {
 		return
 	}
 
-	allowField := []string{"Username", "Name", "Mail", "Token", "Role"}
-
 	// 密码不为默认“-”空，修改密码
 	if user.Password != "-" {
 		user.Password = util.PasswordEncryption(user.Password)
-		allowField = append(allowField, "Password")
 	}
 
 	// 验证账号是否存在
