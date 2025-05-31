@@ -11,20 +11,17 @@ service.interceptors.request.use(
     const token = authStore.token
     
     // 从 URL 路径中获取 public code
-    // 例如：http://localhost:1002/abc 中的 abc
     let publiccode = ''
     const pathSegments = window.location.pathname.split('/')
     if (pathSegments.length > 1 && pathSegments[1] !== '') {
       publiccode = pathSegments[1]
     }
     
-    // 添加 JWT token 到请求头
-    if (token)
-      config.headers.Authorization = `Bearer ${token}`
-    
     // 添加 publiccode 到请求头（如果存在）
     if (publiccode)
       config.headers.publiccode = publiccode
+    else
+      config.headers.Authorization = `Bearer ${token}`
     
     return config
   },

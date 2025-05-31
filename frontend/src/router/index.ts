@@ -1,6 +1,6 @@
 import type { App } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { setupPageGuard } from './permission'
 
 const routes: RouteRecordRaw[] = [
@@ -29,22 +29,31 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-    path: '/:pathMatch(.*)*',
-    name: 'notFound',
-    redirect: '/404',
-  },
-
-  {
     path: '/test',
     name: 'test',
     component: () => import('../views/exception/test/index.vue'),
+  },
+
+  // 专门处理公开访问代码的路由
+  // 匹配 10 位字母数字的路径，可以带或不带斜杠
+  {
+    path: '/:code([a-zA-Z0-9]{10})',
+    name: 'PublicAccess',
+    component: () => import('../views/home/index.vue'),
+  },
+
+  // 必须放在最后，作为兜底
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'notFound',
+    redirect: '/404',
   },
 
   // adminRouter,
 ]
 
 export const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
   scrollBehavior: () => ({ left: 0, top: 0 }),
 })

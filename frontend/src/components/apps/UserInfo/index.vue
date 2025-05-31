@@ -27,7 +27,6 @@ const nickName = ref(authStore.userInfo?.name || '')
 const isEditNickNameStatus = ref(false)
 const formRef = ref<FormInst | null>(null)
 const publicVisitEnabled = ref<boolean>(false)
-const publicVisitCode = ref<string>('')
 const publicVisitUrl = ref<string>('')
 const publicVisitLoading = ref<boolean>(false)
 const themeOptions: { label: string; key: string; value: Theme }[] = [
@@ -156,14 +155,12 @@ const fetchPublicVisitCode = () => {
     if (publiccode) {
       // 使用类型断言确保类型安全
       const codeStr = String(publiccode)
-      publicVisitCode.value = codeStr
       publicVisitEnabled.value = true
       // 构建公开访问URL
       const baseUrl = window.location.origin
-      publicVisitUrl.value = `${baseUrl}/${codeStr}/`
+      publicVisitUrl.value = `${baseUrl}/${codeStr}`
     } else {
       publicVisitEnabled.value = false
-      publicVisitCode.value = ''
       publicVisitUrl.value = ''
     }
   } catch (error) {
@@ -182,11 +179,10 @@ const handleTogglePublicVisit = async (value: boolean) => {
       if (res.code === 0 && res.data && res.data.code) {
         // 使用类型断言确保类型安全
         const codeStr = String(res.data.code)
-        publicVisitCode.value = codeStr
         publicVisitEnabled.value = true
         // 构建公开访问URL
         const baseUrl = window.location.origin
-        publicVisitUrl.value = `${baseUrl}/${codeStr}/`
+        publicVisitUrl.value = `${baseUrl}/${codeStr}`
         ms.success('公开访问已开启')
         // 更新用户信息
         updateLocalUserInfo()
@@ -195,7 +191,6 @@ const handleTogglePublicVisit = async (value: boolean) => {
       // 关闭公开访问
       await disablePublicVisit()
       publicVisitEnabled.value = false
-      publicVisitCode.value = ''
       publicVisitUrl.value = ''
       ms.success('公开访问已关闭')
       // 更新用户信息
@@ -285,7 +280,7 @@ const handleTogglePublicVisit = async (value: boolean) => {
             <span class="mr-[10px]">{{ $t('apps.userInfo.enablePublicVisit') }}</span>
             <NSwitch :value="publicVisitEnabled" :loading="publicVisitLoading" @update:value="handleTogglePublicVisit" />
           </div>
-          <div v-if="publicVisitEnabled && publicVisitCode" class="mt-2">
+          <div v-if="publicVisitEnabled" class="mt-2">
             <div class="text-sm text-slate-500 mb-1">
               <a :href="publicVisitUrl" target="_blank" class="text-blue-500">{{ publicVisitUrl }}</a>
             </div>

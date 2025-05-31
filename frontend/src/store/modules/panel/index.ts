@@ -32,7 +32,10 @@ export const usePanelState = defineStore('panel', {
         if (res.code === 0)
           this.panelConfig = { ...defaultStatePanelConfig(), ...res.data.panel }
         else
-          this.resetPanelConfig() // 重置恢复默认
+          this.resetPanelConfig()
+        this.recordState()
+      }).catch(() => {
+        this.resetPanelConfig()
         this.recordState()
       })
     },
@@ -41,14 +44,7 @@ export const usePanelState = defineStore('panel', {
       this.panelConfig = defaultStatePanelConfig()
     },
 
-    // async refreshSpaceNoteList(spaceId: string) {
-    //   await getListBySpaceNoteId<Common.ListResponse<SNote.InfoTree[]>>(spaceId).then((res) => {
-    //     this.notesList = res.data.list
-    //   })
-    // },
-
     async reloadRoute(id?: number) {
-      // this.recordState()
       await router.push({ name: 'AppletDialog', params: { aiAppletId: id } })
     },
 

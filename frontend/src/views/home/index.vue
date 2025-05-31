@@ -8,7 +8,7 @@ import { SvgIcon } from '../../components/common'
 import { AppIcon, AppStarter, EditItem } from './components'
 import { deleteItem, getListByGroupId, saveSort } from '@/api/panel/itemIcon'
 
-import { setTitle, updateLocalUserInfo } from '@/utils/cmn'
+import { setTitle } from '@/utils/cmn'
 import { usePanelState, useUserStore } from '@/store'
 import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/enums'
 import { t } from '@/locales'
@@ -86,8 +86,8 @@ function handWindowIframeIdLoad(payload: Event) {
   windowIframeIsLoad.value = false
 }
 
+// 获取组数据
 function getList() {
-  // 获取组数据
   getGroupList<Common.ListResponse<ItemGroup[]>>().then(({ code, data, msg }) => {
     if (code === 0 && data && data.list) {
       items.value = data.list
@@ -252,9 +252,7 @@ function getDropdownMenuOptions() {
 }
 
 onMounted(() => {
-  // 更新用户信息
-  // updateLocalUserInfo()
-
+  // 获取页面数据
   getList()
 
   // 更新同步云端配置

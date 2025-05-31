@@ -63,14 +63,12 @@ func ErrorParamFomat(ctx *gin.Context, errMsg string) {
 
 // // 返回错误 数据库
 func ErrorDatabase(ctx *gin.Context, errMsg string) {
-	// Error(ctx, global.Lang.GetAndInsert("common.db_error", "[", errMsg, "]"))
 	ErrorByCodeAndMsg(ctx, 1200, errMsg)
-
 }
 
 // 返回错误 数据记录未找到
 func ErrorDataNotFound(ctx *gin.Context) {
-	ErrorByCode(ctx, 404)
+	ErrorCode(ctx, 404, "Data not found", nil)
 }
 
 func ErrorByCode(ctx *gin.Context, code int) {
