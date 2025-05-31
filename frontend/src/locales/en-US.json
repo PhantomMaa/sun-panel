@@ -52,7 +52,7 @@
       "viewUpdateLog": "Click here to view update log"
     },
     "baseSettings": {
-      "appName": "App Settings",
+      "appName": "Style Settings",
       "bottomMargin": "Bottom margin",
       "clock": "Clock component",
       "clockSecondShow": "Show seconds",
@@ -121,7 +121,9 @@
         "auto": "Follow the system ",
         "dark": "Dark ",
         "light": "Light "
-      }
+      },
+      "publicVisit": "Public visit",
+      "enablePublicVisit": "Enable public visit"
     }
   },
   "common": {
@@ -155,7 +157,7 @@
     "language": "Language",
     "leastOne": "Please keep at least one",
     "networkError": "Network error, please try again later",
-    "nikeName": "Nickname",
+    "nickName": "Nickname",
     "no": "No",
     "noData": "No data available",
     "password": "Password",

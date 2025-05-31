@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormInst, FormRules } from 'naive-ui'
-import { NButton, NCard, NDivider, NForm, NFormItem, NInput, NSelect, useDialog, useMessage } from 'naive-ui'
+import { NButton, NCard, NDivider, NForm, NFormItem, NInput, NSelect, useDialog, useMessage, NSwitch } from 'naive-ui'
 import { ref } from 'vue'
 import { RoundCardModal, SvgIcon } from '../../common'
 import { useAppStore, useAuthStore, usePanelState, useUserStore } from '@/store'
@@ -149,7 +149,7 @@ function handleChangeTheme(value: Theme) {
 
       <div class="mt-[10px]">
         <div class="text-slate-500 font-bold">
-          {{ $t('common.nikeName') }}
+          {{ $t('common.nickName') }}
         </div>
 
         <div v-if="!isEditNickNameStatus">
@@ -172,6 +172,18 @@ function handleChangeTheme(value: Theme) {
 
       <div class="mt-[10px]">
         <div class="text-slate-500 font-bold">
+          {{ $t('common.password') }}
+        </div>
+
+        <NButton size="small" text type="info" @click="updatePasswordModalState.show = !updatePasswordModalState.show">
+          {{ $t('settingUserInfo.updatePassword') }}
+        </NButton>
+      </div>
+
+      <NDivider style="margin: 10px 0;" dashed />
+
+      <div class="mt-[10px]">
+        <div class="text-slate-500 font-bold">
           {{ $t('common.language') }}
         </div>
         <div class="max-w-[200px]">
@@ -189,11 +201,6 @@ function handleChangeTheme(value: Theme) {
       </div>
 
       <NDivider style="margin: 10px 0;" dashed />
-      <div>
-        <NButton size="small" text type="info" @click="updatePasswordModalState.show = !updatePasswordModalState.show">
-          {{ $t('settingUserInfo.updatePassword') }}
-        </NButton>
-      </div>
     </NCard>
 
     <NCard style="border-radius:10px" class="mt-[10px]" size="small">

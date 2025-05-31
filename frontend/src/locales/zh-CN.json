@@ -52,7 +52,7 @@
       "viewUpdateLog": "点此查看更新说明"
     },
     "baseSettings": {
-      "appName": "应用设置",
+      "appName": "风格设置",
       "bottomMargin": "下边距",
       "clock": "时钟组件",
       "clockSecondShow": "显示秒",
@@ -121,7 +121,9 @@
         "auto": "跟随系统 ",
         "dark": "深色 ",
         "light": "浅色 "
-      }
+      },
+      "publicVisit": "公开访问",
+      "enablePublicVisit": "开启公开访问"
     }
   },
   "common": {
@@ -155,7 +157,7 @@
     "language": "语言",
     "leastOne": "请至少保留一项",
     "networkError": "网络错误，请稍后重试",
-    "nikeName": "昵称",
+    "nickName": "昵称",
     "no": "否",
     "noData": "暂无数据",
     "password": "密码",

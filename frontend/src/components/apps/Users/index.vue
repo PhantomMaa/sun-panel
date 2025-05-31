@@ -32,7 +32,7 @@ const createColumns = ({
       },
     },
     {
-      title: t('common.nikeName'),
+      title: t('common.nickName'),
       key: 'name',
     },
     {

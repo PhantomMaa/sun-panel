@@ -114,7 +114,7 @@ const handleValidateButtonClick = (e: MouseEvent) => {
         <NInput v-model:value="model.username" type="text" :placeholder="$t('common.inputPlaceholder')" />
       </NFormItem>
 
-      <NFormItem path="name" :label="$t('common.nikeName')">
+      <NFormItem path="name" :label="$t('common.nickName')">
         <NInput v-model:value="model.name" type="text" :placeholder="$t('common.inputPlaceholder')" />
       </NFormItem>
 
