@@ -10,6 +10,7 @@ import { languageOptions } from '../../utils/defaultData'
 import type { Language } from '../../store/modules/app/helper'
 import service from '../../utils/request/axios'
 import { getUser } from '@/api/system/user'
+import { updateLocalUserInfo } from '@/utils/cmn'
 
 const authStore = useAuthStore()
 const appStore = useAppStore()
@@ -78,6 +79,9 @@ const loginPost = async () => {
     if (res.code === 0) {
       authStore.setToken(res.data.token)
       authStore.setUserInfo(res.data)
+
+      // 更新用户信息
+      updateLocalUserInfo()
 
       setTimeout(() => {
         ms.success(`Hi ${res.data.name},${t('login.welcomeMessage')}`)

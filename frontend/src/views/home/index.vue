@@ -253,7 +253,7 @@ function getDropdownMenuOptions() {
 
 onMounted(() => {
   // 更新用户信息
-  updateLocalUserInfo()
+  // updateLocalUserInfo()
 
   getList()
 
