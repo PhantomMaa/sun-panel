@@ -52,7 +52,7 @@
       "viewUpdateLog": "点此查看更新说明"
     },
     "baseSettings": {
-      "appName": "风格设置",
+      "appName": "应用设置",
       "bottomMargin": "下边距",
       "clock": "时钟组件",
       "clockSecondShow": "显示秒",

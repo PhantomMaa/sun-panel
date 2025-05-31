@@ -52,7 +52,7 @@
       "viewUpdateLog": "Click here to view update log"
     },
     "baseSettings": {
-      "appName": "Style Settings",
+      "appName": "App Settings",
       "bottomMargin": "Bottom margin",
       "clock": "Clock component",
       "clockSecondShow": "Show seconds",
