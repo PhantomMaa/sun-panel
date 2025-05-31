@@ -14,9 +14,12 @@ service.interceptors.request.use(
     let publiccode = ''
     const pathSegments = window.location.pathname.split('/')
     if (pathSegments.length > 1 && pathSegments[1] !== '') {
-      publiccode = pathSegments[1]
+      // 检查代码格式是否符合要求（只包含字母和数字，长度为10）
+      if (/^[a-zA-Z0-9]{10}$/.test(pathSegments[1])) {
+        publiccode = pathSegments[1]
+      }
     }
-    
+
     // 添加 publiccode 到请求头（如果存在）
     if (publiccode)
       config.headers.publiccode = publiccode
