@@ -34,7 +34,7 @@ func (a *FileRouter) InitRouter(router *gin.RouterGroup) {
 	router.GET("/file/s3/*filepath", a.GetS3File)
 
 	r := router.Group("")
-	r.Use(interceptor.JWTAuth)
+	r.Use(interceptor.Auth)
 	{
 		r.POST("/file/uploadImg", a.UploadImg)
 		r.POST("/file/delete", a.Delete)

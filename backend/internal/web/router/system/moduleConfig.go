@@ -21,7 +21,7 @@ func NewModuleConfigRouter() *ModuleConfigRouter {
 
 func (a *ModuleConfigRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
-	r.Use(interceptor.JWTAuth)
+	r.Use(interceptor.Auth)
 	{
 		r.GET("/system/moduleConfig/getByName", a.GetByName)
 		r.POST("/system/moduleConfig/save", a.Save)

@@ -21,7 +21,7 @@ func NewPublicVisitRouter() *PublicVisitRouter {
 
 func (a *PublicVisitRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
-	r.Use(interceptor.JWTAuth)
+	r.Use(interceptor.Auth)
 	{
 		r.POST("/panel/publicVisit/enable", a.Enable)
 		r.POST("/panel/publicVisit/disable", a.Disable)

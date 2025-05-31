@@ -32,7 +32,7 @@ func NewItemIconRouter() *ItemIconRouter {
 func (a *ItemIconRouter) InitRouter(router *gin.RouterGroup) {
 	// 需要登录的路由组
 	r := router.Group("")
-	r.Use(interceptor.JWTAuth)
+	r.Use(interceptor.Auth)
 	{
 		r.POST("/panel/itemIcon/edit", a.Edit)
 		r.POST("/panel/itemIcon/delete", a.Delete)

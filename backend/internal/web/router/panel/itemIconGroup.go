@@ -24,7 +24,7 @@ func NewItemIconGroupRouter() *ItemIconGroupRouter {
 
 func (a *ItemIconGroupRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
-	r.Use(interceptor.JWTAuth)
+	r.Use(interceptor.Auth)
 	{
 		r.POST("/panel/itemIconGroup/edit", a.Edit)
 		r.POST("/panel/itemIconGroup/deletes", a.Deletes)

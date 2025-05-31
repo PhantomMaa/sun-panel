@@ -24,7 +24,7 @@ func NewUserConfigRouter() *UserConfigRouter {
 
 func (a *UserConfigRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
-	r.Use(interceptor.JWTAuth)
+	r.Use(interceptor.Auth)
 	{
 		r.POST("/panel/userConfig/setConfig", a.SetConfig)
 		r.GET("/panel/userConfig/getConfig", a.GetConfig)

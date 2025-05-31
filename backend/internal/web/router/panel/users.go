@@ -24,7 +24,7 @@ func NewUsersRouter() *UsersRouter {
 
 func (a UsersRouter) InitRouter(router *gin.RouterGroup) {
 	rAdmin := router.Group("")
-	rAdmin.Use(interceptor.JWTAuth, interceptor.AdminInterceptor)
+	rAdmin.Use(interceptor.Auth, interceptor.AdminInterceptor)
 	{
 		rAdmin.POST("panel/users/create", a.Create)
 		rAdmin.GET("panel/users/getList", a.GetList)

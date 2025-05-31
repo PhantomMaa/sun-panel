@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"sun-panel/internal/biz/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/locales/zh"
@@ -12,6 +11,15 @@ import (
 	"github.com/go-playground/validator/v10"
 	zhTranslations "github.com/go-playground/validator/v10/translations/zh"
 )
+
+type UserInfo struct {
+	ID         uint   `json:"id"`
+	Name       string `json:"name"`
+	Role       int8   `json:"role"`
+	Username   string `json:"username"`
+	Publiccode string `json:"publiccode"`
+	Logined    bool   `json:"logined"`
+}
 
 type PageLimitVerify struct {
 	Page  int64
@@ -66,9 +74,9 @@ func validateTransInit(validate *validator.Validate) ut.Translator {
 	return trans
 }
 
-func GetCurrentUserInfo(c *gin.Context) (userInfo repository.User, exist bool) {
+func GetCurrentUserInfo(c *gin.Context) (userInfo UserInfo, exist bool) {
 	if value, exist := c.Get("userInfo"); exist {
-		if v, ok := value.(repository.User); ok {
+		if v, ok := value.(UserInfo); ok {
 			return v, exist
 		}
 	}

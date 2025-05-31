@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	// DefaultLength 默认公开访问代码长度
-	DefaultLength = 10
+	LENGTH  = 10
+	CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
 var (
@@ -20,8 +20,7 @@ var (
 
 // GenerateAndSave 生成 public visit 代码
 func GenerateAndSave(userID uint) (string, error) {
-	// 使用nanoid生成固定长度的随机字符串
-	code, err := gonanoid.New(DefaultLength)
+	code, err := gonanoid.Generate(CHARSET, LENGTH)
 	if err != nil {
 		zaplog.Logger.Errorf("generate public visit code failed: %v", err)
 		return "", err

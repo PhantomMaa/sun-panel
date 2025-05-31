@@ -33,7 +33,7 @@ export async function updateLocalUserInfo() {
   try {
     const { data } = await getUser()
     if (data) {
-      userStore.updateUserInfo({ name: data.name })
+      userStore.updateUserInfo({ name: data.name, logined: data.logined })
       authStore.setUserInfo(data)
     }
   }

@@ -9,7 +9,7 @@ import { AppIcon, AppStarter, EditItem } from './components'
 import { deleteItem, getListByGroupId, saveSort } from '@/api/panel/itemIcon'
 
 import { setTitle, updateLocalUserInfo } from '@/utils/cmn'
-import { usePanelState } from '@/store'
+import { usePanelState, useUserStore } from '@/store'
 import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/enums'
 import { t } from '@/locales'
 
@@ -22,6 +22,7 @@ interface ItemGroup extends Panel.ItemIconGroup {
 const ms = useMessage()
 const dialog = useDialog()
 const panelState = usePanelState()
+const userStore = useUserStore()
 
 const scrollContainerRef = ref<HTMLElement | undefined>(undefined)
 
@@ -251,6 +252,9 @@ function getDropdownMenuOptions() {
 }
 
 onMounted(() => {
+  // 更新用户信息
+  updateLocalUserInfo()
+
   getList()
 
   // 更新同步云端配置
@@ -489,7 +493,7 @@ function handleAddItem(itemIconGroupId?: number) {
     />
 
     <!-- 悬浮按钮 -->
-    <div class="fixed-element shadow-[0_0_10px_2px_rgba(0,0,0,0.2)]">
+    <div v-if="userStore.userInfo?.logined" class="fixed-element shadow-[0_0_10px_2px_rgba(0,0,0,0.2)]">
       <NButtonGroup vertical>
         <!-- 网络模式切换按钮组 -->
         <NButton

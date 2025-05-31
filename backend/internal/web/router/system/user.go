@@ -15,21 +15,13 @@ import (
 
 type UserRouter struct{}
 
-type UserVO struct {
-	ID         uint   `json:"id"`
-	Name       string `json:"name"`
-	Role       int8   `json:"role"`
-	Username   string `json:"username"`
-	Publiccode string `json:"publiccode"`
-}
-
 func NewUserRouter() *UserRouter {
 	return &UserRouter{}
 }
 
 func (a *UserRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
-	r.Use(interceptor.JWTAuth)
+	r.Use(interceptor.Auth)
 	{
 		r.POST("/user/updatePassword", a.UpdatePasssword)
 		r.POST("/user/updateInfo", a.UpdateInfo)
@@ -44,13 +36,7 @@ func (a *UserRouter) GetUser(c *gin.Context) {
 		return
 	}
 
-	user := UserVO{}
-	user.ID = userInfo.ID
-	user.Name = userInfo.Name
-	user.Role = userInfo.Role
-	user.Username = userInfo.Username
-	user.Publiccode = userInfo.Publiccode
-	response.SuccessData(c, user)
+	response.SuccessData(c, userInfo)
 }
 
 func (a *UserRouter) UpdateInfo(c *gin.Context) {
