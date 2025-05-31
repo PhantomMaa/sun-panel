@@ -41,13 +41,6 @@ func (a *ItemIconRouter) InitRouter(router *gin.RouterGroup) {
 		r.POST("/panel/itemIcon/getSiteFavicon", a.GetSiteFavicon)
 		r.GET("/panel/itemIcon/getIcons", a.GetIcons)
 	}
-
-	// public visit 路由组
-	publicR := router.Group(":code")
-	publicR.Use(interceptor.PublicAccess)
-	{
-		publicR.GET("/panel/itemIcon/getIcons", a.GetIcons)
-	}
 }
 
 func (a *ItemIconRouter) Edit(c *gin.Context) {

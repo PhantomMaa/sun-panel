@@ -31,13 +31,6 @@ func (a *ItemIconGroupRouter) InitRouter(router *gin.RouterGroup) {
 		r.POST("/panel/itemIconGroup/saveSort", a.SaveSort)
 		r.GET("/panel/itemIconGroup/getGroups", a.GetGroups)
 	}
-
-	// public visit 路由组
-	publicR := router.Group(":code")
-	publicR.Use(interceptor.PublicAccess)
-	{
-		publicR.GET("/panel/itemIconGroup/getGroups", a.GetGroups)
-	}
 }
 
 func (a *ItemIconGroupRouter) Edit(c *gin.Context) {

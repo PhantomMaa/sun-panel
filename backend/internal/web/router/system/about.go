@@ -1,9 +1,10 @@
 package system
 
 import (
-	"github.com/gin-gonic/gin"
 	"sun-panel/internal/global"
 	"sun-panel/internal/web/model/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 type AboutRouter struct {
@@ -20,5 +21,6 @@ func (a *AboutRouter) Get(c *gin.Context) {
 }
 
 func (a *AboutRouter) InitRouter(router *gin.RouterGroup) {
+	// 公开接口
 	router.GET("about", a.Get)
 }

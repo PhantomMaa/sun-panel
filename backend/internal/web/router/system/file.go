@@ -30,20 +30,15 @@ func NewFileRouter() *FileRouter {
 }
 
 func (a *FileRouter) InitRouter(router *gin.RouterGroup) {
-	// 公共访问组，不需要 JWT 认证
-	public := router.Group("")
-	{
-		// S3 文件访问路由
-		public.GET("/file/s3/*filepath", a.GetS3File)
-	}
+	// 公开接口
+	router.GET("/file/s3/*filepath", a.GetS3File)
 
-	// 需要 JWT 认证的私有访问组
-	private := router.Group("")
-	private.Use(interceptor.JWTAuth)
+	r := router.Group("")
+	r.Use(interceptor.JWTAuth)
 	{
-		private.POST("/file/uploadImg", a.UploadImg)
-		private.POST("/file/delete", a.Delete)
-		private.GET("/file/getList", a.GetList)
+		r.POST("/file/uploadImg", a.UploadImg)
+		r.POST("/file/delete", a.Delete)
+		r.GET("/file/getList", a.GetList)
 	}
 }
 

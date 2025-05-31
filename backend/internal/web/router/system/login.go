@@ -35,10 +35,10 @@ func (l *LoginRouter) InitRouter(router *gin.RouterGroup) {
 	router.POST("/login", l.Login)
 
 	// 需要认证的接口
-	authGroup := router.Group("")
-	authGroup.Use(interceptor.JWTAuth)
+	r := router.Group("")
+	r.Use(interceptor.JWTAuth)
 	{
-		authGroup.POST("/logout", l.Logout)
+		r.POST("/logout", l.Logout)
 	}
 }
 

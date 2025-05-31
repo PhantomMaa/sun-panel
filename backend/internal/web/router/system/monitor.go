@@ -20,7 +20,6 @@ func NewMonitorRouter() *MonitorRouter {
 func (a *MonitorRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
 	r.Use(interceptor.JWTAuth)
-
 	{
 		r.POST("/system/monitor/getDiskMountpoints", a.GetDiskMountpoints)
 		r.POST("/system/monitor/getCpuState", a.GetCpuState)
