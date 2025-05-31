@@ -2,9 +2,9 @@ import {get, post} from '@/utils/request'
 
 // For current user, update himself info
 
-export function getAuthInfo() {
+export function getUser() {
   return get<User.Info>({
-    url: '/user/getAuthInfo',
+    url: '/user/getUser',
   })
 }
 

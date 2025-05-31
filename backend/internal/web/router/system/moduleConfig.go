@@ -1,12 +1,14 @@
 package system
 
 import (
-	"github.com/gin-gonic/gin/binding"
 	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
+
+	"github.com/gin-gonic/gin/binding"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,7 +35,11 @@ func (a *ModuleConfigRouter) GetByName(c *gin.Context) {
 		return
 	}
 
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
 
 	if cfg, err := global.ModuleConfigRepo.GetModuleConfigByUserIdAndName(userInfo.ID, req.Name); err != nil {
 		response.ErrorDatabase(c, err.Error())
@@ -51,7 +57,12 @@ func (a *ModuleConfigRouter) Save(c *gin.Context) {
 		return
 	}
 
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	config := repository.ModuleConfig{
 		UserId: userInfo.ID,
 		Value:  req.Value,

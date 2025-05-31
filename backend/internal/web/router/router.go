@@ -26,14 +26,16 @@ func RouterArray() []IRouter {
 		panel.NewItemIconGroupRouter(),
 		panel.NewUserConfigRouter(),
 		panel.NewUsersRouter(),
+		panel.NewPublicVisitRouter(),
 	}
 }
 
 func InitRouters(addr string) error {
 	router := gin.Default()
 	rootRouter := router.Group("/")
-	routerGroup := rootRouter.Group("api")
 
+	// 注册标准 API 路由
+	routerGroup := rootRouter.Group("api")
 	for _, router := range RouterArray() {
 		router.InitRouter(routerGroup)
 	}

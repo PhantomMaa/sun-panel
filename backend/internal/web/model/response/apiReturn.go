@@ -70,7 +70,7 @@ func ErrorDatabase(ctx *gin.Context, errMsg string) {
 
 // 返回错误 数据记录未找到
 func ErrorDataNotFound(ctx *gin.Context) {
-	ErrorByCode(ctx, -1)
+	ErrorByCode(ctx, 404)
 }
 
 func ErrorByCode(ctx *gin.Context, code int) {

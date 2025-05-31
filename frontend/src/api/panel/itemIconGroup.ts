@@ -9,7 +9,7 @@ export function edit<T>(req: Panel.ItemIconGroup) {
 
 export function getList<T>() {
   return get<T>({
-    url: '/panel/itemIconGroup/getList',
+    url: '/panel/itemIconGroup/getGroups',
   })
 }
 

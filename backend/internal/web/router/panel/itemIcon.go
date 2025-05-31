@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
@@ -29,6 +30,7 @@ func NewItemIconRouter() *ItemIconRouter {
 }
 
 func (a *ItemIconRouter) InitRouter(router *gin.RouterGroup) {
+	// 需要登录的路由组
 	r := router.Group("")
 	r.Use(interceptor.JWTAuth)
 	{
@@ -37,12 +39,24 @@ func (a *ItemIconRouter) InitRouter(router *gin.RouterGroup) {
 		r.POST("/panel/itemIcon/saveSort", a.SaveSort)
 		r.POST("/panel/itemIcon/addMultiple", a.AddMultiple)
 		r.POST("/panel/itemIcon/getSiteFavicon", a.GetSiteFavicon)
-		r.GET("/panel/itemIcon/getListByGroupId", a.GetListByGroupId)
+		r.GET("/panel/itemIcon/getIcons", a.GetIcons)
+	}
+
+	// public visit 路由组
+	publicR := router.Group(":code")
+	publicR.Use(interceptor.PublicAccess)
+	{
+		publicR.GET("/panel/itemIcon/getIcons", a.GetIcons)
 	}
 }
 
 func (a *ItemIconRouter) Edit(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	itemIcon := repository.ItemIcon{}
 	if err := c.ShouldBindBodyWith(&itemIcon, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())
@@ -66,7 +80,12 @@ func (a *ItemIconRouter) Edit(c *gin.Context) {
 
 // 添加多个图标
 func (a *ItemIconRouter) AddMultiple(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	// type Request
 	var req []repository.ItemIcon
 
@@ -96,7 +115,7 @@ func (a *ItemIconRouter) AddMultiple(c *gin.Context) {
 	response.SuccessData(c, req)
 }
 
-func (a *ItemIconRouter) GetListByGroupId(c *gin.Context) {
+func (a *ItemIconRouter) GetIcons(c *gin.Context) {
 	type ParamsStruct struct {
 		ItemIconGroupId uint `form:"itemIconGroupId" json:"itemIconGroupId"`
 	}
@@ -109,7 +128,12 @@ func (a *ItemIconRouter) GetListByGroupId(c *gin.Context) {
 		return
 	}
 
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	itemIcons, err := global.ItemIconRepo.GetList(userInfo.ID, param.ItemIconGroupId)
 	if err != nil {
 		response.ErrorDatabase(c, err.Error())
@@ -134,10 +158,15 @@ func (a *ItemIconRouter) Delete(c *gin.Context) {
 		return
 	}
 
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
 
 	item, err := global.ItemIconRepo.Get(userInfo.ID, req.Id)
 	if err != nil {
+		response.ErrorDatabase(c, err.Error())
 		return
 	}
 
@@ -162,7 +191,12 @@ func (a *ItemIconRouter) Delete(c *gin.Context) {
 
 // 支持获取并直接下载对方网站图标到服务器
 func (a *ItemIconRouter) GetSiteFavicon(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	req := panelApi.ItemIconGetSiteFaviconReq{}
 	if err := c.ShouldBind(&req); err != nil {
 		response.ErrorParamFomat(c, err.Error())
@@ -232,7 +266,11 @@ func (a *ItemIconRouter) SaveSort(c *gin.Context) {
 		return
 	}
 
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
 
 	err := global.ItemIconRepo.BatchSaveSort(userInfo.ID, req.ItemIconGroupId, req.SortItems)
 	if err != nil {

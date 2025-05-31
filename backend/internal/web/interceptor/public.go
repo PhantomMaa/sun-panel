@@ -1,42 +1,41 @@
 package interceptor
 
 import (
-	"strings"
 	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/infra/zaplog"
-	"sun-panel/internal/util/jwt"
+	"sun-panel/internal/util/publiccode"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin"
 )
 
-// JWTAuth JWT认证中间件
-func JWTAuth(c *gin.Context) {
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
+// PublicAccess 公开访问认证中间件
+func PublicAccess(c *gin.Context) {
+	zaplog.Logger.Infof("public access. %v", c.Request.URL.Path)
+
+	// 直接从路由参数中获取公开访问代码
+	code := c.Param("code")
+	zaplog.Logger.Infof("public access code: %s", code)
+	
+	if code == "" {
+		zaplog.Logger.Infof("empty public access code")
 		response.ErrorByCode(c, constant.CodeNotLogin)
 		c.Abort()
 		return
 	}
 
-	// 支持Bearer token
-	parts := strings.SplitN(authHeader, " ", 2)
-	if len(parts) == 2 && parts[0] == "Bearer" {
-		authHeader = parts[1]
-	}
-
-	// 解析Token
-	claims, err := jwt.ParseToken(authHeader)
+	// 解析公开访问代码，获取用户ID
+	userID, err := publiccode.ParseCode(code)
 	if err != nil {
-		zaplog.Logger.Infof("invalid token. %v", err)
+		zaplog.Logger.Infof("invalid public access code. %v", err)
 		response.ErrorByCode(c, constant.CodeNotLogin)
 		c.Abort()
 		return
 	}
 
 	// 获取用户信息
-	userInfo, err := global.UserRepo.Get(claims.UserID)
+	userInfo, err := global.UserRepo.Get(userID)
 	if err != nil {
 		zaplog.Logger.Infof("user not exist. %v", err)
 		response.ErrorByCode(c, constant.CodeNotLogin)

@@ -13,5 +13,6 @@ declare namespace User{
 		token?:string
 		oauthProvider?:string
 		oauthId?:string
+		publiccode?:string
 	}
 }

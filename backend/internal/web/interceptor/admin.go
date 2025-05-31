@@ -8,8 +8,8 @@ import (
 )
 
 func AdminInterceptor(c *gin.Context) {
-	currentUser, _ := base.GetCurrentUserInfo(c)
-	if currentUser.Role != 1 {
+	currentUser, exist := base.GetCurrentUserInfo(c)
+	if !exist || currentUser.Role != 1 {
 		response.ErrorNoAccess(c)
 		c.Abort()
 		return

@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import type { FormInst, FormRules } from 'naive-ui'
 import { NButton, NCard, NDivider, NForm, NFormItem, NInput, NSelect, useDialog, useMessage, NSwitch } from 'naive-ui'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { RoundCardModal, SvgIcon } from '../../common'
 import { useAppStore, useAuthStore, usePanelState, useUserStore } from '@/store'
 import { languageOptions } from '@/utils/defaultData'
 import type { Language, Theme } from '@/store/modules/app/helper'
 import { logout } from '@/api'
 import { updateInfo, updatePassword } from '@/api/system/user'
+import { enablePublicVisit, disablePublicVisit } from '@/api/panel/publicVisit'
 import { updateLocalUserInfo } from '@/utils/cmn'
 import { t } from '@/locales'
+
+// 使用导入的 ApiResponse 类型
 
 const userStore = useUserStore()
 const authStore = useAuthStore()
@@ -23,6 +26,10 @@ const themeValue = ref(appStore.theme)
 const nickName = ref(authStore.userInfo?.name || '')
 const isEditNickNameStatus = ref(false)
 const formRef = ref<FormInst | null>(null)
+const publicVisitEnabled = ref<boolean>(false)
+const publicVisitCode = ref<string>('')
+const publicVisitUrl = ref<string>('')
+const publicVisitLoading = ref<boolean>(false)
 const themeOptions: { label: string; key: string; value: Theme }[] = [
   { label: t('apps.userInfo.themeStyle.dark'), key: 'dark', value: 'dark' },
   { label: t('apps.userInfo.themeStyle.light'), key: 'light', value: 'light' },
@@ -135,6 +142,73 @@ function handleChangeTheme(value: Theme) {
   appStore.setTheme(value)
   // location.reload()
 }
+
+// 组件挂载时获取公开访问代码状态
+onMounted(() => {
+  fetchPublicVisitCode()
+})
+
+// 从用户认证信息中获取公开访问代码状态
+const fetchPublicVisitCode = () => {
+  try {
+    // 直接从 authStore 中获取公开访问代码
+    const publiccode = authStore.userInfo?.publiccode
+    if (publiccode) {
+      // 使用类型断言确保类型安全
+      const codeStr = String(publiccode)
+      publicVisitCode.value = codeStr
+      publicVisitEnabled.value = true
+      // 构建公开访问URL
+      const baseUrl = window.location.origin
+      publicVisitUrl.value = `${baseUrl}/${codeStr}/`
+    } else {
+      publicVisitEnabled.value = false
+      publicVisitCode.value = ''
+      publicVisitUrl.value = ''
+    }
+  } catch (error) {
+    console.error('获取公开访问代码失败:', error)
+    ms.error('获取公开访问代码状态失败')
+  }
+}
+
+// 处理公开访问开关切换
+const handleTogglePublicVisit = async (value: boolean) => {
+  publicVisitLoading.value = true
+  try {
+    if (value) {
+      // 开启公开访问
+      const res = await enablePublicVisit()
+      if (res.code === 0 && res.data && res.data.code) {
+        // 使用类型断言确保类型安全
+        const codeStr = String(res.data.code)
+        publicVisitCode.value = codeStr
+        publicVisitEnabled.value = true
+        // 构建公开访问URL
+        const baseUrl = window.location.origin
+        publicVisitUrl.value = `${baseUrl}/${codeStr}/`
+        ms.success('公开访问已开启')
+        // 更新用户信息
+        updateLocalUserInfo()
+      }
+    } else {
+      // 关闭公开访问
+      await disablePublicVisit()
+      publicVisitEnabled.value = false
+      publicVisitCode.value = ''
+      publicVisitUrl.value = ''
+      ms.success('公开访问已关闭')
+      // 更新用户信息
+      updateLocalUserInfo()
+    }
+  } catch (error) {
+    console.error('切换公开访问状态失败:', error)
+    ms.error('切换公开访问状态失败')
+    publicVisitEnabled.value = !value // 恢复开关状态
+  } finally {
+    publicVisitLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -201,6 +275,23 @@ function handleChangeTheme(value: Theme) {
       </div>
 
       <NDivider style="margin: 10px 0;" dashed />
+
+      <div class="mt-[10px]">
+        <div class="text-slate-500 font-bold">
+          {{ $t('apps.userInfo.publicVisit') }}
+        </div>
+        <div class="max-w-[400px]">
+          <div class="flex items-center">
+            <span class="mr-[10px]">{{ $t('apps.userInfo.enablePublicVisit') }}</span>
+            <NSwitch :value="publicVisitEnabled" :loading="publicVisitLoading" @update:value="handleTogglePublicVisit" />
+          </div>
+          <div v-if="publicVisitEnabled && publicVisitCode" class="mt-2">
+            <div class="text-sm text-slate-500 mb-1">
+              <a :href="publicVisitUrl" target="_blank" class="text-blue-500">{{ publicVisitUrl }}</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </NCard>
 
     <NCard style="border-radius:10px" class="mt-[10px]" size="small">

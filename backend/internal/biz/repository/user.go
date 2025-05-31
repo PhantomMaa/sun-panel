@@ -18,6 +18,7 @@ type User struct {
 	Token         string `gorm:"-" json:"token"`                                                                // 仅用于API返回
 	OauthProvider string `gorm:"type:varchar(50);uniqueIndex:idx_username_oauth_provider" json:"oauthProvider"` // OAuth来源 (github, google)
 	OauthID       string `gorm:"type:varchar(255);index" json:"oauthId"`                                        // OAuth提供商中的用户ID
+	Publiccode    string `gorm:"type:varchar(50);uniqueIndex:uk_publiccode" json:"publiccode"`                  // 公开访问代码
 }
 
 type UserRepo struct {
@@ -34,6 +35,7 @@ type IUserRepo interface {
 	Create(user *User) error
 	Delete(userId uint) ([]string, error)
 	CheckUsernameExist(username, oauthProvider string) (User, error)
+	GetByPubliccode(publiccode string) (User, error)
 }
 
 func NewUserRepo() IUserRepo {
@@ -96,6 +98,9 @@ func (r *UserRepo) UpdateUserInfo(userId uint, updateInfo map[string]any) error 
 	}
 	if v, ok := updateInfo["role"]; ok {
 		data["role"] = v
+	}
+	if v, ok := updateInfo["publiccode"]; ok {
+		data["publiccode"] = v
 	}
 
 	if v, ok := updateInfo["mail"]; ok {
@@ -169,7 +174,7 @@ func (r *UserRepo) Delete(userId uint) ([]string, error) {
 
 		return nil
 	})
-	
+
 	return fileNames, err
 }
 
@@ -181,4 +186,11 @@ func (r *UserRepo) CheckUsernameExist(username, oauthProvider string) (User, err
 	}
 
 	return hasUser, nil
+}
+
+// GetByPubliccode 根据 public visit 代码获取用户
+func (r *UserRepo) GetByPubliccode(publiccode string) (User, error) {
+	userInfo := User{}
+	err := Db.Where("publiccode=?", publiccode).First(&userInfo).Error
+	return userInfo, err
 }

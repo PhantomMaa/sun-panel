@@ -2,13 +2,15 @@ package panel
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin/binding"
-	"gorm.io/gorm"
 	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
+
+	"github.com/gin-gonic/gin/binding"
+	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,13 +26,18 @@ func (a *UserConfigRouter) InitRouter(router *gin.RouterGroup) {
 	r := router.Group("")
 	r.Use(interceptor.JWTAuth)
 	{
-		r.POST("/panel/userConfig/set", a.Set)
-		r.GET("/panel/userConfig/get", a.Get)
+		r.POST("/panel/userConfig/setConfig", a.SetConfig)
+		r.GET("/panel/userConfig/getConfig", a.GetConfig)
 	}
 }
 
-func (a *UserConfigRouter) Get(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
+func (a *UserConfigRouter) GetConfig(c *gin.Context) {
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	cfg, err := global.UserConfigRepo.GetUserConfig(userInfo.ID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -45,8 +52,13 @@ func (a *UserConfigRouter) Get(c *gin.Context) {
 	response.SuccessData(c, cfg)
 }
 
-func (a *UserConfigRouter) Set(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
+func (a *UserConfigRouter) SetConfig(c *gin.Context) {
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	req := repository.UserConfig{}
 
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {

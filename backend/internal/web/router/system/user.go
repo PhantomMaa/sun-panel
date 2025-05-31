@@ -1,7 +1,6 @@
 package system
 
 import (
-	"sun-panel/internal/biz/repository"
 	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/util"
@@ -16,6 +15,14 @@ import (
 
 type UserRouter struct{}
 
+type UserVO struct {
+	ID         uint   `json:"id"`
+	Name       string `json:"name"`
+	Role       int8   `json:"role"`
+	Username   string `json:"username"`
+	Publiccode string `json:"publiccode"`
+}
+
 func NewUserRouter() *UserRouter {
 	return &UserRouter{}
 }
@@ -26,23 +33,33 @@ func (a *UserRouter) InitRouter(router *gin.RouterGroup) {
 	{
 		r.POST("/user/updatePassword", a.UpdatePasssword)
 		r.POST("/user/updateInfo", a.UpdateInfo)
-		r.GET("/user/getAuthInfo", a.GetAuthInfo)
+		r.GET("/user/getUser", a.GetUser)
 	}
 }
 
-func (a *UserRouter) GetAuthInfo(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
-	user := repository.User{}
+func (a *UserRouter) GetUser(c *gin.Context) {
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
+	user := UserVO{}
 	user.ID = userInfo.ID
-	user.HeadImage = userInfo.HeadImage
 	user.Name = userInfo.Name
 	user.Role = userInfo.Role
 	user.Username = userInfo.Username
+	user.Publiccode = userInfo.Publiccode
 	response.SuccessData(c, user)
 }
 
 func (a *UserRouter) UpdateInfo(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	type UpdateUserInfoStruct struct {
 		HeadImage string `json:"headImage"`
 		Name      string `json:"name" validate:"max=15,min=3,required"`
@@ -60,7 +77,7 @@ func (a *UserRouter) UpdateInfo(c *gin.Context) {
 		return
 	}
 
-	err = global.UserRepo.UpdateUserInfo(userInfo.ID, map[string]interface{}{
+	err = global.UserRepo.UpdateUserInfo(userInfo.ID, map[string]any{
 		"head_image": params.HeadImage,
 		"name":       params.Name,
 	})
@@ -84,7 +101,12 @@ func (a *UserRouter) UpdatePasssword(c *gin.Context) {
 		return
 	}
 
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	vUser, err := global.UserRepo.Get(userInfo.ID)
 	if err != nil {
 		response.ErrorParamFomat(c, err.Error())

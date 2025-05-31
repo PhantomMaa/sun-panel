@@ -9,7 +9,7 @@ import { t } from '../../locales'
 import { languageOptions } from '../../utils/defaultData'
 import type { Language } from '../../store/modules/app/helper'
 import service from '../../utils/request/axios'
-import { getAuthInfo } from '@/api/system/user'
+import { getUser } from '@/api/system/user'
 
 const authStore = useAuthStore()
 const appStore = useAppStore()
@@ -51,7 +51,7 @@ onMounted(async () => {
         authStore.setToken(token)
         
         try {
-          const { data } = await getAuthInfo()
+          const { data } = await getUser()
           if (data) {
             authStore.setUserInfo(data)
             // 显示欢迎消息

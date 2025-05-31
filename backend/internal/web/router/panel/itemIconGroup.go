@@ -3,6 +3,7 @@ package panel
 import (
 	"math"
 	"sun-panel/internal/biz/repository"
+	"sun-panel/internal/constant"
 	"sun-panel/internal/global"
 	"sun-panel/internal/web/interceptor"
 	"sun-panel/internal/web/model/base"
@@ -28,12 +29,24 @@ func (a *ItemIconGroupRouter) InitRouter(router *gin.RouterGroup) {
 		r.POST("/panel/itemIconGroup/edit", a.Edit)
 		r.POST("/panel/itemIconGroup/deletes", a.Deletes)
 		r.POST("/panel/itemIconGroup/saveSort", a.SaveSort)
-		r.GET("/panel/itemIconGroup/getList", a.GetList)
+		r.GET("/panel/itemIconGroup/getGroups", a.GetGroups)
+	}
+
+	// public visit 路由组
+	publicR := router.Group(":code")
+	publicR.Use(interceptor.PublicAccess)
+	{
+		publicR.GET("/panel/itemIconGroup/getGroups", a.GetGroups)
 	}
 }
 
 func (a *ItemIconGroupRouter) Edit(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	itemIconGroup := &repository.ItemIconGroup{}
 
 	if err := c.ShouldBindBodyWith(itemIconGroup, binding.JSON); err != nil {
@@ -55,8 +68,12 @@ func (a *ItemIconGroupRouter) Edit(c *gin.Context) {
 	response.SuccessData(c, itemIconGroup)
 }
 
-func (a *ItemIconGroupRouter) GetList(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
+func (a *ItemIconGroupRouter) GetGroups(c *gin.Context) {
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
 
 	groups, err := global.ItemIconGroupRepo.GetList(userInfo.ID)
 	if err != nil {
@@ -75,7 +92,11 @@ func (a *ItemIconGroupRouter) Deletes(c *gin.Context) {
 		return
 	}
 
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
 
 	if count, err := global.ItemIconGroupRepo.Count(userInfo.ID); err != nil {
 		response.ErrorDatabase(c, err.Error())
@@ -103,7 +124,11 @@ func (a *ItemIconGroupRouter) SaveSort(c *gin.Context) {
 		return
 	}
 
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
 
 	err := global.ItemIconGroupRepo.BatchSaveSort(userInfo.ID, req.SortItems)
 	if err != nil {

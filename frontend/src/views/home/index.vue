@@ -251,8 +251,6 @@ function getDropdownMenuOptions() {
 }
 
 onMounted(() => {
-  // 更新用户信息
-  updateLocalUserInfo()
   getList()
 
   // 更新同步云端配置

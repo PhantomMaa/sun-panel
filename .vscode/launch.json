@@ -11,7 +11,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/backend/main.go",
             "cwd": "${workspaceFolder}/backend",
-            "args": ["-c", "conf.yaml"]
+            "args": ["-c", "my_conf.yaml"]
         }
     ]
 }

@@ -48,7 +48,12 @@ func (a *FileRouter) InitRouter(router *gin.RouterGroup) {
 }
 
 func (a *FileRouter) UploadImg(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	f, err := c.FormFile("imgfile")
 	if err != nil {
 		response.ErrorByCode(c, constant.CodeUploadFailed)
@@ -112,7 +117,12 @@ func (a *FileRouter) UploadImg(c *gin.Context) {
 }
 
 func (a *FileRouter) GetList(c *gin.Context) {
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	list, count, err := global.FileRepo.GetList(userInfo.ID)
 	if err != nil {
 		response.ErrorDatabase(c, err.Error())
@@ -137,7 +147,12 @@ func (a *FileRouter) Delete(c *gin.Context) {
 	}
 
 	req := RequestDeleteId{}
-	userInfo, _ := base.GetCurrentUserInfo(c)
+	userInfo, exist := base.GetCurrentUserInfo(c)
+	if !exist || userInfo.ID == 0 {
+		response.ErrorByCode(c, constant.CodeNotLogin)
+		return
+	}
+
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
 		response.ErrorParamFomat(c, err.Error())
 		return
