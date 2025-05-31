@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { h, onMounted, reactive, ref } from 'vue'
-import { NAlert, NButton, NDataTable, NDropdown, NTag, useDialog, useMessage } from 'naive-ui'
+import { NButton, NDataTable, NDropdown, NTag, useDialog, useMessage } from 'naive-ui'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import { deleteUser as usersDeleteUser, getList as usersGetList } from '../../../api/panel/users'
 import { SvgIcon } from '../../common'
