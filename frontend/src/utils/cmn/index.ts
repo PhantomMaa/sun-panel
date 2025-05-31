@@ -1,8 +1,7 @@
 import moment from 'moment'
-import { useAuthStore, useUserStore } from '@/store'
+import { useAuthStore } from '@/store'
 import { getUser } from '@/api/system/user'
 
-const userStore = useUserStore()
 const authStore = useAuthStore()
 
 /**
@@ -33,7 +32,6 @@ export async function updateLocalUserInfo() {
   try {
     const { data } = await getUser()
     if (data) {
-      userStore.updateUserInfo({ name: data.name, logined: data.logined })
       authStore.setUserInfo(data)
     }
   }

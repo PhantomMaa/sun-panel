@@ -3,7 +3,7 @@ import type { FormInst, FormRules } from 'naive-ui'
 import { NButton, NCard, NDivider, NForm, NFormItem, NInput, NSelect, useDialog, useMessage, NSwitch } from 'naive-ui'
 import { ref, onMounted } from 'vue'
 import { RoundCardModal, SvgIcon } from '../../common'
-import { useAppStore, useAuthStore, usePanelState, useUserStore } from '@/store'
+import { useAppStore, useAuthStore, usePanelState } from '@/store'
 import { languageOptions } from '@/utils/defaultData'
 import type { Language, Theme } from '@/store/modules/app/helper'
 import { logout } from '@/api'
@@ -14,7 +14,6 @@ import { t } from '@/locales'
 
 // 使用导入的 ApiResponse 类型
 
-const userStore = useUserStore()
 const authStore = useAuthStore()
 const appStore = useAppStore()
 const panelState = usePanelState()
@@ -70,7 +69,6 @@ const updatePasswordModalFormRules: FormRules = {
 
 async function logoutApi() {
   await logout()
-  userStore.resetUserInfo()
   authStore.removeToken()
   panelState.removeState()
   appStore.removeToken()

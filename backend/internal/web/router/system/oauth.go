@@ -110,7 +110,7 @@ func (r *OAuthRouter) OAuthCallback(c *gin.Context) {
 	}
 	c.Set("userInfo", userInfo)
 
-	redirectUrl := config.AppConfig.Base.RootURL
+	redirectUrl := config.AppConfig.Base.RootURL + "/login?token=" + tokenString
 	c.Redirect(302, redirectUrl)
 }
 

@@ -1,7 +1,7 @@
 import type { AuthState } from './index'
 import { ss } from '@/utils/storage'
 
-const LOCAL_NAME = 'AUTH_TOKEN'
+const LOCAL_NAME = 'userStorage'
 
 export function setStorage(state: AuthState) {
   return ss.set(LOCAL_NAME, state)
