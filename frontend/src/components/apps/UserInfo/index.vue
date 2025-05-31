@@ -69,12 +69,11 @@ const updatePasswordModalFormRules: FormRules = {
 
 async function logoutApi() {
   await logout()
-  authStore.removeToken()
+  authStore.removeStorage()
   panelState.removeState()
-  appStore.removeToken()
+  appStore.removeStorage()
   ms.success(t('settingUserInfo.logoutSuccess'))
-  // router.push({ path: '/login' })
-  location.reload()// 强制刷新一下页面
+  location.reload()
 }
 
 function handleSaveInfo() {

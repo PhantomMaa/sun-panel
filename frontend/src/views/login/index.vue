@@ -10,7 +10,6 @@ import { languageOptions } from '../../utils/defaultData'
 import type { Language } from '../../store/modules/app/helper'
 import service from '../../utils/request/axios'
 import { getUser } from '@/api/system/user'
-import { updateLocalUserInfo } from '@/utils/cmn'
 
 const authStore = useAuthStore()
 const appStore = useAppStore()
@@ -41,20 +40,17 @@ onMounted(async () => {
 
   // 检查URL中是否有token参数（OAuth回调）
   // 从hash部分获取token参数
-  const hashParts = window.location.hash.split('?')
+  const hashParts = window.location.href.split('?')
   if (hashParts.length > 1) {
     const hashParams = new URLSearchParams(hashParts[1])
     const token = hashParams.get('token')
-    
     if (token) {
       try {
-        // 直接保存token
-        authStore.setToken(token)
-        
         try {
           const { data } = await getUser()
           if (data) {
             authStore.setUserInfo(data)
+
             // 显示欢迎消息
             ms.success(`Hi ${data.name}, ${t('login.welcomeMessage')}`)
             router.push({ path: '/' })
@@ -77,11 +73,7 @@ const loginPost = async () => {
   try {
     const res = await login<Login.LoginResponse>(form.value)
     if (res.code === 0) {
-      authStore.setToken(res.data.token)
       authStore.setUserInfo(res.data)
-
-      // 更新用户信息
-      updateLocalUserInfo()
 
       setTimeout(() => {
         ms.success(`Hi ${res.data.name},${t('login.welcomeMessage')}`)

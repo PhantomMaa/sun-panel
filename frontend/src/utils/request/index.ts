@@ -44,13 +44,13 @@ function http<T = any>(
       }
 
       router.push({ path: '/login' })
-      authStore.removeToken()
+      authStore.removeStorage()
       return res.data
     }
 
     if (res.data.code === 1000) {
       router.push({ path: '/login' })
-      authStore.removeToken()
+      authStore.removeStorage()
       return res.data
     }
 

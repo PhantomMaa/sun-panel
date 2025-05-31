@@ -27,24 +27,13 @@ export const useAppStore = defineStore('app-store', {
     getTheme() {
       const { theme } = useTheme()
       return theme
-
-      // const appStore = useAppStore()
-      // console.log('主题', appStore.theme)
-      // if (appStore.theme === 'auto')
-      //   return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? darkTheme : lightTheme
-
-      // else if (appStore.theme === 'light')
-      //   return lightTheme
-
-      // else
-      //   return darkTheme
     },
 
     recordState() {
       setLocalSetting(this.$state)
     },
 
-    removeToken() {
+    removeStorage() {
       this.$state = defaultSetting()
       removeLocalState()
     },

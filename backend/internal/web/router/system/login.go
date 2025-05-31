@@ -82,8 +82,17 @@ func (l *LoginRouter) Login(c *gin.Context) {
 		return
 	}
 
-	user.Password = "" // 清除敏感信息
-	response.SuccessData(c, user)
+	// 将用户信息存储到上下文
+	userInfo := base.UserInfo{
+		ID:         user.ID,
+		Name:       user.Name,
+		Role:       user.Role,
+		Username:   user.Username,
+		Publiccode: user.Publiccode,
+		Token:      user.Token,
+		Logined:    true,
+	}
+	response.SuccessData(c, userInfo)
 }
 
 // Logout 安全退出
