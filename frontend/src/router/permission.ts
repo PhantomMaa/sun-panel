@@ -1,6 +1,5 @@
 import type { Router } from 'vue-router'
-import { useUserStore } from '../store/modules/user'
-import { useAuthStore } from '../store'
+import { useUserStore, useAuthStore } from '@/store'
 
 export function setupPageGuard(router: Router) {
   router.beforeEach(async (to, from, next) => {
@@ -8,20 +7,20 @@ export function setupPageGuard(router: Router) {
     const authStore = useAuthStore()
     const userStore = useUserStore()
     const token = authStore.token
-    
+
     // 如果是登录页且有token，直接跳转到首页
     if (to.path === '/login' && token) {
       next('/')
       return
     }
-    
+
     // 非管理员路由拦截
     if (userStore.userInfo && userStore.userInfo.role !== 1 && to.path.includes('admin')) {
       console.log('Non-admin trying to access admin page')
       next({ name: '404' })
       return
     }
-    
+
     // 其他情况正常放行
     next()
   })

@@ -1,5 +1,4 @@
-import { ss } from '../../../utils/storage'
-// import userDefaultAvatar from '@/assets/userDefaultAvatar.png'
+import { ss } from '@/utils/storage'
 
 const LOCAL_NAME = 'userStorage'
 
@@ -15,7 +14,6 @@ export interface UserState {
 export function defaultSetting(): UserState {
   return {
     userInfo: {
-      // headImage: userDefaultAvatar,
       name: '-- --',
     },
   }

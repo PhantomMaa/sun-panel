@@ -7,6 +7,7 @@ import (
 	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
 	"sun-panel/internal/util/jwt"
+	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +40,7 @@ func (r *OAuthRouter) GetConfig(c *gin.Context) {
 	}
 
 	// 检查哪些提供商已配置
-	providers := []string{}
+	var providers []string
 	for _, provider := range config.AppConfig.OAuth.Providers {
 		providers = append(providers, provider.Name)
 	}
@@ -98,15 +99,18 @@ func (r *OAuthRouter) OAuthCallback(c *gin.Context) {
 	}
 
 	// 设置当前用户信息
-	c.Set("userInfo", *user)
+	userInfo := base.UserInfo{
+		ID:         user.ID,
+		Name:       user.Name,
+		Role:       user.Role,
+		Username:   user.Username,
+		Publiccode: user.Publiccode,
+		Token:      tokenString,
+		Logined:    true,
+	}
+	c.Set("userInfo", userInfo)
 
-	// 为了安全起见，清除密码
-	user.Password = ""
-
-	// 设置token
-	user.Token = tokenString
-
-	redirectUrl := config.AppConfig.Base.RootURL + "/#/login?token=" + tokenString
+	redirectUrl := config.AppConfig.Base.RootURL
 	c.Redirect(302, redirectUrl)
 }
 

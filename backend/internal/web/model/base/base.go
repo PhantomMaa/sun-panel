@@ -18,6 +18,7 @@ type UserInfo struct {
 	Role       int8   `json:"role"`
 	Username   string `json:"username"`
 	Publiccode string `json:"publiccode"`
+	Token      string `json:"token"`
 	Logined    bool   `json:"logined"`
 }
 

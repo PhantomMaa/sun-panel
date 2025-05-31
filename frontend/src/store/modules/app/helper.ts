@@ -1,4 +1,4 @@
-import { ss } from '../../../utils/storage'
+import { ss } from '@/utils/storage'
 
 const LOCAL_NAME = 'appSetting'
 

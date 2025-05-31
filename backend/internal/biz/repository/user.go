@@ -55,16 +55,16 @@ func (r *UserRepo) Count() (uint, error) {
 }
 
 func (r *UserRepo) GetByUsernameAndPassword(username, password, oauthProvider string) (User, error) {
-	userInfo := User{}
+	user := User{}
 	err := Db.Where("username=?", username).Where("oauth_provider=?", oauthProvider).
-		Where("password=?", password).First(&userInfo).Error
-	return userInfo, err
+		Where("password=?", password).First(&user).Error
+	return user, err
 }
 
 func (r *UserRepo) GetByOAuthID(oauthProvider, oauthID string) (User, error) {
-	userInfo := User{}
-	err := Db.Where("oauth_provider=?", oauthProvider).Where("oauth_id=?", oauthID).First(&userInfo).Error
-	return userInfo, err
+	info := User{}
+	err := Db.Where("oauth_provider=?", oauthProvider).Where("oauth_id=?", oauthID).First(&info).Error
+	return info, err
 }
 
 func (r *UserRepo) GetList(pagedParam PagedParam) ([]User, uint, error) {
@@ -190,7 +190,7 @@ func (r *UserRepo) CheckUsernameExist(username, oauthProvider string) (User, err
 
 // GetByPubliccode 根据 public visit 代码获取用户
 func (r *UserRepo) GetByPubliccode(publiccode string) (User, error) {
-	userInfo := User{}
-	err := Db.Where("publiccode=?", publiccode).First(&userInfo).Error
-	return userInfo, err
+	user := User{}
+	err := Db.Where("publiccode=?", publiccode).First(&user).Error
+	return user, err
 }

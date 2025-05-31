@@ -19,8 +19,6 @@ export interface HttpOption {
 
 export interface Response<T = any> {
   data: T
-  // message: string | null
-  // status: string
   msg: string
   code: number
 }
@@ -36,10 +34,9 @@ function http<T = any>(
 
     if (res.data.code === 1001) {
       // 避免重复弹窗
-      if (loginMessageShow === false) {
+      if (!loginMessageShow) {
         loginMessageShow = true
         message.warning(t('api.loginExpires'), {
-        // message.warning('登录过期', {
           onLeave() {
             loginMessageShow = false
           },
@@ -63,9 +60,6 @@ function http<T = any>(
     }
 
     if (res.data.code === -1) {
-      // message.warning(res.data.msg)
-      // router.push({ path: '/login' })
-      // authStore.removeToken()
       return res.data
     }
 

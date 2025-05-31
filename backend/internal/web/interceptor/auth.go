@@ -21,10 +21,8 @@ func Auth(c *gin.Context) {
 	var err error
 	var logined bool = false
 	if publiccode != "" {
-		zaplog.Logger.Infof("Auth use public code: %v", publiccode)
 		userId, err = ParseUserIdFromPubliccode(publiccode)
 	} else {
-		zaplog.Logger.Infof("Auth use jwt token. %v", c.Request.URL.Path)
 		userId, err = ParseUserIdFromJwtToken(c.GetHeader("Authorization"))
 		logined = true
 	}
@@ -58,6 +56,7 @@ func Auth(c *gin.Context) {
 		Role:       user.Role,
 		Username:   user.Username,
 		Publiccode: user.Publiccode,
+		Token:      user.Token,
 		Logined:    logined,
 	}
 	c.Set("userInfo", userInfo)
