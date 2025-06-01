@@ -3,19 +3,24 @@ import { getStorage, removeStorage as hRemoveStorage, setStorage } from './helpe
 
 export interface AuthState {
   userInfo: User.Info | null
+  token: string | null
 }
 
 const defaultState: AuthState = {
   userInfo: null,
+  token: '',
 }
 
 export const useAuthStore = defineStore('auth-store', {
   state: (): AuthState => getStorage() || defaultState,
 
   actions: {
+    setToken(token: string) {
+      this.token = token
+    },
+
     setUserInfo(userInfo: User.Info) {
       this.userInfo = userInfo
-      this.saveStorage()
     },
 
     saveStorage() {

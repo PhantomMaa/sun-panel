@@ -19,12 +19,10 @@ func Auth(c *gin.Context) {
 	publiccode := c.GetHeader("publiccode")
 	var userId uint
 	var err error
-	var logined bool = false
 	if publiccode != "" {
 		userId, err = ParseUserIdFromPubliccode(publiccode)
 	} else {
 		userId, err = ParseUserIdFromJwtToken(c.GetHeader("Authorization"))
-		logined = true
 	}
 
 	if err != nil {
@@ -57,7 +55,6 @@ func Auth(c *gin.Context) {
 		Username:   user.Username,
 		Publiccode: user.Publiccode,
 		Token:      user.Token,
-		Logined:    logined,
 	}
 	c.Set("userInfo", userInfo)
 	c.Next()

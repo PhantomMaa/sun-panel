@@ -380,7 +380,7 @@ function handleAddItem(itemIconGroupId?: number) {
                 {{ itemGroup.title }}
               </span>
               <div
-                v-if="authStore.userInfo?.logined"
+                v-if="authStore.token"
                 class="group-buttons ml-2 delay-100 transition-opacity flex"
                 :class="itemGroup.hoverStatus ? 'opacity-100' : 'opacity-0'"
               >
@@ -487,13 +487,13 @@ function handleAddItem(itemIconGroupId?: number) {
 
     <!-- 右键菜单 -->
     <NDropdown
-      v-if="authStore.userInfo?.logined"
+      v-if="authStore.token"
       placement="bottom-start" trigger="manual" :x="dropdownMenuX" :y="dropdownMenuY"
       :options="getDropdownMenuOptions()" :show="dropdownShow" :on-clickoutside="onClickoutside" @select="handleRightMenuSelect"
     />
 
     <!-- 悬浮按钮 -->
-    <div v-if="authStore.userInfo?.logined" class="fixed-element shadow-[0_0_10px_2px_rgba(0,0,0,0.2)]">
+    <div v-if="authStore.token" class="fixed-element shadow-[0_0_10px_2px_rgba(0,0,0,0.2)]">
       <NButtonGroup vertical>
         <!-- 网络模式切换按钮组 -->
         <NButton

@@ -19,7 +19,6 @@ type UserInfo struct {
 	Username   string `json:"username"`
 	Publiccode string `json:"publiccode"`
 	Token      string `json:"token"`
-	Logined    bool   `json:"logined"`
 }
 
 type PageLimitVerify struct {

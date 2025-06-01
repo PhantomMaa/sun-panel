@@ -7,7 +7,6 @@ import (
 	"sun-panel/internal/infra/zaplog"
 	"sun-panel/internal/util"
 	"sun-panel/internal/util/jwt"
-	"sun-panel/internal/web/model/base"
 	"sun-panel/internal/web/model/response"
 
 	"github.com/gin-gonic/gin"
@@ -91,26 +90,14 @@ func (r *OAuthRouter) OAuthCallback(c *gin.Context) {
 	}
 
 	// 生成JWT Token
-	tokenString, err := jwt.GenerateToken(user.ID)
+	token, err := jwt.GenerateToken(user.ID)
 	if err != nil {
 		zaplog.Logger.Error("生成token失败:", err)
 		response.Error(c, "生成token失败")
 		return
 	}
 
-	// 设置当前用户信息
-	userInfo := base.UserInfo{
-		ID:         user.ID,
-		Name:       user.Name,
-		Role:       user.Role,
-		Username:   user.Username,
-		Publiccode: user.Publiccode,
-		Token:      tokenString,
-		Logined:    true,
-	}
-	c.Set("userInfo", userInfo)
-
-	redirectUrl := config.AppConfig.Base.RootURL + "/login?token=" + tokenString
+	redirectUrl := config.AppConfig.Base.RootURL + "/login?token=" + token
 	c.Redirect(302, redirectUrl)
 }
 

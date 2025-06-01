@@ -6,7 +6,7 @@ export function setupPageGuard(router: Router) {
     // 获取当前token和用户信息
     const authStore = useAuthStore()
 
-    if (to.path === '/login' && authStore.userInfo && authStore.userInfo.logined) {
+    if (to.path === '/login' && authStore.token) {
       next('/')
       return
     }

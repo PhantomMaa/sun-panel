@@ -45,11 +45,15 @@ onMounted(async () => {
     const hashParams = new URLSearchParams(hashParts[1])
     const token = hashParams.get('token')
     if (token) {
+      authStore.setToken(token)
+      authStore.saveStorage()
+      
       try {
         try {
           const { data } = await getUser()
           if (data) {
             authStore.setUserInfo(data)
+            authStore.saveStorage()
 
             // 显示欢迎消息
             ms.success(`Hi ${data.name}, ${t('login.welcomeMessage')}`)
@@ -73,7 +77,9 @@ const loginPost = async () => {
   try {
     const res = await login<Login.LoginResponse>(form.value)
     if (res.code === 0) {
+      authStore.setToken(res.data.token)
       authStore.setUserInfo(res.data)
+      authStore.saveStorage()
 
       setTimeout(() => {
         ms.success(`Hi ${res.data.name},${t('login.welcomeMessage')}`)

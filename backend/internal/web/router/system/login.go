@@ -90,7 +90,6 @@ func (l *LoginRouter) Login(c *gin.Context) {
 		Username:   user.Username,
 		Publiccode: user.Publiccode,
 		Token:      user.Token,
-		Logined:    true,
 	}
 	response.SuccessData(c, userInfo)
 }

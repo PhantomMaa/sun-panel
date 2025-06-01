@@ -8,7 +8,7 @@ const service = axios.create({
 service.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore()
-    const token = authStore.userInfo?.token
+    const token = authStore.token
     
     // 从 URL 路径中获取 public code
     let publiccode = ''

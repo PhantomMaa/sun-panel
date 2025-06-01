@@ -14,6 +14,5 @@ declare namespace User{
 		oauthProvider?:string
 		oauthId?:string
 		publiccode?:string
-		logined?:boolean
 	}
 }

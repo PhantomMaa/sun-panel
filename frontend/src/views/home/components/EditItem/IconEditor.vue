@@ -145,7 +145,7 @@ const handleUploadFinish = ({
               :show-file-list="false"
               name="imgfile"
               :headers="{
-                Authorization: `Bearer ${authStore.userInfo?.token}`,
+                Authorization: `Bearer ${authStore.token}`,
               }"
               @finish="handleUploadFinish"
             >

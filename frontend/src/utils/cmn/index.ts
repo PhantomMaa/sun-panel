@@ -33,6 +33,7 @@ export async function updateLocalUserInfo() {
     const { data } = await getUser()
     if (data) {
       authStore.setUserInfo(data)
+      authStore.saveStorage()
     }
   }
   catch (error) {
