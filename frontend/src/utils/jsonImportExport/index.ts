@@ -3,7 +3,7 @@ import moment from 'moment'
 
 const VERSION = 1 // 当前配置文件版本
 const ALLOW_LOW_VERSION = 1 // 最小支持的配置文件版本号
-const APPNAME = 'Sun-Panel-Config'
+const APPNAME = 'Moon-Box-Config'
 
 export class FormatError extends Error {
   constructor(message: string) {
@@ -21,7 +21,7 @@ export class ConfigVersionLowError extends Error {
 
 export interface JsonStructure {
   version: number
-  appName: 'Sun-Panel-Config'
+  appName: 'Moon-Box-Config'
   exportTime: string
   appVersion: string
   icons?: any
@@ -83,7 +83,7 @@ export function exportJson(appVersion?: string): ExportJsonResult {
         const blob = new Blob([jsonString], { type: 'application/json' })
         const link = document.createElement('a')
         link.href = URL.createObjectURL(blob)
-        link.download = `SunPanel-Data${moment().format('YYYYMMDDHHmm')}.sun-panel.json`
+        link.download = `SunPanel-Data${moment().format('YYYYMMDDHHmm')}.moon-box.json`
         link.click()
       }
     },

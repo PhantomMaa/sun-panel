@@ -140,6 +140,6 @@ func Logo() {
 	fmt.Println("")
 
 	fmt.Println("Version:", global.VERSION)
-	fmt.Println("Welcome to the Sun-Panel.")
+	fmt.Println("Welcome to the Moon-Box.")
 	fmt.Println("Project address:", "https://github.com/hslr-s/sun-panel")
 }

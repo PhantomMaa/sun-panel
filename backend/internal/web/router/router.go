@@ -63,6 +63,6 @@ func InitRouters(addr string) error {
 		zaplog.Logger.Info("Static file server is disabled")
 	}
 
-	zaplog.Logger.Info("Sun-Panel is Started.  Listening and serving HTTP on ", addr)
+	zaplog.Logger.Info("Moon-Box is Started.  Listening and serving HTTP on ", addr)
 	return router.Run(addr)
 }

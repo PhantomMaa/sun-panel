@@ -1,11 +1,11 @@
 {
-  "name": "sun-panel",
+  "name": "moon-box",
   "version": "0.0.0",
   "private": false,
-  "description": "Sun-Panel Web",
+  "description": "Moon-Box Web",
   "author": "BraisedHunter <95302870@qq.com>",
   "keywords": [
-    "Sun-Panel",
+    "Moon-Box",
     "vue"
   ],
   "scripts": {

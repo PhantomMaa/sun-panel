@@ -5,7 +5,7 @@
 
 <img src="./doc/images/logo.png" width="100" height="100" />
 
-# Sun-Panel
+# Moon-Box
 
 [![Github](https://img.shields.io/badge/Github-123456?logo=github&labelColor=242424)](https://github.com/hslr-s/sun-panel)
 [![Gitee](https://img.shields.io/badge/Gitee-123456?logo=gitee&labelColor=c71d23)](https://gitee.com/hslr/sun-panel)
