@@ -1,6 +1,18 @@
 import axios, { type AxiosResponse } from 'axios'
 import { useAuthStore } from '../../store'
 
+export function parsePublicCodeFromPath(): string {
+  let publiccode = ''
+  const pathSegments = window.location.pathname.split('/')
+  if (pathSegments.length > 1 && pathSegments[1] !== '') {
+    // Check if code format is valid (only letters and numbers, length of 10)
+    if (/^[a-zA-Z0-9]{10}$/.test(pathSegments[1])) {
+      publiccode = pathSegments[1]
+    }
+  }
+  return publiccode
+}
+
 const service = axios.create({
   baseURL: import.meta.env.VITE_GLOB_API_URL,
 })
@@ -11,14 +23,7 @@ service.interceptors.request.use(
     const token = authStore.token
     
     // 从 URL 路径中获取 public code
-    let publiccode = ''
-    const pathSegments = window.location.pathname.split('/')
-    if (pathSegments.length > 1 && pathSegments[1] !== '') {
-      // 检查代码格式是否符合要求（只包含字母和数字，长度为10）
-      if (/^[a-zA-Z0-9]{10}$/.test(pathSegments[1])) {
-        publiccode = pathSegments[1]
-      }
-    }
+    const publiccode = parsePublicCodeFromPath()
 
     // 添加 publiccode 到请求头（如果存在）
     if (publiccode)
