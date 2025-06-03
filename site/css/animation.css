@@ -1,0 +1,302 @@
+/* 
+ * MoonBox Landing Page Animation Styles
+ * Contains styles for the deployment animation
+ */
+
+:root {
+    --primary-color: #3498db;
+    --primary-rgb: 52, 152, 219;
+    --accent-color: #f1c40f;
+    --background-rgb: 255, 255, 255;
+    --card-bg-rgb: 255, 255, 255;
+    --text-light: #666;
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 12px rgba(0, 0, 0, 0.2);
+    --card-border-radius: 10px;
+}
+
+/* Deployment Animation Container */
+.deployment-animation {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    background-color: rgba(var(--background-rgb), 0.5);
+    border-radius: var(--card-border-radius);
+    padding: 20px;
+    box-sizing: border-box;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+
+[data-theme="dark"] .deployment-animation {
+    background-color: rgba(30, 30, 30, 0.5);
+}
+
+/* Docker Container */
+.docker-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    background-color: rgba(var(--card-bg-rgb), 0.7);
+    border-radius: var(--card-border-radius);
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: pulse 3s infinite alternate;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.3);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.6);
+    }
+}
+
+/* Docker Logo */
+.docker-logo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+    color: var(--primary-color);
+    animation: spin 20s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Server Rack */
+.server-rack {
+    position: absolute;
+    top: 30%;
+    left: 10%;
+    width: 30%;
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.server {
+    width: 100%;
+    height: 25%;
+    background-color: rgba(var(--background-rgb), 0.8);
+    border-radius: 5px;
+    border: 1px solid rgba(var(--primary-rgb), 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.server::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 5px;
+    height: 5px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    animation: serverLight 1.5s infinite alternate;
+}
+
+.server:nth-child(2)::after {
+    animation-delay: 0.5s;
+}
+
+.server:nth-child(3)::after {
+    animation-delay: 1s;
+}
+
+@keyframes serverLight {
+    0% {
+        box-shadow: 0 0 5px var(--primary-color);
+        opacity: 0.5;
+    }
+    100% {
+        box-shadow: 0 0 10px var(--primary-color);
+        opacity: 1;
+    }
+}
+
+/* Connection Line */
+.connection-line {
+    position: absolute;
+    top: 50%;
+    left: 40%;
+    width: 20%;
+    height: 2px;
+    background-color: var(--primary-color);
+    transform-origin: left center;
+    animation: dataFlow 2s infinite linear;
+}
+
+@keyframes dataFlow {
+    0% {
+        background: linear-gradient(to right, var(--primary-color) 0%, var(--accent-color) 50%, transparent 50%, transparent 100%);
+        background-size: 20px 2px;
+        background-position: 0px 0;
+    }
+    100% {
+        background: linear-gradient(to right, var(--primary-color) 0%, var(--accent-color) 50%, transparent 50%, transparent 100%);
+        background-size: 20px 2px;
+        background-position: 20px 0;
+    }
+}
+
+/* Browser Window */
+.browser-window {
+    position: absolute;
+    top: 30%;
+    right: 10%;
+    width: 40%;
+    height: 60%;
+    background-color: rgba(var(--card-bg-rgb), 0.9);
+    border-radius: var(--card-border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: browserAppear 1s ease-out;
+}
+
+@keyframes browserAppear {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Browser Header */
+.browser-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: rgba(var(--background-rgb), 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.browser-controls {
+    display: flex;
+    justify-content: space-between;
+    width: 50px;
+}
+
+.browser-controls span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin: 0 2px;
+}
+
+.browser-controls span:nth-child(1) {
+    background-color: #ff5f56;
+}
+
+.browser-controls span:nth-child(2) {
+    background-color: #ffbd2e;
+}
+
+.browser-controls span:nth-child(3) {
+    background-color: #27c93f;
+}
+
+.browser-address {
+    font-size: 12px;
+    color: var(--text-light);
+    background-color: rgba(var(--background-rgb), 0.5);
+    padding: 4px 8px;
+    border-radius: 4px;
+    width: 70%;
+    text-align: center;
+}
+
+/* Browser Content */
+.browser-content {
+    padding: 20px;
+    height: calc(100% - 40px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.moonbox-logo {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 20px;
+    color: var(--primary-color);
+    animation: glow 3s infinite alternate;
+}
+
+@keyframes glow {
+    0% {
+        filter: drop-shadow(0 0 2px var(--primary-color));
+    }
+    100% {
+        filter: drop-shadow(0 0 8px var(--primary-color));
+    }
+}
+
+/* Panel Grid */
+.panel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 10px;
+    width: 100%;
+}
+
+.panel-item {
+    width: 100%;
+    height: 40px;
+    background-color: rgba(var(--background-rgb), 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.panel-item:nth-child(1) {
+    animation-delay: 0.2s;
+}
+
+.panel-item:nth-child(2) {
+    animation-delay: 0.4s;
+}
+
+.panel-item:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+.panel-item:nth-child(4) {
+    animation-delay: 0.8s;
+}
+
+@keyframes fadeIn {
+    0% {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

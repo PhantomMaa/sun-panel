@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoonBox - 简单、易用、美观的导航面板</title>
+	<link rel="icon" type="image/svg+xml" href="image/favicon.svg">
+    <link rel="apple-touch-icon" href="image/apple-touch-icon.png">
+    <link rel="stylesheet" href="css/style-combined.css">
+    <link rel="stylesheet" href="css/fixes.css">
+    <link rel="stylesheet" href="css/animation.css">
+    <!-- 引入字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 主题切换器 -->
+    <div class="theme-toggle">
+        <button id="theme-toggle-btn" aria-label="切换主题">
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- 导航栏 -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="image/favicon.svg" alt="MoonBox Logo">
+                    <span>MoonBox</span>
+                </div>
+                <div class="nav-toggle" id="nav-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="nav-menu">
+                    <ul class="nav-list">
+                        <li class="nav-item"><a href="#home" class="nav-link active">首页</a></li>
+                        <li class="nav-item"><a href="#features" class="nav-link">特点</a></li>
+                        <li class="nav-item"><a href="#deployment" class="nav-link">部署</a></li>
+                        <li class="nav-item"><a href="#extension" class="nav-link">插件</a></li>
+                        <li class="nav-item"><a href="https://doc.moon-box.top/zh_cn/" class="nav-link">文档</a></li>
+                    </ul>
+                    <div class="language-switch">
+                        <button class="lang-btn active">中文</button>
+                        <button class="lang-btn">English</button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主区域 -->
+    <main>
+        <!-- 英雄区域 -->
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="glitch-text">MoonBox</h1>
+                    <p class="hero-subtitle">简单、易用、美观</p>
+                    <p class="hero-description">一个 NAS、服务器导航面板、简易 docker 管理器、Homepage、浏览器首页</p>
+                    <div class="hero-buttons">
+                        <a href="https://doc.moon-box.top/zh_cn/usage/quick_deploy.html" class="btn btn-primary">
+                            <span>快速部署</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="floating-elements">
+                        <div class="floating-element fe-1">
+                            <img src="svg-icons/material-symbols-lan-outline-rounded.svg" alt="网络图标">
+                        </div>
+                        <div class="floating-element fe-2">
+                            <img src="svg-icons/solar-cpu-bold.svg" alt="CPU图标">
+                        </div>
+                        <div class="floating-element fe-3">
+                            <img src="svg-icons/clarity-hard-disk-solid.svg" alt="硬盘图标">
+                        </div>
+                        <div class="floating-element fe-4">
+                            <img src="svg-icons/ion-color-palette-outline.svg" alt="调色板图标">
+                        </div>
+                        <div class="floating-element fe-5">
+                            <img src="svg-icons/majesticons-applications.svg" alt="应用图标">
+                        </div>
+                    </div>
+                    <img src="image/defaultBackground.webp" alt="MoonBox 界面预览" class="main-image">
+                </div>
+            </div>
+            <div class="scroll-indicator">
+                <div class="mouse">
+                    <div class="wheel"></div>
+                </div>
+                <div class="arrow">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 特点区域 -->
+        <section id="features" class="features">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">核心特点</h2>
+                    <p class="section-subtitle">MoonBox 提供了丰富的功能，让您的导航体验更加简单、高效</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                        <div class="feature-icon">
+                            <img src="svg-icons/material-symbols-lan-outline-rounded.svg" alt="网络图标">
+                        </div>
+                        <h3>简洁易用</h3>
+                        <p>无需代码修改，易于操作，功能强大，占用资源小，支持局域网与公网环境切换。</p>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                        <div class="feature-icon">
+                            <img src="svg-icons/solar-cpu-bold.svg" alt="Docker图标">
+                        </div>
+                        <h3>Docker 部署</h3>
+                        <p>支持 Docker 轻松部署，简化操作流程，一键启动，方便管理。</p>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                        <div class="feature-icon">
+                            <img src="svg-icons/majesticons-applications.svg" alt="插件图标">
+                        </div>
+                        <h3>浏览器插件</h3>
+                        <p>结合浏览器辅助插件，打造媲美原生体验的新标签页，提升您的浏览效率。</p>
+                    </div>
+                    <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                        <div class="feature-icon">
+                            <img src="svg-icons/ion-color-palette-outline.svg" alt="调色板图标">
+                        </div>
+                        <h3>美观定制</h3>
+                        <p>各种风格，自由搭配，满足您对美观与个性化的需求。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 部署区域 -->
+        <section id="deployment" class="deployment">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">快速部署</h2>
+                    <p class="section-subtitle">只需几个简单步骤，即可开始使用 MoonBox</p>
+                </div>
+                <div class="deployment-content">
+                    <div class="deployment-steps">
+                        <div class="step" data-aos="fade-right" data-aos-delay="100">
+                            <div class="step-number">01</div>
+                            <div class="step-content">
+                                <h3>拉取 Docker 镜像</h3>
+                                <p>使用 Docker 命令拉取最新的 MoonBox 镜像。</p>
+                                <div class="code-block">
+                                    <code>docker pull ghcr.io/phantommaa/sun-panel/monolith:latest</code>
+                                    <button class="copy-btn" aria-label="复制代码">
+                                        <img src="svg-icons/ion-copy.svg" alt="复制">
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step" data-aos="fade-right" data-aos-delay="200">
+                            <div class="step-number">02</div>
+                            <div class="step-content">
+                                <h3>启动容器</h3>
+                                <p>配置端口映射和数据卷，启动 MoonBox 容器。</p>
+                                <div class="code-block">
+                                    <code>docker run -d --name moonbox -p 8085:8085 -v /your/data/path:/app/data ghcr.io/phantommaa/sun-panel/monolith:latest</code>
+                                    <button class="copy-btn" aria-label="复制代码">
+                                        <img src="svg-icons/ion-copy.svg" alt="复制">
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step" data-aos="fade-right" data-aos-delay="300">
+                            <div class="step-number">03</div>
+                            <div class="step-content">
+                                <h3>访问面板</h3>
+                                <p>通过浏览器访问 <code>http://localhost:8085</code>，开始使用 MoonBox。</p>
+                                <a href="https://doc.moon-box.top/zh_cn/usage/quick_deploy.html" class="btn btn-outline">查看详细部署指南</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="deployment-image" data-aos="fade-left">
+                        <div class="deployment-animation">
+                            <div class="docker-container">
+                                <div class="docker-logo">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512" width="40" height="40">
+                                        <path fill="currentColor" d="M349.9 236.3h-66.1v-59.4h66.1v59.4zm0-204.3h-66.1v60.7h66.1V32zm78.2 144.8H362v59.4h66.1v-59.4zm-156.3-72.1h-66.1v60.1h66.1v-60.1zm78.1 0h-66.1v60.1h66.1v-60.1zm276.8 100c-14.4-9.7-47.6-13.2-73.1-8.4-3.3-24-16.7-44.9-41.1-63.7l-14-9.3-9.3 14c-18.4 27.8-23.4 73.6-3.7 103.8-8.7 4.7-25.8 11.1-48.4 10.7H2.4c-8.7 50.8 5.8 116.8 44 162.1 37.1 43.9 92.7 66.2 165.4 66.2 157.4 0 273.9-72.5 328.4-204.2 21.4.4 67.6.1 91.3-45.2 1.5-2.5 6.6-13.2 8.5-17.1l-13.3-8.9zm-511.1-27.9h-66v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm-78.1-72.1h-66.1v60.1h66.1v-60.1z"/>
+                                    </svg>
+                                </div>
+                                <div class="server-rack">
+                                    <div class="server"></div>
+                                    <div class="server"></div>
+                                    <div class="server"></div>
+                                </div>
+                                <div class="connection-line"></div>
+                                <div class="browser-window">
+                                    <div class="browser-header">
+                                        <div class="browser-controls">
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
+                                        </div>
+                                        <div class="browser-address">http://localhost:8085</div>
+                                    </div>
+                                    <div class="browser-content">
+                                        <div class="moonbox-logo">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                                <circle cx="12" cy="12" r="5" fill="currentColor"></circle>
+                                                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="panel-grid">
+                                            <div class="panel-item"></div>
+                                            <div class="panel-item"></div>
+                                            <div class="panel-item"></div>
+                                            <div class="panel-item"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 浏览器插件区域 -->
+        <section id="extension" class="extension">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">浏览器辅助插件</h2>
+                    <p class="section-subtitle">结合浏览器插件功能，打造媲美原生体验的新标签页</p>
+                </div>
+                <div class="extension-showcase">
+                    <div class="extension-cards">
+                        <div class="extension-card" data-aos="zoom-in" data-aos-delay="100">
+                            <div class="card-image">
+                                <img src="image/defaultBackground.webp" alt="各种风格，自由搭配">
+                            </div>
+                            <div class="card-content">
+                                <h3>各种风格，自由搭配</h3>
+                                <p>提供多种主题和布局选项，让您的新标签页与众不同。</p>
+                            </div>
+                        </div>
+                        <div class="extension-card" data-aos="zoom-in" data-aos-delay="200">
+                            <div class="card-image">
+                                <img src="image/defaultBackground.webp" alt="内置小窗口">
+                            </div>
+                            <div class="card-content">
+                                <h3>内置小窗口</h3>
+                                <p>直接在新标签页中访问您常用的网站和服务，提高工作效率。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="extension-cta" data-aos="fade-up">
+                        <a href="https://doc.moon-box.top/zh_cn/browser_extension/index" class="btn btn-primary">
+                            <span>了解更多插件功能</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <div class="footer-logo">
+                        <img src="image/favicon.svg" alt="MoonBox Logo">
+                        <span>MoonBox</span>
+                    </div>
+                    <p class="footer-description">简单、易用、美观的导航面板</p>
+                </div>
+                <div class="footer-column">
+                    <h3>链接</h3>
+                    <ul class="footer-links">
+                        <li><a href="https://doc.moon-box.top/zh_cn/introduce/project.html">项目介绍</a></li>
+                        <li><a href="https://doc.moon-box.top/zh_cn/usage/quick_deploy.html">快速部署</a></li>
+                        <li><a href="https://doc.moon-box.top/zh_cn/faq/faq.html">常见问题</a></li>
+                        <li><a href="https://doc.moon-box.top/zh_cn/openapi/v1/">OpenAPI</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>社区</h3>
+                    <ul class="footer-links">
+                        <li><a href="https://pro.moon-box.top">PRO 版本</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>法律</h3>
+                    <ul class="footer-links">
+                        <li><a href="privacy-policy.html" target="_blank">隐私政策</a></li>
+                        <li><a href="terms-of-service.html" target="_blank">服务条款</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">Copyright 2023-present MoonBox. Released under the MIT License.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" aria-label="返回顶部">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    </button>
+
+    <!-- 加载脚本 -->
+    <script src="js/main.js"></script>
+</body>
+</html>

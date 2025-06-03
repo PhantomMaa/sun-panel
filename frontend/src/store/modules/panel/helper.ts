@@ -4,7 +4,7 @@ import { PanelPanelConfigStyleEnum, PanelStateNetworkModeEnum } from '@/enums'
 // 使用 public 目录下的资源，直接使用绝对路径
 // 在 Vite 中，public 目录下的文件会被原样复制到构建输出目录，不会经过任何处理
 // 确保使用绝对路径，不包含任何特定的端口号或主机名
-const defaultBackground = '/assets/defaultBackground.webp'
+const defaultBackground = '/assets/bg-forest.jpg'
 const LOCAL_NAME = 'panelStorage'
 
 const defaultFooterHtml = '<div class="flex justify-center text-slate-300" style="margin-top:100px">Powered By <a href="https://moon.phantomlab.top/site/" target="_blank" class="ml-[5px]">Moon-Box</a></div>'
